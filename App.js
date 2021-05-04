@@ -115,14 +115,15 @@ export default function App(){
     <AuthContext.Provider value={authContext}>
     <NavigationContainer>
       { loginState.userToken!==null?(
-        <Drawer.Navigator screenOptions={{ headerShown: true }} 
+        <Drawer.Navigator screenOptions={{ headerShown: false }} 
             drawerContent={props => <DrawerContent {...props} />}>
-         <Drawer.Screen name="Servers" component={MainStackNavigator}
+         <Drawer.Screen name="Servers" component={MainStackNavigator} 
           options={{
            headerTintColor: 'white',
            headerStyle: {
              backgroundColor: '#008570',
-             },headerShown:true
+             },
+             headerShown:false,
             }}
           />
           <Drawer.Screen name="ServerManagement" component={MainStackNavigator}
@@ -131,15 +132,7 @@ export default function App(){
            headerStyle: {
              backgroundColor: '#008570',
              },headerShown:false
-          ,
-              headerLeft: (props) => (
-                <HeaderBackButton
-                  {...props}
-                  onPress={() => {
-                    // Do something
-                  }}
-                />
-              ),}}
+          }}
           />
           <Drawer.Screen name="Events" component={EventsStackNavigator}
           options={{
