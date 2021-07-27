@@ -20,21 +20,14 @@ const screenOptionStyle = {
   headerTintColor: 'white',
   headerBackTitle: 'Back',
 };
-const MainStackNavigator = ({navigation}) => {
-  const openMenu = () => {
-    navigation.openDrawer();
-  };
-  const openSearch = () => {
-    navigation.navigate('SearchServers');
-  };
-
+const AccountRootStack = ({navigation}) => {
   return (
     <Stack.Navigator
-      initialRouteName="Servers"
+      initialRouteName="AccountStack"
       screenOptions={{headerShown: true}}>
       <Stack.Screen
-        name="Servers"
-        component={HomeScreen}
+        name="AccountStack"
+        component={AccountRootStack}
         options={{
           headerTintColor: 'white',
           headerStyle: {
@@ -103,4 +96,4 @@ const MainStackNavigator = ({navigation}) => {
   );
 };
 
-export {MainStackNavigator};
+export {AccountRootStack};

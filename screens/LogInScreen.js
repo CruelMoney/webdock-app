@@ -17,9 +17,8 @@ import LOGO from '../assets/logowhite.svg';
 import { AsyncStorage } from '@react-native-community/async-storage';
 import { AuthContext } from '../components/context';
 
-export function LogInScreen(){
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export function LogInScreen({navigation}){
+  const [token, setToken] = useState("");
 
   const { signIn }=React.useContext(AuthContext);
 
@@ -45,7 +44,13 @@ export function LogInScreen(){
   //   })
   // );
   const loginHandle = (usertoken)=>{
-    signIn(usertoken);
+    getPing(usertoken).then(data => {
+      if(data.webdock==="rocks"){
+          signIn(usertoken);
+      }else{
+          Alert.alert("Error","Something went wrong!")
+      }
+  })
   }
 
   return(
@@ -62,25 +67,21 @@ export function LogInScreen(){
           height:'70%',
           marginTop:'-15%'
         }}>
-                  <Text style={styles.welcomeback}>Welcome back!</Text>
         <TextInput
         mode="outlined"
-        label="Email"
+        label="Token"
         theme={{ colors: { primary: '#008570',underlineColor:'transparent',}}}
-        onChangeText={(email) => setEmail(email)}
+        onChangeText={(token) => setToken(token)}
         style={styles.email}
         />
-         <TextInput
-        mode="outlined"
-        label="Password"
-        secureTextEntry={true}
-        theme={{ colors: { primary: '#008570',underlineColor:'transparent',}}}
-        onChangeText={(val)=> textInputChange(val)}
-        style={styles.email}
-        />
+
         <Button mode="contained" theme={{ colors: { primary: '#008570'}}} 
-            onPress={()=>{loginHandle(email)}}>
-          LOG IN
+            onPress={()=>{loginHandle(token)}}>
+              Log In
+        </Button>
+        <Button mode="contained" theme={{ colors: { primary: '#008570'}}} 
+            onPress={()=>{navigation.navigate("ScanScreen")}}>
+              Scan
         </Button>
         </Card>
         </View>

@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 
-import React,{useEffect} from 'react';
+import React, {useEffect} from 'react';
 import {
   ActivityIndicator,
   HeaderBarItem,
@@ -18,138 +18,161 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import { DrawerContent } from './screens/DrawerContent';
+import {NavigationContainer, StackActions} from '@react-navigation/native';
+import {createDrawerNavigator} from '@react-navigation/drawer';
+import {DrawerContent} from './screens/DrawerContent';
 import Header from './shared/header';
-import { LogInScreen } from './screens/LogInScreen';
+import {LogInScreen} from './screens/LogInScreen';
 import EventsScreen from './screens/EventsScreen';
 import {MainStackNavigator} from './screens/HomeStack';
-import { RootStack } from './screens/RootStack';
-import { AuthContext } from './components/context';
+import {RootStack} from './screens/RootStack';
+import {AuthContext} from './components/context';
 import AsyncStorage from '@react-native-community/async-storage';
-import { EventsStackNavigator } from './screens/EventsStack';
-import { HeaderBackButton } from '@react-navigation/stack';
-
+import {EventsStackNavigator} from './screens/EventsStack';
+import {createStackNavigator, HeaderBackButton} from '@react-navigation/stack';
+import {AccountStack} from './screens/AccountStack';
+import {IconButton} from 'react-native-paper';
+import CreatePublicKey from './screens/CreatePublicKey';
+import {AccountRootStack} from './screens/AccountRootStack';
 const Drawer = createDrawerNavigator();
-
-export default function App(){
+const Stack = createStackNavigator();
+export default function App() {
   //const [isLoading, setIsLoading] = React.useState(true);
   //const [userToken, setUserToken] = React.useState(null);
-  
-  const initialLoginState = {
-    isLoading:true,
-    userToken:null,
-  }
 
-  const loginReducer = ( prevState, action) => {
-    switch(action.type){
+  const initialLoginState = {
+    isLoading: true,
+    userToken: null,
+  };
+
+  const loginReducer = (prevState, action) => {
+    switch (action.type) {
       case 'RETRIEVE_TOKEN':
         return {
           ...prevState,
-          userToken:action.token,
-          isLoading:false
+          userToken: action.token,
+          isLoading: false,
         };
       case 'LOGIN':
         return {
           ...prevState,
           userToken: action.token,
-          isLoading:false
+          isLoading: false,
         };
       case 'LOGOUT':
         return {
           ...prevState,
-          userToken:null,
-          isLoading:false
+          userToken: null,
+          isLoading: false,
         };
     }
-  }
+  };
 
-  const [loginState, dispatch] = React.useReducer(loginReducer, initialLoginState)
+  const [loginState, dispatch] = React.useReducer(
+    loginReducer,
+    initialLoginState,
+  );
 
-  const authContext = React.useMemo(()=>({
-    signIn:async (utoken)=>{
+  const authContext = React.useMemo(() => ({
+    signIn: async utoken => {
       // setUserToken('fgkj');
-      try{
-        await AsyncStorage.setItem('userToken',utoken);
-      }catch(e){
+      try {
+        await AsyncStorage.setItem('userToken', utoken);
+      } catch (e) {
         alert(e);
       }
       dispatch({
         type: 'LOGIN',
-        token: utoken
-      })
+        token: utoken,
+      });
     },
-    signOut:async()=>{
-      try{
+    signOut: async () => {
+      try {
         await AsyncStorage.removeItem('userToken');
-      } catch(e){
+      } catch (e) {
         alert(e);
       }
-      dispatch({ type: 'LOGOUT'})
-    }
+      dispatch({type: 'LOGOUT'});
+    },
   }));
 
   useEffect(() => {
-    setTimeout(async() => {
+    setTimeout(async () => {
       //setIsLoading(false);
-      let userToken=null;
+      let userToken = null;
       try {
-        userToken=await AsyncStorage.getItem('userToken');
-      }catch(e){
+        userToken = await AsyncStorage.getItem('userToken');
+      } catch (e) {
         alert(e);
       }
-      dispatch({ type: 'RETRIEVE_TOKEN', token: userToken });
-    },1000);
+      dispatch({type: 'RETRIEVE_TOKEN', token: userToken});
+    }, 1000);
   }, []);
 
-  if( loginState.isLoading ) {
-    return(
-      <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
-        <ActivityIndicator size="large"/>
+  if (loginState.isLoading) {
+    return (
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <ActivityIndicator size="large" color="#008570" />
       </View>
     );
   }
 
-  return(
+  return (
     <AuthContext.Provider value={authContext}>
-    <NavigationContainer>
-      { loginState.userToken!==null?(
-        <Drawer.Navigator screenOptions={{ headerShown: false }} 
-            drawerContent={props => <DrawerContent {...props} />}>
-         <Drawer.Screen name="Servers" component={MainStackNavigator} 
-          options={{
-           headerTintColor: 'white',
-           headerStyle: {
-             backgroundColor: '#008570',
-             },
-             headerShown:false,
-            }}
-          />
-          <Drawer.Screen name="ServerManagement" component={MainStackNavigator}
-          options={{
-           headerTintColor: 'white',
-           headerStyle: {
-             backgroundColor: '#008570',
-             },headerShown:false
-          }}
-          />
-          <Drawer.Screen name="Events" component={EventsStackNavigator}
-          options={{
-           headerTintColor: 'white',
-           headerStyle: {
-             backgroundColor: '#008570',
-             },headerShown:true
-            }}
-          />
-        </Drawer.Navigator>
-      ):
-      <RootStack/>
-      }
-      
-    </NavigationContainer>
+      <NavigationContainer>
+        {loginState.userToken !== null ? (
+          <>
+            <Drawer.Navigator
+              screenOptions={{headerShown: false}}
+              drawerContent={props => <DrawerContent {...props} />}>
+              <Drawer.Screen
+                name="Servers"
+                component={MainStackNavigator}
+                options={{
+                  headerTintColor: 'white',
+                  headerStyle: {
+                    backgroundColor: '#008570',
+                  },
+                  headerShown: false,
+                }}
+              />
+              <Drawer.Screen
+                name="Account"
+                component={AccountStack}
+                options={{
+                  headerTintColor: 'white',
+                  headerStyle: {
+                    backgroundColor: '#008570',
+                  },
+                  headerShown: true,
+                }}
+              />
+              <Drawer.Screen
+                name="Events"
+                component={EventsStackNavigator}
+                options={{
+                  headerTintColor: 'white',
+                  headerStyle: {
+                    backgroundColor: '#008570',
+                  },
+                  headerShown: false,
+                  headerRight: () => (
+                    <IconButton icon="magnify" color="white" size={25} />
+                  ),
+                }}
+              />
+              <Drawer.Screen
+                name="CreatePublicKey"
+                component={CreatePublicKey}
+              />
+            </Drawer.Navigator>
+          </>
+        ) : (
+          <RootStack />
+        )}
+      </NavigationContainer>
     </AuthContext.Provider>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
