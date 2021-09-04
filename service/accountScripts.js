@@ -16,9 +16,9 @@ export async function getAccountScripts(api_key) {
     alert(error.message);
   }
 }
-export async function postAccountPublicKeys(api_key, keyname, publickey) {
+export async function postAccountScripts(api_key, name, filename, filecontent) {
   try {
-    let request = await fetch(api_url + 'account/publicKeys', {
+    let request = await fetch(api_url + 'account/scripts', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -26,12 +26,45 @@ export async function postAccountPublicKeys(api_key, keyname, publickey) {
         Authorization: 'Bearer ' + api_key,
       },
       body: JSON.stringify({
-        name: keyname,
-        publicKey: publickey,
+        name: name,
+        filename: filename,
+        content: filecontent,
       }),
     });
-    console.log(request);
-    let result = await request.json();
+    let result = {status: request.status, response: await request.json()};
+    console.log(result);
+
+    request = null;
+    return result;
+  } catch (error) {
+    console.log('Api call error');
+    alert(error.message);
+  }
+}
+export async function patchAccountScripts(
+  api_key,
+  id,
+  name,
+  filename,
+  filecontent,
+) {
+  try {
+    let request = await fetch(api_url + 'account/scripts/' + id, {
+      method: 'PATCH',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + api_key,
+      },
+      body: JSON.stringify({
+        name: name,
+        filename: filename,
+        content: filecontent,
+      }),
+    });
+    let result = {status: request.status, response: await request.json()};
+    console.log(result);
+
     request = null;
     return result;
   } catch (error) {

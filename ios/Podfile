@@ -24,6 +24,8 @@ target 'Webdock' do
 
   pod 'RNPermissions', :path => '../node_modules/react-native-permissions'
 
+  pod 'RNDateTimePicker', :path => '../node_modules/@react-native-community/datetimepicker'
+
   target 'WebdockTests' do
     inherit! :complete
     # Pods for testing

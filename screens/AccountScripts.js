@@ -21,19 +21,21 @@ import {
   Portal,
   FAB,
   Provider,
+  Snackbar,
 } from 'react-native-paper';
 import {Avatar, Divider} from 'react-native-paper';
 import {
   deleteAccountScript,
   getAccountScripts,
 } from '../service/accountScripts';
-
+import Toast from 'react-native-toast-message';
 export default function AccountScripts({navigation}) {
   const [scripts, setScripts] = useState();
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       onBackgroundRefresh();
     });
+
     setTimeout(async () => {
       let userToken = null;
       try {
@@ -53,27 +55,58 @@ export default function AccountScripts({navigation}) {
 
     userToken = await AsyncStorage.getItem('userToken');
 
-    Alert.alert(
-      'Delete Public Keys',
-      'Do you really want to delete this Public Key?',
-      [
-        {
-          text: 'Cancel',
-          onPress: () => console.log('Cancel Pressed'),
-          style: 'cancel',
-        },
-        {
-          text: 'OK',
-          onPress: () => {
-            deleteAccountScript(userToken, pkey);
+    Alert.alert('Delete Script', 'Do you really want to delete this script?', [
+      {
+        text: 'Cancel',
+        onPress: () => console.log('Cancel Pressed'),
+        style: 'cancel',
+      },
+      {
+        text: 'OK',
+        onPress: async () => {
+          var result = await deleteAccountScript(userToken, pkey);
+          if (result == 200) {
             onBackgroundRefresh();
-          },
+            try {
+              Toast.show({
+                type: 'success',
+                position: 'bottom',
+                text1: 'Account script deleted successfully',
+                visibilityTime: 4000,
+                autoHide: true,
+              });
+            } catch (e) {
+              alert(e);
+            }
+          } else if (result == 404) {
+            try {
+              Toast.show({
+                type: 'error',
+                position: 'bottom',
+                text1: 'Script not found',
+                visibilityTime: 4000,
+                autoHide: true,
+              });
+            } catch (e) {
+              alert(e);
+            }
+          }
         },
-      ],
-    );
+      },
+    ]);
   };
   const Item = ({item}) => (
     <View style={styles.item}>
+      <View style={styles.icon}>
+        <Icon
+          name="perm-data-setting"
+          size={25}
+          color="green"
+          onPress={() => {
+            deleteScriptAlert(item.id);
+          }}
+        />
+      </View>
       <View style={styles.name}>
         <Text>{item.name}</Text>
       </View>
@@ -122,7 +155,10 @@ export default function AccountScripts({navigation}) {
         onRefresh={() => onRefresh()}
         refreshing={isFetching}
         renderItem={({item}) => (
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate('EditAccountScript', {item: item})
+            }>
             <View>
               <Item item={item} />
               <Divider />
@@ -136,8 +172,8 @@ export default function AccountScripts({navigation}) {
         color="white"
         icon="plus"
         animated={true}
-        accessibilityLabel="Create new server"
-        onPress={() => navigation.navigate('CreatePublicKey')}
+        accessibilityLabel="Create new script"
+        onPress={() => navigation.navigate('CreateAccountScript')}
       />
     </View>
   );
@@ -155,11 +191,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     padding: 5,
   },
+  icon: {
+    width: '10%',
+  },
   name: {
-    width: '85%',
+    width: '80%',
   },
   status: {
-    width: '15%',
+    width: '10%',
     alignItems: 'center',
     justifyContent: 'center',
   },

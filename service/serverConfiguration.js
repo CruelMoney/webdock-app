@@ -1,62 +1,55 @@
 import {api_url} from '../config/config';
 
-export async function getServers(api_key) {
+export async function getImages(api_key) {
   try {
-    let request = await fetch(api_url + 'servers?status=active', {
+    let request = await fetch(api_url + 'images', {
       method: 'GET',
-      headers: {
-        Authorization: 'Bearer ' + api_key,
-      },
-    });
-    let result = await request.json();
-    request = null;
-    return result;
-  } catch (error) {
-    console.log('Api call error');
-    alert(error.message);
-  }
-}
-export async function getServerBySlug(api_key, slug) {
-  try {
-    let request = await fetch(api_url + 'servers/' + slug, {
-      method: 'GET',
-      headers: {
-        Authorization: 'Bearer ' + api_key,
-      },
-    });
-    let result = await request.json();
-    request = null;
-    return result;
-  } catch (error) {
-    console.log('Api call error');
-    alert(error.message);
-  }
-}
-
-export async function updateServerMetadata(
-  api_key,
-  slug,
-  name,
-  description,
-  notes,
-  nextActionDate,
-) {
-  try {
-    let request = await fetch(api_url + 'servers/' + slug, {
-      method: 'PATCH',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + api_key,
       },
-      body: JSON.stringify({
-        name: name,
-        description: description,
-        notes: notes,
-        nextActionDate: nextActionDate,
-      }),
     });
-    let result = {status: await request.status, response: await request.json()};
+    let result = await request.json();
+
+    request = null;
+    return result;
+  } catch (error) {
+    console.log('Api call error');
+    alert(error.message);
+  }
+}
+export async function getLocations(api_key) {
+  try {
+    let request = await fetch(api_url + 'locations', {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + api_key,
+      },
+    });
+    let result = await request.json();
+
+    request = null;
+    return result;
+  } catch (error) {
+    console.log('Api call error');
+    alert(error.message);
+  }
+}
+export async function getProfiles(api_key, lcid) {
+  try {
+    let request = await fetch(api_url + 'profiles?locationId=' + lcid, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + api_key,
+      },
+    });
+    let result = await request.json();
+
     request = null;
     return result;
   } catch (error) {

@@ -18,6 +18,7 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
+import {Provider} from 'react-native-paper';
 import {NavigationContainer, StackActions} from '@react-navigation/native';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import {DrawerContent} from './screens/DrawerContent';
@@ -34,6 +35,13 @@ import {AccountStack} from './screens/AccountStack';
 import {IconButton} from 'react-native-paper';
 import CreatePublicKey from './screens/CreatePublicKey';
 import {AccountRootStack} from './screens/AccountRootStack';
+import CreateAccountScript from './screens/CreateAccountScript';
+import Toast from 'react-native-toast-message';
+import EditAccountScript from './screens/EditAccountScript';
+import UpdateServerMetadata from './screens/UpdateServerMetadata';
+import CreateServerScript from './screens/CreateServerScript';
+import ServerScriptManage from './screens/ServerScriptManage';
+
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 export default function App() {
@@ -118,60 +126,84 @@ export default function App() {
   }
 
   return (
-    <AuthContext.Provider value={authContext}>
-      <NavigationContainer>
-        {loginState.userToken !== null ? (
-          <>
-            <Drawer.Navigator
-              screenOptions={{headerShown: false}}
-              drawerContent={props => <DrawerContent {...props} />}>
-              <Drawer.Screen
-                name="Servers"
-                component={MainStackNavigator}
-                options={{
-                  headerTintColor: 'white',
-                  headerStyle: {
-                    backgroundColor: '#008570',
-                  },
-                  headerShown: false,
-                }}
-              />
-              <Drawer.Screen
-                name="Account"
-                component={AccountStack}
-                options={{
-                  headerTintColor: 'white',
-                  headerStyle: {
-                    backgroundColor: '#008570',
-                  },
-                  headerShown: true,
-                }}
-              />
-              <Drawer.Screen
-                name="Events"
-                component={EventsStackNavigator}
-                options={{
-                  headerTintColor: 'white',
-                  headerStyle: {
-                    backgroundColor: '#008570',
-                  },
-                  headerShown: false,
-                  headerRight: () => (
-                    <IconButton icon="magnify" color="white" size={25} />
-                  ),
-                }}
-              />
-              <Drawer.Screen
-                name="CreatePublicKey"
-                component={CreatePublicKey}
-              />
-            </Drawer.Navigator>
-          </>
-        ) : (
-          <RootStack />
-        )}
-      </NavigationContainer>
-    </AuthContext.Provider>
+    <Provider>
+      <AuthContext.Provider value={authContext}>
+        <NavigationContainer>
+          {loginState.userToken !== null ? (
+            <>
+              <Drawer.Navigator
+                screenOptions={{headerShown: false}}
+                drawerContent={props => <DrawerContent {...props} />}>
+                <Drawer.Screen
+                  name="Servers"
+                  component={MainStackNavigator}
+                  options={{
+                    headerTintColor: 'white',
+                    headerStyle: {
+                      backgroundColor: '#008570',
+                    },
+                    headerShown: false,
+                  }}
+                />
+                <Drawer.Screen
+                  name="Account"
+                  component={AccountStack}
+                  options={{
+                    headerTintColor: 'white',
+                    headerStyle: {
+                      backgroundColor: '#008570',
+                    },
+                    headerShown: true,
+                  }}
+                />
+                <Drawer.Screen
+                  name="Events"
+                  component={EventsStackNavigator}
+                  options={{
+                    headerTintColor: 'white',
+                    headerStyle: {
+                      backgroundColor: '#008570',
+                    },
+                    headerShown: false,
+                    headerRight: () => (
+                      <IconButton icon="magnify" color="white" size={25} />
+                    ),
+                  }}
+                />
+                <Drawer.Screen
+                  name="CreatePublicKey"
+                  component={CreatePublicKey}
+                />
+                <Drawer.Screen
+                  name="CreateAccountScript"
+                  component={CreateAccountScript}
+                />
+                <Drawer.Screen
+                  name="EditAccountScript"
+                  component={EditAccountScript}
+                />
+                <Drawer.Screen
+                  name="UpdateServerMetadata"
+                  component={UpdateServerMetadata}
+                />
+                <Drawer.Screen
+                  name="CreateServerScript"
+                  component={CreateServerScript}
+                />
+                <Drawer.Screen
+                  name="ServerScriptManage"
+                  component={ServerScriptManage}
+                />
+              </Drawer.Navigator>
+            </>
+          ) : (
+            <RootStack />
+          )}
+          <Toast ref={ref => Toast.setRef(ref)} />
+        </NavigationContainer>
+        <Toast ref={ref => Toast.setRef(ref)} />
+      </AuthContext.Provider>
+    </Provider>
   );
 }
 

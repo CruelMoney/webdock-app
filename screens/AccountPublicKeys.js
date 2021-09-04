@@ -116,6 +116,13 @@ export default function AccountPublicKeys({navigation}) {
     }
   };
 
+  const EmptyListMessage = ({item}) => {
+    return (
+      // Flat List Item
+      <Text style={styles.emptyListStyle}>No Data Found</Text>
+    );
+  };
+
   return (
     <View width="100%" height="100%">
       <FlatList
@@ -131,6 +138,7 @@ export default function AccountPublicKeys({navigation}) {
           </TouchableOpacity>
         )}
         keyExtractor={item => item.id}
+        ListEmptyComponent={EmptyListMessage}
       />
       <FAB
         style={styles.fab}

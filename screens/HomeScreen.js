@@ -21,18 +21,52 @@ import AsyncStorage from '@react-native-community/async-storage';
 export function HomeScreen({navigation}) {
   const [servers, setServers] = useState();
   useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      onBackgroundRefresh();
+      setServers([]);
+    });
     setTimeout(async () => {
       let userToken = null;
       try {
         userToken = await AsyncStorage.getItem('userToken');
         getServers(userToken).then(data => {
-          setServers(data);
+          const sorter = (a, b) => {
+            var dA = a.date.split(' ');
+            var dB = b.date.split(' ');
+            var dateA = Date.parse(dA[0] + 'T' + dA[1]),
+              dateB = Date.parse(dB[0] + 'T' + dB[1]);
+
+            return dateB - dateA;
+          };
+
+          setServers(data.sort(sorter));
         });
       } catch (e) {
         alert(e);
       }
     }, 1000);
-  }, []);
+    return unsubscribe;
+  }, [navigation]);
+  const onBackgroundRefresh = async () => {
+    let userToken = null;
+    try {
+      userToken = await AsyncStorage.getItem('userToken');
+      getServers(userToken).then(data => {
+        const sorter = (a, b) => {
+          var dA = a.date.split(' ');
+          var dB = b.date.split(' ');
+          var dateA = Date.parse(dA[0] + 'T' + dA[1]),
+            dateB = Date.parse(dB[0] + 'T' + dB[1]);
+
+          return dateB - dateA;
+        };
+
+        setServers(data.sort(sorter));
+      });
+    } catch (e) {
+      alert(e);
+    }
+  };
   const Item = ({title, alias, dc, profile, ipv4}) => (
     <View style={styles.item}>
       <View style={styles.logo}>
@@ -71,17 +105,50 @@ export function HomeScreen({navigation}) {
       </View>
     </View>
   );
+  const [isFetching, setIsFetching] = useState(false);
+  const onRefresh = async () => {
+    setIsFetching(true);
+    let userToken = null;
+    try {
+      userToken = await AsyncStorage.getItem('userToken');
+      getServers(userToken).then(data => {
+        const sorter = (a, b) => {
+          var dA = a.date.split(' ');
+          var dB = b.date.split(' ');
+          var dateA = Date.parse(dA[0] + 'T' + dA[1]),
+            dateB = Date.parse(dB[0] + 'T' + dB[1]);
+
+          return dateB - dateA;
+        };
+
+        setServers(data.sort(sorter));
+        setIsFetching(false);
+      });
+    } catch (e) {
+      alert(e);
+    }
+  };
 
   return (
     <View width="100%" height="100%">
       <FlatList
         data={servers}
+        onRefresh={() => onRefresh()}
+        refreshing={isFetching}
         renderItem={({item}) => (
           <TouchableOpacity
-            onPress={() => navigation.navigate('ServerManagement')}>
+            onPress={() =>
+              navigation.navigate('ServerManagement', {
+                slug: item.slug,
+                name: item.name,
+                description: item.description,
+                notes: item.notes,
+                nextActionDate: item.nextActionDate,
+              })
+            }>
             <View>
               <Item
-                title={item.slug}
+                title={item.name}
                 alias={item.aliases[0]}
                 dc={item.location}
                 profile={item.profile}

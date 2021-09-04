@@ -86,12 +86,7 @@ export function EventsScreen({navigation}) {
       <FlatList
         data={events}
         renderItem={({item}) => (
-          <TouchableOpacity
-            onPress={item => {
-              setModalData(item);
-              showModal;
-            }}
-            item={item}>
+          <TouchableOpacity onPress={showModal} item={item}>
             <View>
               <Item item={item} />
               <Divider />

@@ -83,20 +83,11 @@ const MainStackNavigator = ({navigation}) => {
         name="ServerManagement"
         component={ServerManagement}
         options={{
-          headerTitle: 'test.webdock.io',
           headerTintColor: 'white',
           headerStyle: {
             backgroundColor: '#008570',
           },
           headerShown: true,
-          headerRight: () => (
-            <IconButton
-              icon="pencil"
-              color="white"
-              size={25}
-              onPress={openMenu}
-            />
-          ),
         }}
       />
     </Stack.Navigator>

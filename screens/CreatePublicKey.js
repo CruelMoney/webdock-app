@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-community/async-storage';
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, ScrollView, Dimensions} from 'react-native';
 import {IconButton, Button} from 'react-native-paper';
 import {TextInput} from 'react-native-paper';
 import * as Yup from 'yup';
@@ -39,58 +39,74 @@ export default function CreatePublicKey({navigation}) {
     navigation.goBack();
   };
   return (
-    <View>
-      <View style={styles.closebutton}>
-        <IconButton
-          icon="close"
-          color="black"
-          size={25}
-          onPress={() => navigation.goBack()}
-        />
-      </View>
+    <View style={{height: Dimensions.get('window').height}}>
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: 'space-between',
+          flexDirection: 'column',
+        }}
+        style={{backgroundColor: 'white', paddingBottom: 20}}>
+        <View style={{flex: 1, justifyContent: 'flex-start'}}>
+          <View style={styles.closebutton}>
+            <IconButton
+              icon="close"
+              color="black"
+              size={25}
+              onPress={() => navigation.goBack()}
+            />
+          </View>
 
-      <Text style={styles.titleText}>Add public key to account</Text>
-      <View style={{padding: 20}}>
-        <TextInput
-          mode="outlined"
-          label="Key name (e.g. Bob's Macbook)"
-          value={publicKeyName}
-          onChangeText={publicKeyName => setPublicKeyName(publicKeyName)}
-          theme={{
-            colors: {
-              primary: '#00a1a1',
-            },
-          }}
-          error={errorPublicKeyName}
-        />
-        <TextInput
-          mode="outlined"
-          label="Your public key"
-          multiline
-          numberOfLines={10}
-          value={publicKey}
-          onChangeText={publicKey => setPublicKey(publicKey)}
-          theme={{
-            colors: {
-              primary: '#00a1a1',
-            },
-          }}
-          error={errorPublicKey}
-          style={{paddingTop: 20}}
-        />
-      </View>
-      <View style={{padding: 20}}>
-        <Button
-          mode="contained"
-          theme={{
-            colors: {
-              primary: '#008570',
-            },
-          }}
-          onPress={sendRequest}>
-          Add Key
-        </Button>
-      </View>
+          <Text style={styles.titleText}>Add public key to account</Text>
+          <View style={{padding: 20}}>
+            <TextInput
+              mode="outlined"
+              label="Key name (e.g. Bob's Macbook)"
+              value={publicKeyName}
+              onChangeText={publicKeyName => setPublicKeyName(publicKeyName)}
+              theme={{
+                colors: {
+                  primary: '#00a1a1',
+                },
+              }}
+              error={errorPublicKeyName}
+            />
+            <TextInput
+              mode="outlined"
+              label="Your public key"
+              multiline
+              numberOfLines={10}
+              value={publicKey}
+              onChangeText={publicKey => setPublicKey(publicKey)}
+              theme={{
+                colors: {
+                  primary: '#00a1a1',
+                },
+              }}
+              error={errorPublicKey}
+              style={{paddingTop: 20}}
+            />
+          </View>
+        </View>
+        <View
+          style={{
+            padding: 20,
+            marginBottom: 20,
+            flex: 1,
+            justifyContent: 'flex-end',
+          }}>
+          <Button
+            mode="contained"
+            theme={{
+              colors: {
+                primary: '#008570',
+              },
+            }}
+            onPress={sendRequest}>
+            Add Key
+          </Button>
+        </View>
+      </ScrollView>
     </View>
   );
 }
