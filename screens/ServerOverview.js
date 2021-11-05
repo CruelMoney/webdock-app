@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-community/async-storage';
-import React from 'react';
+import React,{useState} from 'react';
 import {
   StyleSheet,
   View,
@@ -8,12 +8,16 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  LayoutAnimation,
+  Platform,
+  UIManager,
 } from 'react-native';
-import {Card, Provider, Title, Menu, Button, Divider} from 'react-native-paper';
+import {Card, Provider, Title, Menu, Button, Divider, TextInput, IconButton, Paragraph, DataTable} from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {useEffect} from 'react/cjs/react.development';
 import {
+  dryRunForServerProfileChange,
   rebootServer,
   startServer,
   stopServer,
@@ -25,10 +29,16 @@ import {
   getProfiles,
 } from '../service/serverConfiguration';
 import {getServerBySlug} from '../service/servers';
+import Modal from "react-native-modal";
+import { SvgUri, SvgXml } from 'react-native-svg';
+import SVGCpu from '../assets/icon-cpu.svg';
+import SVGRam from '../assets/icon-ram2.svg';
+import SVGStorage from '../assets/icon-storage.svg';
+
 
 export default function ServerOverview({route, navigation}) {
   const [visible, setVisible] = React.useState(false);
-  const [lcid, setLcid] = React.useState();
+  const [dryRun, setDryRun] = React.useState();
   const [server, setServer] = React.useState();
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -338,12 +348,21 @@ export default function ServerOverview({route, navigation}) {
     try {
       userToken = await AsyncStorage.getItem('userToken');
       getProfiles(userToken, lc).then(data => {
+        data.map((item)=>{
+          item.isExpanded=false;
+        })
         setProfiles(data);
       });
     } catch (e) {
       alert(e);
     }
   };
+  
+  const LeftContent = props => <Title style={{color:'#00a1a1',marginRight:10}}>{profiles
+    ? profiles.map(gr =>
+        server.profile == gr.slug ? currency_symbols[gr.price.currency]+(gr.price.amount/100)+"/mo" : '',
+      )
+    : 'Unknown'}</Title>;
 
   const getLocationIcon = serverlocation => {
     locations
@@ -354,7 +373,138 @@ export default function ServerOverview({route, navigation}) {
         })
       : '';
   };
+  var currency_symbols = {
+    'USD': '$', // US Dollar
+    'EUR': '€', // Euro
+    'CRC': '₡', // Costa Rican Colón
+    'GBP': '£', // British Pound Sterling
+    'ILS': '₪', // Israeli New Sheqel
+    'INR': '₹', // Indian Rupee
+    'JPY': '¥', // Japanese Yen
+    'KRW': '₩', // South Korean Won
+    'NGN': '₦', // Nigerian Naira
+    'PHP': '₱', // Philippine Peso
+    'PLN': 'zł', // Polish Zloty
+    'PYG': '₲', // Paraguayan Guarani
+    'THB': '฿', // Thai Baht
+    'UAH': '₴', // Ukrainian Hryvnia
+    'VND': '₫', // Vietnamese Dong
+};
+  const [isModalVisible, setModalVisible]=useState();
+  const toggleModal=()=>{
+      setModalVisible(!isModalVisible);
+  }
+  const [selectedPlan,setSelectedPlan]=useState();
+
+  const ExpandableComponent = ({item,onClickFunction}) => {
+    const [layoutHeight, setLayoutHeight]=useState(0);
+
+    useEffect(()=>{
+      if(item.isExpanded){
+        setLayoutHeight(null);
+        setSelectedPlan(item);
+      }else{
+        setLayoutHeight(0);
+      }
+    },[item.isExpanded]);
+
+    const fetchDryRun=async ()=>{
+        let userToken = null;
+        try {
+          userToken = await AsyncStorage.getItem('userToken');
+          dryRunForServerProfileChange(userToken,route.params.slug,item.slug).then(data=>{
+            setDryRun(data);
+            console.log(data);
+          })
+        } catch (e) {
+          alert(e);
+        }
+      };
+
+    return(
+      <Card style={{borderColor:item.isExpanded?'#00a1a1':'#eee',borderWidth:item.isExpanded?2:1,marginVertical:10}}
+          onPress={onClickFunction}>
+          <Card.Title titleStyle={{color:item.isExpanded?'#00a1a1':'black'}} title={item.name}
+                  right={()=><Title style={{color:'#00a1a1',marginRight:10}}>{currency_symbols[item.price.currency]+(item.price.amount/100)+"/mo"}</Title>}/>
+        {item.isExpanded?<Divider/>:null}
+        {item.isExpanded?<Card.Content style={{height: layoutHeight, overflow:'hidden'}}>
+        <View style={{display:'flex',flexDirection:'row',alignItems:'center',paddingTop:10,paddingHorizontal:10}}>
+          
+          <Paragraph style={{width:'90%',textAlign:'center'}}>{item.cpu.cores + " Cores," + item.cpu.threads+" Threads"}</Paragraph>
+        </View>
+        <View style={{display:'flex',flexDirection:'row',alignItems:'center',paddingTop:10,paddingHorizontal:10}}>
+          
+          <Paragraph style={{width:'90%',textAlign:'center'}}>{ Math.round(item.ram*0.001048576 * 100)/100 + " GB RAM"}</Paragraph>
+        </View>
+        
+        <View style={{display:'flex',flexDirection:'row',alignItems:'center',paddingTop:10,paddingHorizontal:10}}>
+          
+          <Paragraph style={{width:'90%',textAlign:'center'}}>{ Math.round(item.disk*0.001048576 * 100)/100 + " GB On-Board SSD Drive"}</Paragraph>
+        </View>
+        <View style={{display:'flex',flexDirection:'row',alignItems:'center',paddingTop:10,paddingHorizontal:10}}>
+        <Icon
+            name="wifi"
+            size={30}
+            color="#787878"
+           />
+          <Paragraph style={{width:'90%',textAlign:'center'}}>1 Gbit/s-Port</Paragraph>
+        </View>
+        <View style={{display:'flex',flexDirection:'row',alignItems:'center',paddingTop:10,paddingHorizontal:10}}>
+        <Icon
+            name="location-on"
+            size={30}
+            color="#787878"
+           />
+          <Paragraph style={{width:'90%',textAlign:'center'}}>1 dedicated IPv4 address</Paragraph>
+        </View>
+        </Card.Content>:null}
+      </Card>
+    )
+  }
+
+  const updateLayout= (index)=>{
+    LayoutAnimation.configureNext({
+      duration: 300,
+      create: 
+      {
+         type: LayoutAnimation.Types.easeInEaseOut,
+         property: LayoutAnimation.Properties.opacity,
+      },
+      update: 
+      {
+         type: LayoutAnimation.Types.easeInEaseOut,
+      }
+     });
+    const array=[...profiles];
+    array.map((value,placeindex)=>
+      placeindex===index?(array[placeindex]['isExpanded'])=!array[placeindex]['isExpanded']
+      :(array[placeindex]['isExpanded'])=false
+    );
+    setProfiles(array);
+  }
+  if(Platform.OS === "android"){
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
+
+
+  useEffect(()=>{
+    if(selectedPlan){
+    setTimeout(async ()=>{
+      let userToken = null;
+        try {
+          userToken = await AsyncStorage.getItem('userToken');
+          dryRunForServerProfileChange(userToken,route.params.slug,selectedPlan.slug).then(data=>{
+            setDryRun(data);
+          })
+        } catch (e) {
+          alert(e);
+        }
+    },1000);
+  }
+  },[selectedPlan])
+
   return server ? (
+    <>
     <View width="100%" height="100%">
       <ScrollView>
         <View style={{justifyContent: 'flex-start', height: '90%'}}>
@@ -384,19 +534,7 @@ export default function ServerOverview({route, navigation}) {
                   ? images.map(gr => (server.image == gr.slug ? gr.name : ''))
                   : 'Unknown'}
               </Text>
-              {/* {images ? (
-                  images.map(gr =>
-                    server.image == gr.slug ? (
-                      <Text key={gr.slug} style={styles.textcontent}>
-                        {gr.name}
-                      </Text>
-                    ) : (
-                      <></>
-                    ),
-                  )
-                ) : (
-                  <Text>Unknown</Text>
-                )} */}
+              
               <Text style={styles.textheader}>Location</Text>
               <View
                 style={{
@@ -404,29 +542,8 @@ export default function ServerOverview({route, navigation}) {
                   flexDirection: 'row',
                   textAlign: 'center',
                 }}>
-                {/* <Image
-                    style={{height: 15, width: 15, alignSelf: 'center'}}
-                    source={{
-                      uri: locations
-                        ? locations.map(gr =>
-                            server.location == gr.id
-                              ? gr.icon
-                              : 'https://api.webdock.io/concrete/images/countries/europeanunion.png',
-                          )
-                        : 'https://api.webdock.io/concrete/images/countries/europeanunion.png',
-                    }}
-                  /> */}
+
                 <Text style={styles.textcontent}>
-                  {/* <Image
-                    style={{
-                      height: 15,
-                      width: 15,
-                      alignSelf: 'center',
-                    }}
-                    source={{
-                      uri: getLocationIcon(server.location),
-                    }}
-                  /> */}
                   {locations
                     ? locations.map(gr =>
                         server.location == gr.id
@@ -437,54 +554,15 @@ export default function ServerOverview({route, navigation}) {
                 </Text>
               </View>
 
-              {/* {locations ? (
-                  locations.map(gr =>
-                    server.location == gr.id ? (
-                      <View
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'row',
-                          textAlign: 'center',
-                        }}>
-                        <Image
-                          style={{height: 15, width: 15, alignSelf: 'center'}}
-                          source={{
-                            uri: gr.icon,
-                          }}
-                        />
-                        <Text key={gr.id} style={styles.textcontent}>
-                          {' ' + gr.name + '/' + gr.city}{' '}
-                        </Text>
-                      </View>
-                    ) : (
-                      <></>
-                    ),
-                  )
-                ) : (
-                  <Text>Unknown</Text>
-                )} */}
 
               <Text style={styles.textheader}>Profile</Text>
-              <Text style={styles.textcontent}>
+              <Text onPress={toggleModal} style={styles.textcontent} style = {{ color: '#039be5' }}>
                 {profiles
                   ? profiles.map(gr =>
                       server.profile == gr.slug ? gr.name : '',
                     )
                   : 'Unknown'}
-              </Text>
-              {/* {profiles ? (
-                  profiles.map(gr =>
-                    server.profile == gr.slug ? (
-                      <Text key={gr.slug} style={styles.textcontent}>
-                        {gr.name}
-                      </Text>
-                    ) : (
-                      <></>
-                    ),
-                  )
-                ) : (
-                  <Text>Unknown</Text>
-                )} */}
+              <Text style = {{ color: '#039be5' }}> - Change Profile</Text></Text>
             </Card.Content>
           </Card>
         </View>
@@ -592,6 +670,86 @@ export default function ServerOverview({route, navigation}) {
         </View>
       </View>
     </View>
+    <Modal isVisible={isModalVisible} style={{margin:0}}>
+    <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: 'space-between',
+          flexDirection: 'column',
+        }}
+        style={{backgroundColor: 'white', paddingBottom: 20}}>
+    <View style={styles.content1} >
+        <View style={{width:'100%'}}>
+        <View style={styles.closebutton}>
+            <IconButton
+              icon="close"
+              color="black"
+              size={25}
+              onPress={toggleModal}
+            />
+          </View>
+
+          <Text style={styles.contentTitle}>Your Current Server Profile</Text>
+        </View>
+        <View style={{padding:20}}>
+        {profiles
+                  ? profiles.map((gr,key) =>
+                      server.profile == gr.slug ?
+          <ExpandableComponent 
+            key={gr.slug}
+            item={gr}
+            onClickFunction={()=>{
+              updateLayout(key);
+            }}
+          />:null):null}
+          <Text style={styles.contentTitle}>Select a New Hardware Profile</Text>
+          {profiles
+                  ? profiles.map((gr,key) =>
+                      server.profile != gr.slug ?
+          <ExpandableComponent 
+            key={gr.slug}
+            item={gr}
+            onClickFunction={()=>{
+              updateLayout(key);
+            }}
+          />:null):null}
+
+        </View>
+        <Text style={styles.contentTitle}>Summary</Text>
+        <DataTable style={{paddingHorizontal:20}}>
+        <DataTable.Header>
+        <DataTable.Title>Name - Profile - Period</DataTable.Title>
+        <DataTable.Title numeric>Price</DataTable.Title>
+      </DataTable.Header>
+      {dryRun?<Text>{dryRun.response.chargeSummary.items[0].text}</Text>:null}
+      {dryRun?dryRun.response?dryRun.response.chargeSummary.items.map((item)=>{
+      <DataTable.Row>
+        <DataTable.Cell>{item.text}</DataTable.Cell>
+        <DataTable.Cell numeric>{item.price.amount}</DataTable.Cell>
+      </DataTable.Row>
+      }):null:null
+      }
+        </DataTable>
+        <View style={{padding: 20}}>
+          <View style={{flexDirection:'row',justifyContent:'space-between',}}>
+            <Button
+              mode="contained"
+              icon="send"
+              style={{width:'100%'}}
+              theme={{
+                colors: {
+                  primary: '#008570',
+                },
+              }}
+              >
+              Add User
+            </Button>
+          </View>
+          </View>
+    </View>
+    </ScrollView>
+    </Modal>
+    </>
   ) : (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <ActivityIndicator size="large" color="#008570" />
@@ -608,5 +766,27 @@ const styles = StyleSheet.create({
   },
   textcontent: {
     color: '#666666',
+  },
+  content: {
+    backgroundColor: 'white',
+    padding: 0,
+    borderRadius: 8,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  content1: {
+    width:'100%',
+    height:'100%',
+    backgroundColor: 'white',
+    padding: 0,
+    borderRadius: 8,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  contentTitle: {
+    fontSize: 20,
+    marginBottom: 12,
+    textAlign:'center'
+  },
+  closebutton: {
+    alignItems: 'flex-end',
   },
 });

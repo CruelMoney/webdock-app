@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {FAB, Searchbar} from 'react-native-paper';
+import {ActivityIndicator, Colors, FAB, Searchbar} from 'react-native-paper';
 
 import {Avatar, Divider} from 'react-native-paper';
 import {getServers} from '../service/servers';
@@ -67,7 +67,21 @@ export function HomeScreen({navigation}) {
       alert(e);
     }
   };
-  const Item = ({title, alias, dc, profile, ipv4}) => (
+
+  const renderStatusIcon=(icon)=>{
+    if(icon=="error"){
+      return <Icon name="info-outline" size={25} color="red" />;
+    }else if(icon=="running"){
+      return <Icon name="power-settings-new" size={25} color="green" />;
+    }else if(icon=="stopped"){
+      return <Icon name="power-settings-new" size={25} color="#F44336" />;
+    }else if(icon=="provisioning"||icon=="rebooting"||icon=="starting"||icon=="stopping"||icon=="reinstalling"){
+      return <ActivityIndicator animating={true} size={20} color={Colors.blue400}/>;
+    }
+    return null;
+  }
+
+  const Item = ({title, alias, dc, profile, ipv4,status}) => (
     <View style={styles.item}>
       <View style={styles.logo}>
         <Avatar.Image
@@ -101,7 +115,7 @@ export function HomeScreen({navigation}) {
         <Text style={styles.ipv4}>{ipv4}</Text>
       </View>
       <View style={styles.status}>
-        <Icon name="power-settings-new" size={25} color="green" />
+        {renderStatusIcon(status)}
       </View>
     </View>
   );
@@ -153,6 +167,7 @@ export function HomeScreen({navigation}) {
                 dc={item.location}
                 profile={item.profile}
                 ipv4={item.ipv4}
+                status={item.status}
               />
               <Divider />
             </View>

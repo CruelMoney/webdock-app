@@ -106,8 +106,8 @@ export async function executeServerScript(api_key, slug, scriptId) {
         },
       },
     );
-    let result = {status: await request.status, response: await request.json()};
-
+    let result = {status: request.status};
+    console.log(result);
     request = null;
     return result;
   } catch (error) {

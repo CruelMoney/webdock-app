@@ -20,25 +20,60 @@ import {
   Text,
   Button,
   Provider,
+  ProgressBar,
+  Colors,
+  ActivityIndicator,
 } from 'react-native-paper';
 
 import {getEvents} from '../service/events';
 import AsyncStorage from '@react-native-community/async-storage';
+
+const ListFooterComponent = () => (
+  <Text
+    style={{
+      fontSize: 16,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      padding: 5,
+    }}
+  >
+    Loading...
+  </Text>
+);
+let stopFetchMore = true;
+
 export function EventsScreen({navigation}) {
   const [events, setEvents] = useState();
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   useEffect(() => {
     setTimeout(async () => {
       let userToken = null;
       try {
         userToken = await AsyncStorage.getItem('userToken');
-        getEvents(userToken).then(data => {
+        getEvents(userToken,20).then(data => {
           setEvents(data);
+          setIsLoading(false);
         });
       } catch (e) {
         alert(e);
       }
     }, 1000);
   }, []);
+  const renderStatusIcon=(icon)=>{
+    if(icon=="error"){
+      return <Icon name="info-outline" size={25} color="red" />;
+    }else if(icon=="finished"){
+      return <Icon name="done" size={25} color="green" />;
+    }else if(icon=="waiting"){
+      return <ActivityIndicator animating={true} size={20} color={Colors.blue400}/>;
+    }else if(icon=="working"){
+      return <ActivityIndicator animating={true} size={20} color={Colors.blue400} />
+
+    }
+    return null;
+  }
   const Item = ({item}) => (
     <View style={styles.item}>
       <View style={styles.serveranddate}>
@@ -48,54 +83,49 @@ export function EventsScreen({navigation}) {
         <Text style={styles.eventname}>{item.action}</Text>
       </View>
       <View style={styles.status}>
-        <Icon name="power-settings-new" size={25} color="green" />
+      {renderStatusIcon(item.status)}
       </View>
     </View>
   );
-  const [visible, setVisible] = React.useState(false);
-  const [modalData, setModalData] = React.useState();
-  const showModal = () => setVisible(true);
-  const hideModal = () => setVisible(false);
-  const containerStyle = {backgroundColor: 'white', padding: 20};
+
+  const loadMoreItems = async () => {
+    setLoadingMore(true);
+    if(!stopFetchMore){
+    let userToken = null;
+      try {
+        userToken = await AsyncStorage.getItem('userToken');
+        getEvents(userToken,events.length+20).then(data => {
+          setEvents(data);
+          setIsLoading(false);
+          stopFetchMore=true;
+        });
+      } catch (e) {
+        alert(e);
+      }
+      setLoadingMore(false);
+    }
+  };
 
   return (
-    <Provider>
-      <Portal>
-        <Modal
-          visible={visible}
-          onDismiss={hideModal}
-          contentContainerStyle={containerStyle}
-          style={{
-            padding: 20,
-            borderRadius: 50,
-          }}>
-          <View style={{flexDirection: 'row'}}>
-            <Text style={{flex: 1, fontSize: 18, fontWeight: 'bold'}}>
-              Event Details
-            </Text>
-            <Icon style={{}} name="close" size={24} onPress={hideModal} />
-          </View>
-          <View>
-            <Text>Server: {modalData ? modalData.serverSlug : null}</Text>
-            <Text>Date/Time: {}</Text>
-            <Text>Message: {}</Text>
-            <Text>Event: {}</Text>
-          </View>
-        </Modal>
-      </Portal>
       <FlatList
         data={events}
         renderItem={({item}) => (
-          <TouchableOpacity onPress={showModal} item={item}>
+          <TouchableOpacity item={item}>
             <View>
               <Item item={item} />
               <Divider />
             </View>
           </TouchableOpacity>
         )}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
+        onEndReached={loadMoreItems}
+        onEndReachedThreshold={0.5}
+        onScrollBeginDrag={() => {
+          stopFetchMore = false;
+        }}
+        ListFooterComponent={() => loadingMore && <ListFooterComponent />}
       />
-    </Provider>
+    
   );
 }
 const styles = StyleSheet.create({

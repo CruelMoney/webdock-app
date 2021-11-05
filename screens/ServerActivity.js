@@ -1,16 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text} from 'react-native';
-import {
-  LineChart,
-  BarChart,
-  PieChart,
-  ProgressChart,
-  ContributionGraph,
-  StackedBarChart,
-} from 'react-native-chart-kit';
 import {Dimensions} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {getMetrics} from '../service/serverMetrics';
+import {BarChart,LineChart} from 'react-native-mp-android-chart';
+import { ScrollView } from 'react-native-gesture-handler';
 export default function ServerActivity({route, navigation}) {
   const [metrics, setMetrics] = useState();
   useEffect(() => {
@@ -33,46 +27,31 @@ export default function ServerActivity({route, navigation}) {
   }, [navigation]);
   return (
     <View>
+      <ScrollView>
       <Text>Memory Usage</Text>
-      {/* <LineChart
-        // data={{
-        //   labels: metrics
-        //     ? metrics.memory
-        //       ? metrics.memory.usageSamplings.map(a => a.timestamp)
-        //       : []
-        //     : [],
-        //   datasets: [
-        //     {
-        //       data:
-        //         [] + metrics
-        //           ? metrics.memory
-        //             ? metrics.memory.usageSamplings.map(a => a.amount)
-        //             : []
-        //           : [],
-        //     },
-        //   ],
-        // }}
-        width={Dimensions.get('window').width} // from react-native
-        height={220}
-        yAxisLabel="$"
-        chartConfig={{
-          backgroundGradientFrom: '#1E2923',
-          backgroundGradientFromOpacity: 0,
-          backgroundGradientTo: '#08130D',
-          backgroundGradientToOpacity: 0.5,
-          color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
-          strokeWidth: 2, // optional, default 3
-          barPercentage: 0.5,
-          useShadowColorFromDataset: false, // optional
-        }}
-        yAxisSuffix="k"
-        yAxisInterval={1} // optional, defaults to 1
-        bezier
-        style={{
-          marginVertical: 8,
-          borderRadius: 16,
-        }}
-      /> */}
+      <LineChart
+    data={{
+      datasets: [
+        {
+          yValues: metrics?metrics.memory.usageSamplings.map((item) => {return item.amount}):
+          [
+            0
+          ],
+          label: 'Data set 1',
+          config: {
+            color:'teal'
+          }
+        }
+      ],
+      xValues: metrics?metrics.memory.usageSamplings.map((item) => {return item.timestamp}):[null],
+    }}
+    animation={{durationX: 2000}}
+    chart={{
+      height: 300,
+      width: 300
+    }}
+  />
+  </ScrollView>
     </View>
   );
 }

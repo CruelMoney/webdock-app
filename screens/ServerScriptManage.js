@@ -111,10 +111,10 @@ export default function ServerScriptManage({route, navigation}) {
 
           <Text style={styles.titleText}>{route.params.item.name}</Text>
           <View style={{padding: 20}}>
-            <Text>{route.params.item.name}</Text>
-            <Text>{route.params.item.path}</Text>
-            <Text>{route.params.item.lastRun}</Text>
-            <Text>{route.params.item.created}</Text>
+            <Text><Text style={{fontWeight:'bold'}}>Name: </Text>{route.params.item.name}</Text>
+            <Text><Text style={{fontWeight:'bold'}}>Path: </Text>{route.params.item.path}</Text>
+            <Text><Text style={{fontWeight:'bold'}}>Last Run: </Text>{route.params.item.lastRun}</Text>
+            <Text><Text style={{fontWeight:'bold'}}>Created: </Text>{route.params.item.created}</Text>
           </View>
         </View>
         <View

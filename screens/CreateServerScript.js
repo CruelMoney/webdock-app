@@ -154,6 +154,18 @@ export default function CreateServerScript({route, navigation}) {
           <View style={{padding: 20}}>
             {modifiedScripts ? (
               <RNPickerSelect
+                style={{
+                  inputIOS: {
+                    color: 'black',
+                    paddingTop: 13,
+                    paddingHorizontal: 10,
+                    paddingBottom: 12,
+                  },
+                  inputAndroid: {
+                    color: 'black',
+                  },
+                  placeholderColor: 'black',
+                }}
                 onValueChange={value => setSelectedScript(value)}
                 items={modifiedScripts}
               />
@@ -228,20 +240,6 @@ export default function CreateServerScript({route, navigation}) {
           </Button>
         </View>
       </ScrollView>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          Alert.alert('Modal has been closed.');
-          setModalVisible(!modalVisible);
-        }}>
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Hello World!</Text>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 }

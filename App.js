@@ -16,9 +16,10 @@ import {
   StyleSheet,
   Text,
   useColorScheme,
-  View,
+  View
 } from 'react-native';
 import {Provider} from 'react-native-paper';
+import Modal from 'react-native-modal';
 import {NavigationContainer, StackActions} from '@react-navigation/native';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import {DrawerContent} from './screens/DrawerContent';
@@ -41,6 +42,8 @@ import EditAccountScript from './screens/EditAccountScript';
 import UpdateServerMetadata from './screens/UpdateServerMetadata';
 import CreateServerScript from './screens/CreateServerScript';
 import ServerScriptManage from './screens/ServerScriptManage';
+import NetInfo from "@react-native-community/netinfo";
+import { useState } from 'react/cjs/react.development';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -52,6 +55,8 @@ export default function App() {
     isLoading: true,
     userToken: null,
   };
+  const [netModalIsVisible,setNetModalIsVisible]=useState();
+
 
   const loginReducer = (prevState, action) => {
     switch (action.type) {
@@ -107,6 +112,13 @@ export default function App() {
   useEffect(() => {
     setTimeout(async () => {
       //setIsLoading(false);
+      NetInfo.fetch().then((status)=>{
+        if(status.isConnected){
+          setNetModalIsVisible(false);
+        }else{
+          setNetModalIsVisible(true);
+        }
+      })
       let userToken = null;
       try {
         userToken = await AsyncStorage.getItem('userToken');
@@ -199,10 +211,15 @@ export default function App() {
           ) : (
             <RootStack />
           )}
-          <Toast ref={ref => Toast.setRef(ref)} />
+          <Toast ref={ref => Toast.setRef(ref)} style={{zIndex:200000}}/>
         </NavigationContainer>
-        <Toast ref={ref => Toast.setRef(ref)} />
+        <Toast ref={ref => Toast.setRef(ref)} style={{zIndex:200000}} />
       </AuthContext.Provider>
+      <Modal isVisible={netModalIsVisible}>
+            <View>
+              <Text>Ska internet</Text>
+            </View>
+      </Modal>
     </Provider>
   );
 }

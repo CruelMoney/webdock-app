@@ -64,3 +64,33 @@ export async function updateServerMetadata(
     alert(error.message);
   }
 }
+export async function provisionAServer(api_key, name,slug,locationId,profileSlug,imageSlug,snapshotId) {
+  try {
+    let request = await fetch(
+      api_url + 'servers',
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + api_key,
+        },
+        body: JSON.stringify({
+          name:name,
+          slug:slug,
+          locationId:locationId,
+          profileSlug:profileSlug,
+          imageSlug:imageSlug,
+          snapshotId:snapshotId
+        }),
+      },
+    );
+    let result = {status: request.status, response: await request.json()};
+    request = null;
+    return result;
+  } catch (error) {
+    console.log('Api call error');
+    alert(error.message);
+  }
+}
+

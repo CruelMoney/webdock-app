@@ -26,6 +26,8 @@ target 'Webdock' do
 
   pod 'RNDateTimePicker', :path => '../node_modules/@react-native-community/datetimepicker'
 
+  pod 'react-native-netinfo', :path => '../node_modules/@react-native-community/netinfo'
+
   target 'WebdockTests' do
     inherit! :complete
     # Pods for testing
