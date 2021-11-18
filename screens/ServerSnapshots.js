@@ -30,9 +30,7 @@ import Modal from "react-native-modal";
 
 import {Avatar, Divider} from 'react-native-paper';
 import Toast from 'react-native-toast-message';
-import {getServerScripts} from '../service/serverScripts';
 import { deleteServerSnapshot, getServerSnapshots } from '../service/serverSnapshots';
-import ServerScriptManage from './ServerScriptManage';
 import { createSnapshotForServer, restoreFromSnapshot } from '../service/serverActions';
 export default function ServerSnapshots({route, navigation}) {
   const [serverSnapshots, setSnapshots] = useState();
@@ -53,7 +51,7 @@ export default function ServerSnapshots({route, navigation}) {
       }
     }, 1000);
     return unsubscribe;
-  }, [navigation]);
+  }, [route]);
 
   const deleteSnapshotsAlert = async pkey => {
     let userToken = null;
@@ -226,12 +224,6 @@ export default function ServerSnapshots({route, navigation}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
-          onShow: () => {
-            setButtonDisabled(true);
-          },
-          onHide: () => {
-            setButtonDisabled(false);
-          },
         });
       } catch (e) {
         alert(e);
@@ -243,13 +235,7 @@ export default function ServerSnapshots({route, navigation}) {
           position: 'bottom',
           text1: 'Server or snapshot not found!',
           visibilityTime: 4000,
-          autoHide: true,
-          onShow: () => {
-            setButtonDisabled(true);
-          },
-          onHide: () => {
-            setButtonDisabled(false);
-          },
+          autoHide: true
         });
       } catch (e) {
         alert(e);

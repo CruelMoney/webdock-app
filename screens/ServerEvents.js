@@ -73,7 +73,7 @@ export default function ServerEvents({route, navigation}) {
     }, 1000);
 
     return unsubscribe;
-  }, [navigation]);
+  }, [route]);
 
   const Item = ({item}) => (
     <View style={styles.item}>

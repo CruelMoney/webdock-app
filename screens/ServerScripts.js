@@ -61,7 +61,7 @@ export default function ServerScripts({route, navigation}) {
       }
     }, 1000);
     return unsubscribe;
-  }, [navigation]);
+  }, [route]);
 
   const deleteScriptAlert = async pkey => {
     let userToken = null;
@@ -366,7 +366,7 @@ export default function ServerScripts({route, navigation}) {
               icon="close"
               color="black"
               size={25}
-              onPress={toggleModal}
+              onPress={toggleModal2}
             />
             </View>
           </View>

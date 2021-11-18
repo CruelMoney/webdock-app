@@ -12,18 +12,22 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {ActivityIndicator, Colors, FAB, Searchbar} from 'react-native-paper';
+import {ActivityIndicator, Colors, FAB, Searchbar, IconButton,TextInput,Button, Card, Title, Paragraph} from 'react-native-paper';
 
 import {Avatar, Divider} from 'react-native-paper';
 import {getServers} from '../service/servers';
 import {AuthContext} from '../components/context';
+import Modal from 'react-native-modal';
 import AsyncStorage from '@react-native-community/async-storage';
+import { getLocations, getProfiles } from '../service/serverConfiguration';
 export function HomeScreen({navigation}) {
   const [servers, setServers] = useState();
+  const [locations,setLocations]= useState();
+  const [profiles,setProfiles]=useState();
+  const [snapshot,setSnapshot]=useState();
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       onBackgroundRefresh();
-      setServers([]);
     });
     setTimeout(async () => {
       let userToken = null;
@@ -38,14 +42,22 @@ export function HomeScreen({navigation}) {
 
             return dateB - dateA;
           };
-
           setServers(data.sort(sorter));
         });
+        getLocations(userToken).then(data => {
+          setLocations(...[data]);
+          data.map((item)=>{
+            getProfiles(userToken,item.id).then(datas => {
+              setProfiles(...[{"profile":datas}]);
+              console.log(datas);
+            })
+          })
+          console.log(data);
+        })
       } catch (e) {
         alert(e);
       }
     }, 1000);
-    return unsubscribe;
   }, [navigation]);
   const onBackgroundRefresh = async () => {
     let userToken = null;
@@ -143,7 +155,20 @@ export function HomeScreen({navigation}) {
     }
   };
 
+  const [isModalVisible, setModalVisible]=useState();
+  const toggleModal=()=>{
+      setModalVisible(!isModalVisible);
+  }
+
+  const [newServerName,setNewServerName]=useState();
+  const [newServerSlug,setNewServerSlug]=useState();
+  const [newServerLocation,setNewServerLocation]=useState();
+  const [newServerHardware,setNewServerHardware]=useState();
+  const [newServerImage,setNewServerImage]=useState();
+  const [newServerSnapshot,setNewServerSnapshot]=useState();
+
   return (
+    <>
     <View width="100%" height="100%">
       <FlatList
         data={servers}
@@ -180,10 +205,92 @@ export function HomeScreen({navigation}) {
         color="white"
         icon="plus"
         animated={true}
-        accessibilityLabel="Create new server"
-        onPress={() => console.log('Pressed')}
+        accessibilityLabel="Create new script"
+        onPress={() =>
+          toggleModal()
+        }
       />
     </View>
+    <Modal isVisible={isModalVisible} style={{margin:0}}>
+    <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: 'space-between',
+          flexDirection: 'column',
+        }}
+        style={{backgroundColor: 'white', paddingBottom: 20}}>
+    <View style={styles.content1} >
+    <View style={{width:'100%'}}>
+        <View style={{alignItems: 'flex-end'}}>
+            <IconButton
+              icon="close"
+              color="black"
+              size={25}
+              onPress={toggleModal}
+            />
+          </View>
+
+          <Text style={styles.contentTitle}>Create a Server in 2 minutes or less</Text>
+          <Text style={{textAlign: 'center',paddingHorizontal:20}}>It's free to try. We will not charge your card until tomorrow morning.</Text>
+        </View>
+          <View style={{padding: 20}}>
+            <TextInput 
+              mode="outlined"
+              label="Name"
+              value={newServerName}
+              onChangeText={newServerName => setNewServerName(newServerName)}
+              theme={{
+                colors: {
+                  primary: '#00a1a1',
+                },
+              }}/>
+              <TextInput 
+              mode="outlined"
+              label="Slug"
+              value={newServerSlug}
+              onChangeText={newServerSlug => setNewServerSlug(newServerSlug)}
+              theme={{
+                colors: {
+                  primary: '#00a1a1',
+                },
+              }}
+              style={{marginTop:10}}/>
+
+              {locations?locations.map(item=>{
+              <Card>
+                <Text>Hello</Text>
+                <Card.Cover source={{uri:item.icon}} />
+                <Card.Content>
+                  <Title>Card title</Title>
+                  <Paragraph>Card content</Paragraph>
+                </Card.Content>
+              </Card>
+              }):null}
+
+          </View>
+          <View
+          style={{
+            padding: 20,
+            width:'100%',
+          }}>
+          <View style={{justifyContent:'center'}}>
+            <Button
+              mode="contained"
+              theme={{
+                colors: {
+                  primary: '#008570',
+                },
+              }}
+              onPress={()=>console.log("nothing")}
+              >
+              Create Server
+            </Button>
+          </View>
+          </View>
+    </View> 
+    </ScrollView>
+    </Modal>
+    </>
   );
 }
 const styles = StyleSheet.create({
@@ -241,5 +348,27 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 0,
     bottom: 0,
+  },
+  content: {
+    backgroundColor: 'white',
+    padding: 0,
+    borderRadius: 8,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  content1: {
+    width:'100%',
+    backgroundColor: 'white',
+    padding: 0,
+    borderRadius: 8,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  contentTitle: {
+    fontSize: 20,
+    marginBottom: 12,
+    textAlign:'center'
+  },
+  titleText: {
+    fontSize: 20,
+    textAlign: 'center',
   },
 });

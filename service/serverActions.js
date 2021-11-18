@@ -186,7 +186,10 @@ export async function changeServerProfile(api_key, slug,profileSlug) {
         }),
       },
     );
-    let result = {status: request.status, response: await request.json()};
+    let result = {status: request.status};
+    if (result.status != 202) {
+      result = {status: request.status, response: await request.json()};
+    }
     request = null;
     return result;
   } catch (error) {

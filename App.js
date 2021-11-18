@@ -41,7 +41,6 @@ import Toast from 'react-native-toast-message';
 import EditAccountScript from './screens/EditAccountScript';
 import UpdateServerMetadata from './screens/UpdateServerMetadata';
 import CreateServerScript from './screens/CreateServerScript';
-import ServerScriptManage from './screens/ServerScriptManage';
 import NetInfo from "@react-native-community/netinfo";
 import { useState } from 'react/cjs/react.development';
 
@@ -201,10 +200,6 @@ export default function App() {
                 <Drawer.Screen
                   name="CreateServerScript"
                   component={CreateServerScript}
-                />
-                <Drawer.Screen
-                  name="ServerScriptManage"
-                  component={ServerScriptManage}
                 />
               </Drawer.Navigator>
             </>

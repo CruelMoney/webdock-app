@@ -11,8 +11,9 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  Linking
 } from 'react-native';
-import {Card, Provider, Title, Menu, Button, Divider, TextInput, IconButton, Paragraph, DataTable} from 'react-native-paper';
+import {Card, Provider, Title, Menu, Button, Divider, TextInput, IconButton, Paragraph, DataTable, Checkbox} from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {useEffect} from 'react/cjs/react.development';
@@ -22,6 +23,7 @@ import {
   startServer,
   stopServer,
   suspendServer,
+  changeServerProfile
 } from '../service/serverActions';
 import {
   getImages,
@@ -34,6 +36,7 @@ import { SvgUri, SvgXml } from 'react-native-svg';
 import SVGCpu from '../assets/icon-cpu.svg';
 import SVGRam from '../assets/icon-ram2.svg';
 import SVGStorage from '../assets/icon-storage.svg';
+import IconOcticons from 'react-native-vector-icons/Octicons';
 
 
 export default function ServerOverview({route, navigation}) {
@@ -60,7 +63,7 @@ export default function ServerOverview({route, navigation}) {
       }
     }, 1000);
     return unsubscribe;
-  }, [navigation]);
+  }, [route]);
 
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
@@ -350,19 +353,13 @@ export default function ServerOverview({route, navigation}) {
       getProfiles(userToken, lc).then(data => {
         data.map((item)=>{
           item.isExpanded=false;
-        })
+        });
         setProfiles(data);
       });
     } catch (e) {
       alert(e);
     }
   };
-  
-  const LeftContent = props => <Title style={{color:'#00a1a1',marginRight:10}}>{profiles
-    ? profiles.map(gr =>
-        server.profile == gr.slug ? currency_symbols[gr.price.currency]+(gr.price.amount/100)+"/mo" : '',
-      )
-    : 'Unknown'}</Title>;
 
   const getLocationIcon = serverlocation => {
     locations
@@ -407,21 +404,8 @@ export default function ServerOverview({route, navigation}) {
         setLayoutHeight(0);
       }
     },[item.isExpanded]);
-
-    const fetchDryRun=async ()=>{
-        let userToken = null;
-        try {
-          userToken = await AsyncStorage.getItem('userToken');
-          dryRunForServerProfileChange(userToken,route.params.slug,item.slug).then(data=>{
-            setDryRun(data);
-            console.log(data);
-          })
-        } catch (e) {
-          alert(e);
-        }
-      };
-
     return(
+      <>
       <Card style={{borderColor:item.isExpanded?'#00a1a1':'#eee',borderWidth:item.isExpanded?2:1,marginVertical:10}}
           onPress={onClickFunction}>
           <Card.Title titleStyle={{color:item.isExpanded?'#00a1a1':'black'}} title={item.name}
@@ -429,16 +413,18 @@ export default function ServerOverview({route, navigation}) {
         {item.isExpanded?<Divider/>:null}
         {item.isExpanded?<Card.Content style={{height: layoutHeight, overflow:'hidden'}}>
         <View style={{display:'flex',flexDirection:'row',alignItems:'center',paddingTop:10,paddingHorizontal:10}}>
-          
+          <SVGCpu height={30} width={30} color="#787878"/>
           <Paragraph style={{width:'90%',textAlign:'center'}}>{item.cpu.cores + " Cores," + item.cpu.threads+" Threads"}</Paragraph>
         </View>
         <View style={{display:'flex',flexDirection:'row',alignItems:'center',paddingTop:10,paddingHorizontal:10}}>
-          
+          <View>
+           <SVGRam height={30} width={30} color="#787878"/>
+          </View>
           <Paragraph style={{width:'90%',textAlign:'center'}}>{ Math.round(item.ram*0.001048576 * 100)/100 + " GB RAM"}</Paragraph>
         </View>
         
         <View style={{display:'flex',flexDirection:'row',alignItems:'center',paddingTop:10,paddingHorizontal:10}}>
-          
+          <SVGStorage height={30} width={30} color="#787878"/>
           <Paragraph style={{width:'90%',textAlign:'center'}}>{ Math.round(item.disk*0.001048576 * 100)/100 + " GB On-Board SSD Drive"}</Paragraph>
         </View>
         <View style={{display:'flex',flexDirection:'row',alignItems:'center',paddingTop:10,paddingHorizontal:10}}>
@@ -459,6 +445,7 @@ export default function ServerOverview({route, navigation}) {
         </View>
         </Card.Content>:null}
       </Card>
+      </>
     )
   }
 
@@ -485,23 +472,97 @@ export default function ServerOverview({route, navigation}) {
   if(Platform.OS === "android"){
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
-
-
+  const [itemsCharge,setItemsCharge]=useState();
   useEffect(()=>{
-    if(selectedPlan){
+    if(selectedPlan!=null){
     setTimeout(async ()=>{
       let userToken = null;
         try {
           userToken = await AsyncStorage.getItem('userToken');
           dryRunForServerProfileChange(userToken,route.params.slug,selectedPlan.slug).then(data=>{
+            if(selectedPlan.slug!=server.slug){
             setDryRun(data);
+            setItemsCharge([...data.response.chargeSummary.items]);
+            }
           })
         } catch (e) {
           alert(e);
         }
     },1000);
   }
-  },[selectedPlan])
+  },[selectedPlan]);
+
+  const [checkedBox,setCheckedBox]=useState(false);
+  
+  const changeProfile=async ()=>{
+    let userToken = null;
+    userToken = await AsyncStorage.getItem('userToken');
+    let result = await changeServerProfile(
+      userToken,
+      route.params.slug,
+      selectedPlan.slug
+    );
+    if (result.status == 202) {
+      try {
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Server Profile Change initiated',
+          visibilityTime: 4000,
+          autoHide: true
+        });
+      } catch (e) {
+        alert(e);
+      }
+      toggleModal();
+    } else if (result.status == 400) {
+      try {
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: result.response.message,
+          visibilityTime: 4000,
+          autoHide: true
+        });
+      } catch (e) {
+        alert(e);
+      }
+    } else if (result.status == 404) {
+      try {
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: 'Server not found!',
+          visibilityTime: 4000,
+          autoHide: true
+        });
+      } catch (e) {
+        alert(e);
+      }
+    }
+  }
+  const openUrl=async (alias)=>{
+    if(alias!=null){
+    if(alias.includes("http://") || alias.includes("https://")){
+      //
+    }else{
+      alias=("http://"+alias);
+    }
+    }
+    const supported = await Linking.canOpenURL(alias);
+
+    if (supported) {
+      // Opening the link with some app, if the URL scheme is "http" the web link should be opened
+      // by some browser in the mobile
+      await Linking.openURL(alias);
+    } else {
+      Alert.alert(`Don't know how to open this URL: ${alias}`);
+    }
+  }
+  const [isAliasModalOpen,setIsAliasModalOpen]=useState(false);
+  const openAlertDialog=()=>{
+    setIsAliasModalOpen(!isAliasModalOpen);
+  }
 
   return server ? (
     <>
@@ -515,15 +576,50 @@ export default function ServerOverview({route, navigation}) {
                 {server.status.charAt(0).toUpperCase() + server.status.slice(1)}
               </Text>
               <Text style={styles.textheader}>Aliases</Text>
-              <Text style={styles.textcontent}>{server.aliases[0]}</Text>
+              <View style={{paddingVertical:5,display:'flex',flexDirection:'row'}}>
+                      <Text style={styles.textcontent,{justifyContent:'center'}}>{server.aliases[0]}</Text>
+                      <Icon style={{paddingLeft:5}} name="open-in-new" size={18} color='dodgerblue' onPress={()=>openUrl(server.aliases[0])}/>
+                      </View>
+              {server.aliases.length>1?
+                <><Text onPress={()=>openAlertDialog()} style={{color:'dodgerblue'}}>and {server.aliases.length-1} more...</Text>
+                  <Modal isVisible={isAliasModalOpen}>
+                  <View style={styles.content}>
+        <View style={{width:'100%'}}>
+        <View style={{flexDirection:'row', alignItems:'center',justifyContent:'space-between'}}>
+              <Text style={{textAlign:'center',paddingStart:20,fontSize:18}}>{'All aliases'}</Text>
+
+        <View style={{flexDirection: 'row-reverse'}}>
+          <View style={styles.closebutton}>
+            <IconButton
+              icon="close"
+              color="black"
+              size={25}
+              onPress={openAlertDialog}
+            />
+            </View>
+          </View>
+          </View>
+        </View>
+        <View style={{padding: 20}}>
+                    {(server.aliases).map(item => (
+                      <View style={{paddingVertical:5,display:'flex',flexDirection:'row'}}>
+                      <Text style={styles.textcontent,{justifyContent:'center'}}>{item}</Text>
+                      <Icon style={{paddingLeft:5}} name="open-in-new" size={18} color='dodgerblue' onPress={()=>openUrl(item)}/>
+                      </View>))}
+                    </View>
+                    </View>
+                  </Modal>
+                </>
+                :null
+              }
             </Card.Content>
           </Card>
           <Card style={styles.card1}>
             <Card.Content>
               <Text style={styles.textheader}>IPv4</Text>
-              <Text style={styles.textcontent}>{server.ipv4}</Text>
+              <Text style={styles.textcontent} selectable={true}>{server.ipv4}</Text>
               <Text style={styles.textheader}>IPv6</Text>
-              <Text style={styles.textcontent}>{server.ipv6}</Text>
+              <Text style={styles.textcontent} selectable={true}>{server.ipv6}</Text>
             </Card.Content>
           </Card>
           <Card style={styles.card1}>
@@ -616,9 +712,9 @@ export default function ServerOverview({route, navigation}) {
           />
         </View>
         <View style={{width: '15%', alignItems: 'center'}}>
-          <Image
-            source={require('../assets/termius.png')}
-            style={{width: 32, height: 32, backgroundColor: 'transparent'}}
+          <IconOcticons
+            name="terminal"
+            size={32}
           />
         </View>
         <View
@@ -713,27 +809,50 @@ export default function ServerOverview({route, navigation}) {
               updateLayout(key);
             }}
           />:null):null}
-
-        </View>
-        <Text style={styles.contentTitle}>Summary</Text>
-        <DataTable style={{paddingHorizontal:20}}>
+               {itemsCharge&&selectedPlan?selectedPlan.slug!=server.profile?   
+      <View>
+         <Text style={styles.contentTitle}>Summary</Text>
+        
+        <DataTable>
         <DataTable.Header>
         <DataTable.Title>Name - Profile - Period</DataTable.Title>
         <DataTable.Title numeric>Price</DataTable.Title>
       </DataTable.Header>
-      {dryRun?<Text>{dryRun.response.chargeSummary.items[0].text}</Text>:null}
-      {dryRun?dryRun.response?dryRun.response.chargeSummary.items.map((item)=>{
+
+      {itemsCharge?itemsCharge.map((item) => (    
       <DataTable.Row>
         <DataTable.Cell>{item.text}</DataTable.Cell>
-        <DataTable.Cell numeric>{item.price.amount}</DataTable.Cell>
+        <DataTable.Cell numeric>{(item.price.amount/100) + " "+ currency_symbols[item.price.currency]}</DataTable.Cell>
       </DataTable.Row>
-      }):null:null
-      }
+      )):null}
+      
         </DataTable>
+        <DataTable style={{width:'50%',alignSelf: 'flex-end'}}>
+        <DataTable.Row>
+        <DataTable.Cell>Subtotal</DataTable.Cell>
+        <DataTable.Cell numeric>{(dryRun.response.chargeSummary.total.subTotal.amount/100)+" "+currency_symbols[dryRun.response.chargeSummary.total.subTotal.currency]}</DataTable.Cell>
+        </DataTable.Row>
+        <DataTable.Row>
+        <DataTable.Cell>VAT</DataTable.Cell>
+        <DataTable.Cell numeric>{(dryRun.response.chargeSummary.total.vat.amount/100)+" "+currency_symbols[dryRun.response.chargeSummary.total.vat.currency]}</DataTable.Cell>
+        </DataTable.Row>
+        <DataTable.Row style={{borderColor:'red'}}>
+        <DataTable.Cell><Text style={{fontWeight:'bold'}}>Pay now</Text></DataTable.Cell>
+        <DataTable.Cell numeric><Text style={{fontWeight:'bold'}}>{(dryRun.response.chargeSummary.total.total.amount/100)+" "+currency_symbols[dryRun.response.chargeSummary.total.total.currency]}</Text></DataTable.Cell>
+        </DataTable.Row>
+        </DataTable>
+        <View style={{flexDirection:'row',paddingTop:20,paddingRight:20}}><Checkbox status={checkedBox?"checked":"unchecked"} onPress={() => {
+        setCheckedBox(!checkedBox);
+      }}
+    /><Text>I accept the above changes to my server and order in obligation.</Text></View>
+        </View>
+      :<Text>Please select a new hardware profile above in order to see a summary of changes.</Text>:null}
+</View>
         <View style={{padding: 20}}>
           <View style={{flexDirection:'row',justifyContent:'space-between',}}>
             <Button
               mode="contained"
+              disabled={!checkedBox}
               icon="send"
               style={{width:'100%'}}
               theme={{
@@ -741,8 +860,9 @@ export default function ServerOverview({route, navigation}) {
                   primary: '#008570',
                 },
               }}
+              onPress={changeProfile}
               >
-              Add User
+              Change Profile
             </Button>
           </View>
           </View>

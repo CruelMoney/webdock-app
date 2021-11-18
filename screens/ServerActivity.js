@@ -3,7 +3,7 @@ import {View, Text} from 'react-native';
 import {Dimensions} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {getMetrics} from '../service/serverMetrics';
-import {BarChart,LineChart} from 'react-native-mp-android-chart';
+import {BarChart,LineChart} from 'react-native-chart-kit';
 import { ScrollView } from 'react-native-gesture-handler';
 export default function ServerActivity({route, navigation}) {
   const [metrics, setMetrics] = useState();
@@ -24,7 +24,7 @@ export default function ServerActivity({route, navigation}) {
       }
     }, 1000);
     return unsubscribe;
-  }, [navigation]);
+  }, [route]);
   return (
     <View>
       <ScrollView>
@@ -33,22 +33,37 @@ export default function ServerActivity({route, navigation}) {
     data={{
       datasets: [
         {
-          yValues: metrics?metrics.memory.usageSamplings.map((item) => {return item.amount}):
+          data: metrics?metrics.memory.usageSamplings.map((item) => {return item.amount}):
           [
             0
-          ],
-          label: 'Data set 1',
-          config: {
-            color:'teal'
-          }
+          ]
         }
       ],
-      xValues: metrics?metrics.memory.usageSamplings.map((item) => {return item.timestamp}):[null],
+      labels: metrics?metrics.memory.usageSamplings.map((item) => {return item.timestamp}):[null],
     }}
-    animation={{durationX: 2000}}
-    chart={{
-      height: 300,
-      width: 300
+    width={Dimensions.get("window").width} // from react-native
+    height={220}
+    yAxisInterval={1} // optional, defaults to 1
+    chartConfig={{
+      backgroundColor: "#e26a00",
+      backgroundGradientFrom: "#fb8c00",
+      backgroundGradientTo: "#ffa726",
+      decimalPlaces: 0, // optional, defaults to 2dp
+      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+      labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+      style: {
+        borderRadius: 16
+      },
+      propsForDots: {
+        r: "6",
+        strokeWidth: "2",
+        stroke: "#ffa726"
+      }
+    }}
+    bezier
+    style={{
+      marginVertical: 8,
+      borderRadius: 16
     }}
   />
   </ScrollView>

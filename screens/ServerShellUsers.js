@@ -64,7 +64,7 @@ export default function ServerShellUsers({route, navigation}) {
       }
     }, 1000);
     return unsubscribe;
-  }, [navigation]);
+  }, [route]);
 
   const updateShellUserPKs=async (pkey,selected)=>{
     let userToken = null;
