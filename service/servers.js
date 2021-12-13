@@ -6,6 +6,7 @@ export async function getServers(api_key) {
       method: 'GET',
       headers: {
         Authorization: 'Bearer ' + api_key,
+        "X-Application": "Webdock Mobile App v2.00"
       },
     });
     let result = await request.json();

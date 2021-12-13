@@ -34,11 +34,9 @@ import {EventsStackNavigator} from './screens/EventsStack';
 import {createStackNavigator, HeaderBackButton} from '@react-navigation/stack';
 import {AccountStack} from './screens/AccountStack';
 import {IconButton} from 'react-native-paper';
-import CreatePublicKey from './screens/CreatePublicKey';
-import {AccountRootStack} from './screens/AccountRootStack';
 import CreateAccountScript from './screens/CreateAccountScript';
+import {AccountRootStack} from './screens/AccountRootStack';
 import Toast from 'react-native-toast-message';
-import EditAccountScript from './screens/EditAccountScript';
 import UpdateServerMetadata from './screens/UpdateServerMetadata';
 import CreateServerScript from './screens/CreateServerScript';
 import NetInfo from "@react-native-community/netinfo";
@@ -182,20 +180,8 @@ export default function App() {
                   }}
                 />
                 <Drawer.Screen
-                  name="CreatePublicKey"
-                  component={CreatePublicKey}
-                />
-                <Drawer.Screen
                   name="CreateAccountScript"
                   component={CreateAccountScript}
-                />
-                <Drawer.Screen
-                  name="EditAccountScript"
-                  component={EditAccountScript}
-                />
-                <Drawer.Screen
-                  name="UpdateServerMetadata"
-                  component={UpdateServerMetadata}
                 />
                 <Drawer.Screen
                   name="CreateServerScript"

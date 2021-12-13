@@ -12,6 +12,7 @@ import {
   View,
   TouchableOpacity,
   Alert,
+  Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {
@@ -21,10 +22,15 @@ import {
   Portal,
   FAB,
   Provider,
+  TextInput,
+  IconButton
 } from 'react-native-paper';
 import {Avatar, Divider} from 'react-native-paper';
-import {getAccountPublicKeys} from '../service/accountPublicKeys';
+import {getAccountPublicKeys, postAccountPublicKeys} from '../service/accountPublicKeys';
 import {deleteAccountPublicKey} from '../service/accountPublicKeys';
+import Modal from 'react-native-modal';
+import Toast from 'react-native-toast-message';
+
 
 export default function AccountPublicKeys({navigation}) {
   const [publicKeys, setPublicKeys] = useState();
@@ -65,7 +71,6 @@ export default function AccountPublicKeys({navigation}) {
           onPress: () => {
             deleteAccountPublicKey(userToken, pkey);
             onBackgroundRefresh();
-            console.log(publicKeys);
           },
         },
       ],
@@ -116,14 +121,56 @@ export default function AccountPublicKeys({navigation}) {
     }
   };
 
+  const [publicKeyName, setPublicKeyName] = React.useState('');
+  const [publicKey, setPublicKey] = React.useState('');
+
   const EmptyListMessage = ({item}) => {
     return (
       // Flat List Item
       <Text style={styles.emptyListStyle}>No Data Found</Text>
     );
   };
+  const [isModalVisible,setIsModalVisible]=useState(false);
+  const toggleModal=()=>{
+    setIsModalVisible(!isModalVisible);
+  }
+
+  const sendRequest = async () => {
+    let userToken = null;
+    userToken = await AsyncStorage.getItem('userToken');
+    let result = await postAccountPublicKeys(userToken, publicKeyName, publicKey);
+    if (result.status == 201) {
+      try {
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'PublicKey created',
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      } catch (e) {
+        alert(e);
+      }
+      setPublicKey("");
+      setPublicKeyName("");
+      toggleModal();
+    } else if (result.status == 400) {
+      try {
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: result.response.message,
+          visibilityTime:4000,
+          autoHide:true
+        })
+      } catch (e) {
+        alert(e);
+      }
+    }
+  };
 
   return (
+    <>
     <View width="100%" height="100%">
       <FlatList
         data={publicKeys}
@@ -146,9 +193,77 @@ export default function AccountPublicKeys({navigation}) {
         icon="plus"
         animated={true}
         accessibilityLabel="Create new server"
-        onPress={() => navigation.navigate('CreatePublicKey')}
+        onPress={() => toggleModal()}
       />
     </View>
+    <Modal isVisible={isModalVisible} style={{margin:0}} >
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: 'space-between',
+          flexDirection: 'column',
+        }}
+        style={{backgroundColor: 'white', paddingBottom: 20}}>
+        <View style={{flex: 1, justifyContent: 'flex-start'}}>
+          <View style={styles.closebutton}>
+            <IconButton
+              icon="close"
+              color="black"
+              size={25}
+              onPress={toggleModal}
+            />
+          </View>
+
+          <Text style={styles.titleText}>Add public key to account</Text>
+          <View style={{padding: 20}}>
+            <TextInput
+              mode="outlined"
+              label="Key name (e.g. Bob's Macbook)"
+              value={publicKeyName}
+              onChangeText={publicKeyName => setPublicKeyName(publicKeyName)}
+              theme={{
+                colors: {
+                  primary: '#00a1a1',
+                },
+              }}
+            />
+            <TextInput
+              mode="outlined"
+              label="Your public key"
+              multiline
+              numberOfLines={10}
+              value={publicKey}
+              onChangeText={publicKey => setPublicKey(publicKey)}
+              theme={{
+                colors: {
+                  primary: '#00a1a1',
+                },
+              }}
+              style={{paddingTop: 20}}
+            />
+          </View>
+        </View>
+        <View
+          style={{
+            padding: 20,
+            marginBottom: 20,
+            flex: 1,
+            justifyContent: 'flex-end',
+          }}>
+          <Button
+            mode="contained"
+            theme={{
+              colors: {
+                primary: '#008570',
+              },
+            }}
+            onPress={sendRequest}>
+            Add Key
+          </Button>
+        </View>
+      </ScrollView>
+    </Modal>
+    </>
   );
 }
 const styles = StyleSheet.create({
@@ -178,5 +293,12 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 0,
     bottom: 0,
+  },
+  closebutton: {
+    alignItems: 'flex-end',
+  },
+  titleText: {
+    fontSize: 20,
+    textAlign: 'center',
   },
 });

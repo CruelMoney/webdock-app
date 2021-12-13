@@ -4,7 +4,6 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {LogInScreen} from '../screens/LogInScreen';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ScanQRCode from './ScanQRCode';
-import CreatePublicKey from './CreatePublicKey';
 const Stack = createStackNavigator();
 
 const screenOptionStyle = {

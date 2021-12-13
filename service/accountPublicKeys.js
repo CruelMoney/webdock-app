@@ -30,8 +30,7 @@ export async function postAccountPublicKeys(api_key, keyname, publickey) {
         publicKey: publickey,
       }),
     });
-    console.log(request);
-    let result = await request.json();
+    let result = {status: request.status, response: await request.json()};
     request = null;
     return result;
   } catch (error) {

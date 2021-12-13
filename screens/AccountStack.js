@@ -13,8 +13,6 @@ import ServerScripts from './ServerScripts';
 import Header from '../shared/header';
 import AccountInfo from './AccountInfo';
 import AccountPublicKeys from './AccountPublicKeys';
-import CreatePublicKey from './CreatePublicKey';
-import {createStackNavigator} from '@react-navigation/stack';
 import AccountScripts from './AccountScripts';
 
 const Tab = createMaterialTopTabNavigator();

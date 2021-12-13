@@ -7,7 +7,6 @@ import {ServerManagement} from '../screens/ServerManagement';
 import {DrawerContent} from '../screens/DrawerContent';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {EventsScreen} from './EventsScreen';
-import CreatePublicKey from './CreatePublicKey';
 const Stack = createStackNavigator();
 
 const screenOptionStyle = {

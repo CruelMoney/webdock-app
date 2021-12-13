@@ -32,7 +32,6 @@ export async function postAccountScripts(api_key, name, filename, filecontent) {
       }),
     });
     let result = {status: request.status, response: await request.json()};
-    console.log(result);
 
     request = null;
     return result;

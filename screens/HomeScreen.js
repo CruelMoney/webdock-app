@@ -10,21 +10,32 @@ import {
   useColorScheme,
   View,
   TouchableOpacity,
+  UIManager,
+  LayoutAnimation,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {ActivityIndicator, Colors, FAB, Searchbar, IconButton,TextInput,Button, Card, Title, Paragraph} from 'react-native-paper';
-
+import RNPickerSelect from 'react-native-picker-select';
 import {Avatar, Divider} from 'react-native-paper';
-import {getServers} from '../service/servers';
+import {getServers, provisionAServer} from '../service/servers';
 import {AuthContext} from '../components/context';
 import Modal from 'react-native-modal';
 import AsyncStorage from '@react-native-community/async-storage';
-import { getLocations, getProfiles } from '../service/serverConfiguration';
+import { getImages, getLocations, getProfiles } from '../service/serverConfiguration';
+import { SvgUri, SvgXml } from 'react-native-svg';
+import SVGCpu from '../assets/icon-cpu.svg';
+import SVGRam from '../assets/icon-ram2.svg';
+import SVGStorage from '../assets/icon-storage.svg';
+import IconOcticons from 'react-native-vector-icons/Octicons';
+import { getServerSnapshots } from '../service/serverSnapshots';
+
 export function HomeScreen({navigation}) {
   const [servers, setServers] = useState();
   const [locations,setLocations]= useState();
   const [profiles,setProfiles]=useState();
-  const [snapshot,setSnapshot]=useState();
+  const [images,setImages]=useState();
+  const [snapshots,setSnapshots]=useState();
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       onBackgroundRefresh();
@@ -43,22 +54,55 @@ export function HomeScreen({navigation}) {
             return dateB - dateA;
           };
           setServers(data.sort(sorter));
+          let snaps=[];
+          data.map(serveritem=>{
+            getServerSnapshots(userToken,serveritem.slug).then(itemsnap=>{
+              itemsnap.map((item)=>{
+                snaps.push({"label":serveritem.slug+" - "+item.type+" - "+item.name,"value":item.id});
+              })
+            })
+          });
+          setSnapshots(snaps);
         });
         getLocations(userToken).then(data => {
-          setLocations(...[data]);
-          data.map((item)=>{
-            getProfiles(userToken,item.id).then(datas => {
-              setProfiles(...[{"profile":datas}]);
-              console.log(datas);
+          setLocations(data);
+            getProfiles(userToken,newServerLocation).then(datas => {
+              datas.map((item)=>{
+                item.isExpanded=false;
+              });
+              setProfiles(datas);
             })
-          })
-          console.log(data);
         })
+        getImages(userToken).then(data=>{
+          let datas=[{"label":"Your own image","value":"snapshot"}];
+          data.map(item=>{
+            datas.push({"label":item.name,"value":item.slug});
+          })
+          setImages(datas);
+        });
       } catch (e) {
         alert(e);
       }
     }, 1000);
   }, [navigation]);
+  useEffect(()=>{
+    setTimeout(async () => {
+      let userToken = null;
+      try {
+        console.log("im changing myself")
+        userToken = await AsyncStorage.getItem('userToken');
+        getProfiles(userToken,newServerLocation).then(datas => {
+          datas.map((item)=>{
+            item.isExpanded=false;
+          });
+          setProfiles([...datas]);
+        })
+    }
+    catch (e) {
+      alert(e);
+    }
+    }, 1000); 
+  },[newServerLocation])
   const onBackgroundRefresh = async () => {
     let userToken = null;
     try {
@@ -154,6 +198,24 @@ export function HomeScreen({navigation}) {
       alert(e);
     }
   };
+  var currency_symbols = {
+    'USD': '$', // US Dollar
+    'EUR': '€', // Euro
+    'CRC': '₡', // Costa Rican Colón
+    'GBP': '£', // British Pound Sterling
+    'ILS': '₪', // Israeli New Sheqel
+    'INR': '₹', // Indian Rupee
+    'JPY': '¥', // Japanese Yen
+    'KRW': '₩', // South Korean Won
+    'NGN': '₦', // Nigerian Naira
+    'PHP': '₱', // Philippine Peso
+    'PLN': 'zł', // Polish Zloty
+    'PYG': '₲', // Paraguayan Guarani
+    'THB': '฿', // Thai Baht
+    'UAH': '₴', // Ukrainian Hryvnia
+    'VND': '₫', // Vietnamese Dong
+};
+
 
   const [isModalVisible, setModalVisible]=useState();
   const toggleModal=()=>{
@@ -162,10 +224,139 @@ export function HomeScreen({navigation}) {
 
   const [newServerName,setNewServerName]=useState();
   const [newServerSlug,setNewServerSlug]=useState();
-  const [newServerLocation,setNewServerLocation]=useState();
+  const [newServerLocation,setNewServerLocation]=useState("ca");
   const [newServerHardware,setNewServerHardware]=useState();
   const [newServerImage,setNewServerImage]=useState();
-  const [newServerSnapshot,setNewServerSnapshot]=useState();
+  const [newServerSnapshot,setNewServerSnapshot]=useState(0);
+
+  const changeLocation=async (lc)=>{
+    let userToken = null;
+      try {
+        userToken = await AsyncStorage.getItem('userToken');
+        getProfiles(userToken,lc).then(datas => {
+          datas.map((item)=>{
+            item.isExpanded=false;
+          });
+          setProfiles([...datas]);
+        })
+    }
+    catch (e) {
+      alert(e);
+    }
+  }
+  const ExpandableComponent = ({item,onClickFunction}) => {
+    const [layoutHeight, setLayoutHeight]=useState(0);
+
+    useEffect(()=>{
+      if(item.isExpanded){
+        setLayoutHeight(null);
+        setNewServerHardware(item);
+      }else{
+        setLayoutHeight(0);
+      }
+    },[item.isExpanded]);
+
+    return(
+      <>
+      <Card style={{borderColor:item.isExpanded?'#00a1a1':'#eee',borderWidth:item.isExpanded?2:1,marginVertical:10}}
+          onPress={onClickFunction}>
+          <Card.Title titleStyle={{color:item.isExpanded?'#00a1a1':'black'}} title={item.name}
+                  right={()=><Title style={{color:'#00a1a1',marginRight:10}}>{currency_symbols[item.price.currency]+(item.price.amount/100)+"/mo"}</Title>}/>
+        {item.isExpanded?<Divider/>:null}
+        {item.isExpanded?<Card.Content style={{height: layoutHeight, overflow:'hidden'}}>
+        <View style={{display:'flex',flexDirection:'row',alignItems:'center',paddingTop:10,paddingHorizontal:10}}>
+          <SVGCpu height={30} width={30} color="#787878"/>
+          <Paragraph style={{width:'90%',textAlign:'center'}}>{item.cpu.cores + " Cores," + item.cpu.threads+" Threads"}</Paragraph>
+        </View>
+        <View style={{display:'flex',flexDirection:'row',alignItems:'center',paddingTop:10,paddingHorizontal:10}}>
+          <View>
+           <SVGRam height={30} width={30} color="#787878"/>
+          </View>
+          <Paragraph style={{width:'90%',textAlign:'center'}}>{ Math.round(item.ram*0.001048576 * 100)/100 + " GB RAM"}</Paragraph>
+        </View>
+        
+        <View style={{display:'flex',flexDirection:'row',alignItems:'center',paddingTop:10,paddingHorizontal:10}}>
+          <SVGStorage height={30} width={30} color="#787878"/>
+          <Paragraph style={{width:'90%',textAlign:'center'}}>{ Math.round(item.disk*0.001048576 * 100)/100 + " GB On-Board SSD Drive"}</Paragraph>
+        </View>
+        <View style={{display:'flex',flexDirection:'row',alignItems:'center',paddingTop:10,paddingHorizontal:10}}>
+        <Icon
+            name="wifi"
+            size={30}
+            color="#787878"
+           />
+          <Paragraph style={{width:'90%',textAlign:'center'}}>1 Gbit/s-Port</Paragraph>
+        </View>
+        <View style={{display:'flex',flexDirection:'row',alignItems:'center',paddingTop:10,paddingHorizontal:10}}>
+        <Icon
+            name="location-on"
+            size={30}
+            color="#787878"
+           />
+          <Paragraph style={{width:'90%',textAlign:'center'}}>1 dedicated IPv4 address</Paragraph>
+        </View>
+        </Card.Content>:null}
+      </Card>
+      </>
+    )
+  }
+
+  const updateLayout= (index)=>{
+    LayoutAnimation.configureNext({
+      duration: 300,
+      create: 
+      {
+         type: LayoutAnimation.Types.easeInEaseOut,
+         property: LayoutAnimation.Properties.opacity,
+      },
+      update: 
+      {
+         type: LayoutAnimation.Types.easeInEaseOut,
+      }
+     });
+    const array=[...profiles];
+    array.map((value,placeindex)=>
+      placeindex===index?(array[placeindex]['isExpanded'])=!array[placeindex]['isExpanded']
+      :(array[placeindex]['isExpanded'])=false
+    );
+    setProfiles(array);
+  }
+  if(Platform.OS === "android"){
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
+  const sendRequest=async ()=>{
+    let userToken = null;
+    userToken = await AsyncStorage.getItem('userToken');
+
+    var result = await provisionAServer(userToken,newServerName,newServerSlug,newServerLocation,
+      newServerHardware.slug,newServerImage=="snapshot"?null:newServerImage,newServerImage=="snapshot"?newServerSnapshot:0);
+    if (result.status == 202) {
+      onBackgroundRefresh();
+      try {
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Server provisioning initiated!',
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      } catch (e) {
+        alert(e);
+      }
+    } else if (result.status == 400) {
+      try {
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: result.response.message,
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      } catch (e) {
+        alert(e);
+      }
+    }
+  }
 
   return (
     <>
@@ -255,18 +446,45 @@ export function HomeScreen({navigation}) {
                 },
               }}
               style={{marginTop:10}}/>
-
-              {locations?locations.map(item=>{
-              <Card>
-                <Text>Hello</Text>
-                <Card.Cover source={{uri:item.icon}} />
-                <Card.Content>
-                  <Title>Card title</Title>
-                  <Paragraph>Card content</Paragraph>
+              <View style={{flexDirection:'row',paddingVertical:10,justifyContent:'space-between',flexWrap: "wrap"}}>
+              {locations?locations.map(item=>(
+              <Card onPress={()=>{setNewServerLocation(item.id);changeLocation(item.id);}} key={item.id} 
+                  style={{borderWidth:0.1,backgroundColor:item.id===newServerLocation?'#00a1a1':'white'}}>
+                <Card.Content style={{alignItems:'center',textAlign:'center'}}>
+                  <Title style={{fontSize:16}}><Image source={{uri:item.icon}} style={{width: 20,height: 20}}/> {item.name}</Title>
+                  <Paragraph>{item.city}/{item.country}</Paragraph>
                 </Card.Content>
               </Card>
-              }):null}
-
+              )):null}
+              </View>
+              {profiles?profiles.map((gr,key) => (
+              <ExpandableComponent 
+              key={gr.slug}
+              item={gr}
+              onClickFunction={()=>{
+                updateLayout(key);
+              }}
+            />
+              )):null}
+              <Text style={styles.titleText}>Image</Text>
+              {images?
+              <RNPickerSelect 
+                onValueChange={(value) => setNewServerImage(value)}
+                items={images}
+                style={{borderColor:'black'}}
+              />
+              :null}
+              {newServerImage==="snapshot"?
+              <>
+              <Text>Choose from any existing snapshot or suspended server in your account	</Text>
+              {snapshots?
+              <RNPickerSelect 
+                onValueChange={(value) => setNewServerSnapshot(value)}
+                items={snapshots}
+                style={{borderColor:'black'}}
+              />:null}</>
+              :null
+              }
           </View>
           <View
           style={{
@@ -281,7 +499,7 @@ export function HomeScreen({navigation}) {
                   primary: '#008570',
                 },
               }}
-              onPress={()=>console.log("nothing")}
+              onPress={sendRequest}
               >
               Create Server
             </Button>

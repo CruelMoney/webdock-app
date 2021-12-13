@@ -9,7 +9,6 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import Header from '../shared/header';
 import {IconButton, Colors, Searchbar} from 'react-native-paper';
 import SearchServers from './SearchServers';
-import CreatePublicKey from './CreatePublicKey';
 
 const Stack = createStackNavigator();
 
