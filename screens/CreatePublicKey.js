@@ -24,7 +24,8 @@ import {
     FAB,
     Provider,
     TextInput,
-    IconButton
+    IconButton,
+    HelperText
   } from 'react-native-paper';
 import BackIcon from '../assets/back-icon.svg'
 import AsyncStorage from '@react-native-community/async-storage';
@@ -76,29 +77,9 @@ export default function CreatePublicKey({navigation}){
           }
         });
       };
-          // Initial scale value of 1 means no scale applied initially.
-    const animatedButtonScale = new Animated.Value(1);
-
-    // When button is pressed in, animate the scale to 1.5
-    const onPressIn = () => {
-        Animated.spring(animatedButtonScale, {
-            toValue: 1.5,
-            useNativeDriver: true,
-        }).start();
-    };
-
-    // When button is pressed out, animate the scale back to 1
-    const onPressOut = () => {
-        Animated.spring(animatedButtonScale, {
-            toValue: 1,
-            useNativeDriver: true,
-        }).start();
-    };
-
-    // The animated style for scaling the button within the Animated.View
-    const animatedScaleStyle = {
-        transform: [{scale: animatedButtonScale}]
-    };
+      const hasErrors = () => {
+        return !publicKeyName.includes('@');
+      };
     return(
         <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',padding:'8%'}}>
             <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
@@ -135,7 +116,11 @@ export default function CreatePublicKey({navigation}){
                         placeholder:'#00A1A1'
                         },
                     }}
-                    />
+                    error={hasErrors()}
+                    />      
+                    <HelperText type="error" visible={hasErrors()}>
+                        Key name is required
+                    </HelperText>
                     <TextInput
                     mode="outlined"
                     label="Your public key"
@@ -143,7 +128,6 @@ export default function CreatePublicKey({navigation}){
                     onChangeText={publicKey => setPublicKey(publicKey)}
                     selectionColor='#00A1A1'
                     dense={true}
-                    error
                     outlineColor='#00A1A1'
                     activeOutlineColor='#00A1A1'
                     underlineColorAndroid="transparent"
