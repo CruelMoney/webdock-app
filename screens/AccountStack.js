@@ -21,6 +21,7 @@ export function AccountStack({navigation}) {
     <>
       <Tab.Navigator
         swipeEnabled={true}
+        tabBarStyle={{ display: 'none' }}
         tabBarOptions={{
           activeTintColor: 'white',
           labelStyle: {fontSize: 12, fontWeight: 'bold'},

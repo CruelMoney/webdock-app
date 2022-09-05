@@ -9,21 +9,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import {EventsScreen} from './EventsScreen';
 const Stack = createStackNavigator();
 
-const screenOptionStyle = {
-  headerStyle: {
-    backgroundColor: '#9AC4F8',
-  },
-  headerTintColor: 'white',
-  headerBackTitle: 'Back',
-};
-
 const EventsStackNavigator = ({navigation}) => {
-  const openMenu = () => {
-    navigation.openDrawer();
-  };
-  const openSearch = () => {
-    navigation.openDrawer();
-  };
   return (
     <Stack.Navigator initialRouteName="Events" headerMode="screen">
       <Stack.Screen
@@ -34,23 +20,7 @@ const EventsStackNavigator = ({navigation}) => {
           headerStyle: {
             backgroundColor: '#008570',
           },
-          headerShown: true,
-          headerLeft: () => (
-            <IconButton
-              icon="menu"
-              color="white"
-              size={25}
-              onPress={openMenu}
-            />
-          ),
-          headerRight: () => (
-            <IconButton
-              icon="magnify"
-              color="white"
-              size={25}
-              onPress={openSearch}
-            />
-          ),
+          headerShown: false
         }}
       />
     </Stack.Navigator>

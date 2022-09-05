@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   Alert,
   Dimensions,
+  Pressable,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {
@@ -30,7 +31,10 @@ import {getAccountPublicKeys, postAccountPublicKeys} from '../service/accountPub
 import {deleteAccountPublicKey} from '../service/accountPublicKeys';
 import Modal from 'react-native-modal';
 import Toast from 'react-native-toast-message';
-
+import MenuIcon from '../assets/menu-icon.svg'
+import PlusIcon from '../assets/plus-icon.svg'
+import DeleteIcon from '../assets/delete-icon.svg';
+import BackIcon from '../assets/back-icon.svg';
 
 export default function AccountPublicKeys({navigation}) {
   const [publicKeys, setPublicKeys] = useState();
@@ -54,44 +58,27 @@ export default function AccountPublicKeys({navigation}) {
 
   const deletePublicKeyAlert = async pkey => {
     let userToken = null;
-
     userToken = await AsyncStorage.getItem('userToken');
-
-    Alert.alert(
-      'Delete Public Keys',
-      'Do you really want to delete this Public Key?',
-      [
-        {
-          text: 'Cancel',
-          onPress: () => console.log('Cancel Pressed'),
-          style: 'cancel',
-        },
-        {
-          text: 'OK',
-          onPress: () => {
-            deleteAccountPublicKey(userToken, pkey);
-            onBackgroundRefresh();
-          },
-        },
-      ],
-    );
+    deleteAccountPublicKey(userToken, pkey);
+    onBackgroundRefresh();
+    setIsDeleteModalVisible(false)
   };
   const Item = ({item}) => (
-    <View style={styles.item}>
-      <View style={styles.name}>
-        <Text>{item.name}</Text>
+    <>
+      <View style={{backgroundColor:'white',borderRadius:10,marginBottom:10}}>
+        <View style={{display:'flex',padding:15,flexDirection:'row',
+        alignItems:'center',justifyContent:'space-between'}}>
+          <View>
+            <Text style={{fontFamily:'Raleway-Regular',fontSize:12}}>{item.name}</Text>
+            <View style={{display:'flex',flexDirection:'row'}}>
+              <Text style={{width:100,fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{item.created}</Text>
+            </View>
+          </View>
+          <TouchableOpacity onPress={()=>{setIsDeleteModalVisible(true) 
+            setSelectedPublicKey(item)}}><DeleteIcon /></TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.status}>
-        <Icon
-          name="clear"
-          size={25}
-          color="green"
-          onPress={() => {
-            deletePublicKeyAlert(item.id);
-          }}
-        />
-      </View>
-    </View>
+    </>
   );
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
@@ -121,58 +108,25 @@ export default function AccountPublicKeys({navigation}) {
     }
   };
 
-  const [publicKeyName, setPublicKeyName] = React.useState('');
-  const [publicKey, setPublicKey] = React.useState('');
-
   const EmptyListMessage = ({item}) => {
     return (
       // Flat List Item
       <Text style={styles.emptyListStyle}>No Data Found</Text>
     );
   };
-  const [isModalVisible,setIsModalVisible]=useState(false);
-  const toggleModal=()=>{
-    setIsModalVisible(!isModalVisible);
-  }
 
-  const sendRequest = async () => {
-    let userToken = null;
-    userToken = await AsyncStorage.getItem('userToken');
-    let result = await postAccountPublicKeys(userToken, publicKeyName, publicKey);
-    if (result.status == 201) {
-      try {
-        Toast.show({
-          type: 'success',
-          position: 'bottom',
-          text1: 'PublicKey created',
-          visibilityTime: 4000,
-          autoHide: true,
-        });
-      } catch (e) {
-        alert(e);
-      }
-      setPublicKey("");
-      setPublicKeyName("");
-      toggleModal();
-    } else if (result.status == 400) {
-      try {
-        Toast.show({
-          type: 'error',
-          position: 'bottom',
-          text1: result.response.message,
-          visibilityTime:4000,
-          autoHide:true
-        })
-      } catch (e) {
-        alert(e);
-      }
-    }
-  };
-
+  const [isDeleteModalVisible,setIsDeleteModalVisible]=React.useState(false)
+  const [selectedPublicKey,setSelectedPublicKey]=React.useState("");
   return (
     <>
-    <View width="100%" height="100%">
+    <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',padding:'8%'}}>
+      <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+        <TouchableOpacity onPress={navigation.goBack}><BackIcon height={45} width={50}/></TouchableOpacity>
+        <Text style={{color:'#00A1A1',fontFamily:'Raleway-Medium',fontSize:20,textAlign:'center'}}>Public keys</Text>
+        <TouchableOpacity onPress={()=>navigation.navigate("CreatePublicKeys")}><PlusIcon height={45} width={45}/></TouchableOpacity>
+      </View>
       <FlatList
+        style={{marginTop:20}}
         data={publicKeys}
         onRefresh={() => onRefresh()}
         refreshing={isFetching}
@@ -180,88 +134,35 @@ export default function AccountPublicKeys({navigation}) {
           <TouchableOpacity>
             <View>
               <Item item={item} />
-              <Divider />
             </View>
           </TouchableOpacity>
         )}
         keyExtractor={item => item.id}
         ListEmptyComponent={EmptyListMessage}
       />
-      <FAB
-        style={styles.fab}
-        color="white"
-        icon="plus"
-        animated={true}
-        accessibilityLabel="Create new server"
-        onPress={() => toggleModal()}
-      />
     </View>
-    <Modal isVisible={isModalVisible} style={{margin:0}} >
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: 'space-between',
-          flexDirection: 'column',
-        }}
-        style={{backgroundColor: 'white', paddingBottom: 20}}>
-        <View style={{flex: 1, justifyContent: 'flex-start'}}>
-          <View style={styles.closebutton}>
-            <IconButton
-              icon="close"
-              color="black"
-              size={25}
-              onPress={toggleModal}
-            />
+    <Modal
+        testID={'modal'}
+        isVisible={isDeleteModalVisible}
+        swipeDirection={['up', 'left', 'right', 'down']}
+        onSwipeComplete={()=>setIsDeleteModalVisible(false)}
+        style={{justifyContent: 'flex-end',margin: 0}}>
+        <View style={{backgroundColor:'white',padding:30,borderTopStartRadius:10, borderTopEndRadius:10}}>
+          <Text style={{fontFamily:'Raleway-Medium',fontSize:18,color:'#00a1a1',marginVertical:10}}>Remove {selectedPublicKey?selectedPublicKey.name:null}</Text>
+          <Text style={{fontFamily:'Raleway-Regular',fontSize:12,color:'#000000',marginVertical:10}}>Please confirm you want to remove this public key</Text>
+          <View style={{display:'flex',flexDirection:'row',marginVertical:10}}>
+            <View style={{backgroundColor:'#03A84E',width:1}}></View>
+            <Text style={{fontFamily:'Raleway-Regular',fontSize:12,color:'#000000',marginStart:10}}>This will not remove any keys from any of your servers. You are simply removing this public key from the globally available keys saved against your user account.</Text>
           </View>
-
-          <Text style={styles.titleText}>Add public key to account</Text>
-          <View style={{padding: 20}}>
-            <TextInput
-              mode="outlined"
-              label="Key name (e.g. Bob's Macbook)"
-              value={publicKeyName}
-              onChangeText={publicKeyName => setPublicKeyName(publicKeyName)}
-              theme={{
-                colors: {
-                  primary: '#00a1a1',
-                },
-              }}
-            />
-            <TextInput
-              mode="outlined"
-              label="Your public key"
-              multiline
-              numberOfLines={10}
-              value={publicKey}
-              onChangeText={publicKey => setPublicKey(publicKey)}
-              theme={{
-                colors: {
-                  primary: '#00a1a1',
-                },
-              }}
-              style={{paddingTop: 20}}
-            />
+          <View style={{width:'100%',marginVertical:15,display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+            <TouchableOpacity onPress={()=>setIsDeleteModalVisible(false)} style={{width:'45%',height:40,backgroundColor:'#00a1a1',borderRadius:4,justifyContent:'center'}}>
+                <Text style={{fontFamily:'Raleway-Bold',fontSize:16,color:"#FFFFFF",textAlign:'center'}}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={()=>deletePublicKeyAlert(selectedPublicKey.id)} style={{width:'45%',height:40,backgroundColor:'#D94B4B',borderRadius:4,justifyContent:'center'}}>
+                <Text style={{fontFamily:'Raleway-Bold',fontSize:16,color:"#FFFFFF",textAlign:'center'}}>Delete</Text>
+            </TouchableOpacity>
           </View>
         </View>
-        <View
-          style={{
-            padding: 20,
-            marginBottom: 20,
-            flex: 1,
-            justifyContent: 'flex-end',
-          }}>
-          <Button
-            mode="contained"
-            theme={{
-              colors: {
-                primary: '#008570',
-              },
-            }}
-            onPress={sendRequest}>
-            Add Key
-          </Button>
-        </View>
-      </ScrollView>
     </Modal>
     </>
   );

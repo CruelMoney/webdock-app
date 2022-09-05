@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-community/async-storage';
-import React,{useState} from 'react';
+import React,{useState,useEffect} from 'react';
 import {
   StyleSheet,
   View,
@@ -16,7 +16,6 @@ import {
 import {Card, Provider, Title, Menu, Button, Divider, TextInput, IconButton, Paragraph, DataTable, Checkbox} from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {useEffect} from 'react/cjs/react.development';
 import {
   dryRunForServerProfileChange,
   rebootServer,
@@ -577,7 +576,7 @@ export default function ServerOverview({route, navigation}) {
               </Text>
               <Text style={styles.textheader}>Aliases</Text>
               <View style={{paddingVertical:5,display:'flex',flexDirection:'row'}}>
-                      <Text style={styles.textcontent,{justifyContent:'center'}}>{server.aliases[0]}</Text>
+                      <Text style={styles.textcontent+{justifyContent:'center'}}>{server.aliases[0]}</Text>
                       <Icon style={{paddingLeft:5}} name="open-in-new" size={18} color='dodgerblue' onPress={()=>openUrl(server.aliases[0])}/>
                       </View>
               {server.aliases.length>1?
@@ -603,7 +602,7 @@ export default function ServerOverview({route, navigation}) {
         <View style={{padding: 20}}>
                     {(server.aliases).map(item => (
                       <View style={{paddingVertical:5,display:'flex',flexDirection:'row'}}>
-                      <Text style={styles.textcontent,{justifyContent:'center'}}>{item}</Text>
+                      <Text style={styles.textcontent+{justifyContent:'center'}}>{item}</Text>
                       <Icon style={{paddingLeft:5}} name="open-in-new" size={18} color='dodgerblue' onPress={()=>openUrl(item)}/>
                       </View>))}
                     </View>
@@ -652,7 +651,7 @@ export default function ServerOverview({route, navigation}) {
 
 
               <Text style={styles.textheader}>Profile</Text>
-              <Text onPress={toggleModal} style={styles.textcontent} style = {{ color: '#039be5' }}>
+              <Text onPress={toggleModal} style={styles.textcontent + {color: '#039be5'}}>
                 {profiles
                   ? profiles.map(gr =>
                       server.profile == gr.slug ? gr.name : '',

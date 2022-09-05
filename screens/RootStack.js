@@ -4,6 +4,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {LogInScreen} from '../screens/LogInScreen';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ScanQRCode from './ScanQRCode';
+import { LoginWebView } from './LoginWebView';
 const Stack = createStackNavigator();
 
 const screenOptionStyle = {
@@ -19,6 +20,11 @@ const RootStack = ({navigation}) => {
     <Stack.Navigator>
       <Stack.Screen
         name="LogIn"
+        component={LoginWebView}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="LogIn2"
         component={LogInScreen}
         options={{headerShown: false}}
       />

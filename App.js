@@ -10,6 +10,7 @@ import React, {useEffect} from 'react';
 import {
   ActivityIndicator,
   HeaderBarItem,
+  Image,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -40,7 +41,7 @@ import Toast from 'react-native-toast-message';
 import UpdateServerMetadata from './screens/UpdateServerMetadata';
 import CreateServerScript from './screens/CreateServerScript';
 import NetInfo from "@react-native-community/netinfo";
-import { useState } from 'react/cjs/react.development';
+import { useState } from 'react';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -129,7 +130,10 @@ export default function App() {
   if (loginState.isLoading) {
     return (
       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <ActivityIndicator size="large" color="#008570" />
+        <Image 
+          source={require('./assets/cube-anim-2x.gif')}  
+          style={{width: 100, height: 100 }}
+        />
       </View>
     );
   }
@@ -147,36 +151,21 @@ export default function App() {
                   name="Servers"
                   component={MainStackNavigator}
                   options={{
-                    headerTintColor: 'white',
-                    headerStyle: {
-                      backgroundColor: '#008570',
-                    },
                     headerShown: false,
                   }}
                 />
                 <Drawer.Screen
                   name="Account"
-                  component={AccountStack}
+                  component={AccountRootStack}
                   options={{
-                    headerTintColor: 'white',
-                    headerStyle: {
-                      backgroundColor: '#008570',
-                    },
-                    headerShown: true,
+                    headerShown: false,
                   }}
                 />
                 <Drawer.Screen
                   name="Events"
                   component={EventsStackNavigator}
                   options={{
-                    headerTintColor: 'white',
-                    headerStyle: {
-                      backgroundColor: '#008570',
-                    },
-                    headerShown: false,
-                    headerRight: () => (
-                      <IconButton icon="magnify" color="white" size={25} />
-                    ),
+                    headerShown: false
                   }}
                 />
                 <Drawer.Screen
@@ -198,7 +187,7 @@ export default function App() {
       </AuthContext.Provider>
       <Modal isVisible={netModalIsVisible}>
             <View>
-              <Text>Ska internet</Text>
+              <Text>No internet</Text>
             </View>
       </Modal>
     </Provider>

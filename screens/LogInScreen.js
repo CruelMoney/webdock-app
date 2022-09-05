@@ -22,6 +22,7 @@ import { AsyncStorage } from '@react-native-community/async-storage';
 import { AuthContext } from '../components/context';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
+import {getPing} from '../service/ping';
 
 export function LogInScreen({navigation}){
   const [token, setToken] = useState("");
@@ -190,6 +191,9 @@ const updateSecureTextEntry = () => {
         <Button icon="qrcode-scan" mode="flat" color='#018647' onPress={()=>{navigation.navigate("ScanScreen")}}>
           Scan QR Code
         </Button>
+        <Button onPress={()=>navigation.navigate('LogInWebView')}>
+          Login WebView
+        </Button>
         {loginWithToken==false?
         <Button icon="key" mode="flat" color='#018647' onPress={()=>{setLoginWithToken(true)}}>
           Login With App Token
@@ -198,6 +202,7 @@ const updateSecureTextEntry = () => {
         Login With Email
       </Button>
         }
+        
       </View>
       <TouchableOpacity onPress={()=>Linking.openURL("https://webdock.io/en/signup")}>
           <Text style={{textAlign:'center'}}>Don't have an account yet? <Text style={{color: '#009387', marginTop:15}}>Sign up here!</Text></Text>

@@ -12,20 +12,7 @@ import SearchServers from './SearchServers';
 
 const Stack = createStackNavigator();
 
-const screenOptionStyle = {
-  headerStyle: {
-    backgroundColor: '#9AC4F8',
-  },
-  headerTintColor: 'white',
-  headerBackTitle: 'Back',
-};
 const MainStackNavigator = ({navigation}) => {
-  const openMenu = () => {
-    navigation.openDrawer();
-  };
-  const openSearch = () => {
-    navigation.navigate('SearchServers');
-  };
 
   return (
     <Stack.Navigator
@@ -39,43 +26,7 @@ const MainStackNavigator = ({navigation}) => {
           headerStyle: {
             backgroundColor: '#008570',
           },
-          headerShown: true,
-          headerLeft: () => (
-            <IconButton
-              icon="menu"
-              color="white"
-              size={25}
-              onPress={openMenu}
-            />
-          ),
-          headerRight: () => (
-            <IconButton
-              icon="magnify"
-              color="white"
-              size={25}
-              onPress={openSearch}
-            />
-          ),
-        }}
-      />
-      <Stack.Screen
-        name="SearchServers"
-        component={SearchServers}
-        options={{
-          headerTintColor: 'white',
-          headerStyle: {
-            backgroundColor: '#008570',
-          },
-          headerShown: true,
-          headerTitle: () => (
-            <TextInput
-              autoFocus
-              placeholderTextColor={'white'}
-              selectionColor={'white'}
-              placeholder="  Search"
-              style={{color: 'white'}}
-            />
-          ),
+          headerShown: false
         }}
       />
       <Stack.Screen

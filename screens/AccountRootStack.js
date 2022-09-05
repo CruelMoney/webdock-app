@@ -9,6 +9,9 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import Header from '../shared/header';
 import {IconButton, Colors, Searchbar} from 'react-native-paper';
 import SearchServers from './SearchServers';
+import AccountPublicKeys from './AccountPublicKeys'
+import AccountScripts from './AccountScripts'
+import Account from './Account';
 import CreatePublicKey from './CreatePublicKey';
 
 const Stack = createStackNavigator();
@@ -23,73 +26,41 @@ const screenOptionStyle = {
 const AccountRootStack = ({navigation}) => {
   return (
     <Stack.Navigator
-      initialRouteName="AccountStack"
-      screenOptions={{headerShown: true}}>
+      initialRouteName="Account"
+      screenOptions={{headerShown: false}}>
       <Stack.Screen
-        name="AccountStack"
-        component={AccountRootStack}
+        name="Account"
+        component={Account}
         options={{
-          headerTintColor: 'white',
-          headerStyle: {
-            backgroundColor: '#008570',
-          },
-          headerShown: true,
-          headerLeft: () => (
-            <IconButton
-              icon="menu"
-              color="white"
-              size={25}
-              onPress={openMenu}
-            />
-          ),
-          headerRight: () => (
-            <IconButton
-              icon="magnify"
-              color="white"
-              size={25}
-              onPress={openSearch}
-            />
-          ),
+          headerShown: false
         }}
       />
       <Stack.Screen
-        name="SearchServers"
-        component={SearchServers}
+        name="General"
+        component={Account}
         options={{
-          headerTintColor: 'white',
-          headerStyle: {
-            backgroundColor: '#008570',
-          },
-          headerShown: true,
-          headerTitle: () => (
-            <TextInput
-              autoFocus
-              placeholderTextColor={'white'}
-              selectionColor={'white'}
-              placeholder="  Search"
-              style={{color: 'white'}}
-            />
-          ),
+          headerShown: false
         }}
       />
       <Stack.Screen
-        name="ServerManagement"
-        component={ServerManagement}
+        name="PublicKeys"
+        component={AccountPublicKeys}
         options={{
-          headerTitle: 'test.webdock.io',
-          headerTintColor: 'white',
-          headerStyle: {
-            backgroundColor: '#008570',
-          },
-          headerShown: true,
-          headerRight: () => (
-            <IconButton
-              icon="pencil"
-              color="white"
-              size={25}
-              onPress={openMenu}
-            />
-          ),
+          headerShown: false
+        }}
+      />
+      <Stack.Screen
+        name="CreatePublicKeys"
+        component={CreatePublicKey}
+        options={{
+          headerShown: false
+        }}
+      />
+      <Stack.Screen
+        name="Scripts"
+        component={AccountScripts}
+        options={{
+          headerShown: false
         }}
       />
     </Stack.Navigator>

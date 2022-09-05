@@ -12,10 +12,11 @@ import {
   TouchableOpacity,
   UIManager,
   LayoutAnimation,
+  Pressable,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {ActivityIndicator, Colors, FAB, Searchbar, IconButton,TextInput,Button, Card, Title, Paragraph} from 'react-native-paper';
+import {ActivityIndicator, Colors, FAB, Searchbar, IconButton,TextInput,Button, Card, Title, Paragraph, Menu} from 'react-native-paper';
 import RNPickerSelect from 'react-native-picker-select';
 import {Avatar, Divider} from 'react-native-paper';
 import {getServers, provisionAServer} from '../service/servers';
@@ -29,6 +30,11 @@ import SVGRam from '../assets/icon-ram2.svg';
 import SVGStorage from '../assets/icon-storage.svg';
 import IconOcticons from 'react-native-vector-icons/Octicons';
 import { getServerSnapshots } from '../service/serverSnapshots';
+import MenuIcon from '../assets/menu-icon.svg'
+import PlusIcon from '../assets/plus-icon.svg'
+import SearchIcon from '../assets/search-icon.svg'
+import PowerIcon from '../assets/power-icon.svg'
+import DropdownIcon from '../assets/dropdown-icon.svg';
 
 export function HomeScreen({navigation}) {
   const [servers, setServers] = useState();
@@ -126,11 +132,11 @@ export function HomeScreen({navigation}) {
 
   const renderStatusIcon=(icon)=>{
     if(icon=="error"){
-      return <Icon name="info-outline" size={25} color="red" />;
+      return <PowerIcon width={30} color="red"/>;
     }else if(icon=="running"){
-      return <Icon name="power-settings-new" size={25} color="green" />;
+      return <PowerIcon width={30}/>;
     }else if(icon=="stopped"){
-      return <Icon name="power-settings-new" size={25} color="#F44336" />;
+      return <PowerIcon width={30} color="#F44336" />;
     }else if(icon=="provisioning"||icon=="rebooting"||icon=="starting"||icon=="stopping"||icon=="reinstalling"){
       return <ActivityIndicator animating={true} size={20} color={Colors.blue400}/>;
     }
@@ -138,42 +144,21 @@ export function HomeScreen({navigation}) {
   }
 
   const Item = ({title, alias, dc, profile, ipv4,status}) => (
-    <View style={styles.item}>
-      <View style={styles.logo}>
-        <Avatar.Image
-          source={{
-            uri: 'https://logo.clearbit.com/' + alias,
-          }}
-          theme={{colors: {primary: 'transparent'}}}
-          style={styles.logoitem}
-        />
-      </View>
-      <View style={styles.midinfo}>
-        <Text style={styles.hostname}>{title}</Text>
-        <Text style={styles.datacenterandprofile}>
-          {
-            <Image
-              source={
-                dc === 'fi'
-                  ? {
-                      uri:
-                        'https://api.webdock.io/concrete/images/countries/europeanunion.png',
-                    }
-                  : {
-                      uri:
-                        'https://api.webdock.io/concrete/images/countries/us.png',
-                    }
-              }
-            />
-          }{' '}
-          {profile}
-        </Text>
-        <Text style={styles.ipv4}>{ipv4}</Text>
-      </View>
-      <View style={styles.status}>
+    <>
+    <View style={{backgroundColor:'white',borderRadius:10}}>
+      <View style={{display:'flex',padding:15,flexDirection:'row',
+      alignItems:'center',justifyContent:'space-between'}}>
+        <View>
+          <Text style={{fontFamily:'Raleway-Regular',fontSize:12}}>{title}</Text>
+          <View style={{display:'flex',flexDirection:'row'}}>
+            <Text style={{width:100,fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{profile}</Text>
+            <Text style={{fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{ipv4}</Text>
+          </View>
+        </View>
         {renderStatusIcon(status)}
       </View>
     </View>
+    </>
   );
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
@@ -357,15 +342,97 @@ export function HomeScreen({navigation}) {
       }
     }
   }
+  const [visible, setVisible] = React.useState(false);
 
+  const openMenu = () => setVisible(true);
+
+  const closeMenu = () => setVisible(false);
+  const [filteredServers,setFilteredServers]=useState();
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const onChangeSearch = query => setSearchQuery(query);
+  const search=()=>{
+    if(searchQuery){
+    const newData = servers.filter(item => {      
+        const itemData = `${item.name.toUpperCase()} 
+                  ${item.location.toUpperCase()} 
+                  ${item.ipv4.toUpperCase()}
+                  ${item.ipv6.toUpperCase()}`;
+        
+         const textData = searchQuery.toUpperCase();
+          
+         return itemData.indexOf(textData) > -1;    
+      });
+      setFilteredServers(newData);
+      setRerenderFlatList(!renderStatusIcon);
+    } 
+  }
+  const [rerenderFlatList,setRerenderFlatList]=useState(false);
   return (
     <>
-    <View width="100%" height="100%">
+    <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',padding:'8%'}}>
+      <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+        <TouchableOpacity onPress={navigation.openDrawer}><MenuIcon height={45} width={50}/></TouchableOpacity>
+        <Text style={{color:'#00A1A1',fontFamily:'Raleway-Medium',fontSize:20,textAlign:'center'}}>Servers</Text>
+        <TouchableOpacity onPress={toggleModal}><PlusIcon height={45} width={45}/></TouchableOpacity>
+      </View>
+      <View style={{marginTop:10,display:'flex',flexDirection:'row',justifyContent:'space-between'}}>
+        <TextInput
+          mode="outlined"
+          label="Search"
+          //value={scriptName}
+          onChangeText={searchtext => {
+            onChangeSearch(searchtext)
+            search()
+          }}
+          style={{width:'65%',height:39,borderColor:'#00a1a1',
+          color:'#00a1a1'}}
+          selectionColor='#00A1A1'
+          dense={true}
+          outlineColor='#00A1A1'
+          activeOutlineColor='#00A1A1'
+          underlineColorAndroid="transparent"
+          left={<TextInput.Icon icon="magnify" color="#00a1a1" style={{height:39}}/>}
+          theme={{
+            colors: {
+              primary: '#00a1a1',
+              accent: '#00a1a1',
+              text:'#00a1a1',
+              placeholder:'#00A1A1'
+            },
+          }}
+        />
+        <TouchableOpacity onPress={openMenu}style={{width:'30%'}}><TextInput
+            mode="outlined"
+            label="Order By"
+            style={{height:39,borderColor:'#00a1a1',color:'#00a1a1'}}
+            editable={false}
+            outlineColor='#00A1A1'
+            activeOutlineColor='#00A1A1'
+            right={<><TextInput.Icon icon="menu-down" onPress={openMenu} />  <Menu
+            visible={visible}
+            onDismiss={closeMenu}
+            >
+            <Menu.Item onPress={() => {}} title="Newest First" />
+            <Menu.Item onPress={() => {}} title="Oldest First" />
+            <Menu.Item onPress={() => {}} title="Alphabetical" />
+          </Menu></>}
+            theme={{
+              colors: {
+                primary: '#00a1a1',
+                accent: '#00a1a1',
+                text:'#00a1a1',
+                placeholder:'#00A1A1'
+              },
+            }}
+          /></TouchableOpacity>
+      </View>
       <FlatList
-        data={servers}
+        style={{marginTop:30}}
+        data={searchQuery?searchQuery.length==0?servers:filteredServers:servers}
         onRefresh={() => onRefresh()}
         refreshing={isFetching}
         renderItem={({item}) => (
+          <>
           <TouchableOpacity
             onPress={() =>
               navigation.navigate('ServerManagement', {
@@ -385,21 +452,17 @@ export function HomeScreen({navigation}) {
                 ipv4={item.ipv4}
                 status={item.status}
               />
-              <Divider />
             </View>
           </TouchableOpacity>
+          <View
+          style={{
+              height:10,
+              width: "100%",
+          }} />
+          </>
         )}
+        extraData={rerenderFlatList}
         keyExtractor={item => item.slug}
-      />
-      <FAB
-        style={styles.fab}
-        color="white"
-        icon="plus"
-        animated={true}
-        accessibilityLabel="Create new script"
-        onPress={() =>
-          toggleModal()
-        }
       />
     </View>
     <Modal isVisible={isModalVisible} style={{margin:0}}>
