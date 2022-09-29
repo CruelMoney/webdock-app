@@ -35,7 +35,7 @@ import PlusIcon from '../assets/plus-icon.svg'
 import SearchIcon from '../assets/search-icon.svg'
 import PowerIcon from '../assets/power-icon.svg'
 import DropdownIcon from '../assets/dropdown-icon.svg';
-
+import ArrowIcon from '../assets/arrow-icon.svg'
 export function HomeScreen({navigation}) {
   const [servers, setServers] = useState();
   const [locations,setLocations]= useState();
@@ -132,13 +132,13 @@ export function HomeScreen({navigation}) {
 
   const renderStatusIcon=(icon)=>{
     if(icon=="error"){
-      return <PowerIcon width={30} color="red"/>;
+      return <PowerIcon width={14} height={14} color="red"/>;
     }else if(icon=="running"){
-      return <PowerIcon width={30}/>;
+      return <PowerIcon width={14} height={14} />;
     }else if(icon=="stopped"){
-      return <PowerIcon width={30} color="#F44336" />;
+      return <PowerIcon width={14} height={14} color="#F44336" />;
     }else if(icon=="provisioning"||icon=="rebooting"||icon=="starting"||icon=="stopping"||icon=="reinstalling"){
-      return <ActivityIndicator animating={true} size={20} color={Colors.blue400}/>;
+      return <ActivityIndicator animating={true} size={10} color={Colors.blue400}/>;
     }
     return null;
   }
@@ -147,15 +147,15 @@ export function HomeScreen({navigation}) {
     <>
     <View style={{backgroundColor:'white',borderRadius:10}}>
       <View style={{display:'flex',padding:15,flexDirection:'row',
-      alignItems:'center',justifyContent:'space-between'}}>
+        alignItems:'center',justifyContent:'space-between'}}>
         <View>
-          <Text style={{fontFamily:'Raleway-Regular',fontSize:12}}>{title}</Text>
-          <View style={{display:'flex',flexDirection:'row'}}>
-            <Text style={{width:100,fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{profile}</Text>
-            <Text style={{fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{ipv4}</Text>
+          <View style={{display:'flex',flexDirection:'row',alignItems:'center'}}>
+            {renderStatusIcon(status)} 
+            <Text style={{fontFamily:'Raleway-Regular',fontSize:12}}>  {title}</Text>
           </View>
+          <Text style={{fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{profile} · {ipv4}</Text>
         </View>
-        {renderStatusIcon(status)}
+        <ArrowIcon width={15} height={15}/>
       </View>
     </View>
     </>
@@ -371,9 +371,10 @@ export function HomeScreen({navigation}) {
     <>
     <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',padding:'8%'}}>
       <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
-        <TouchableOpacity onPress={navigation.openDrawer}><MenuIcon height={45} width={50}/></TouchableOpacity>
+        <TouchableOpacity onPress={navigation.openDrawer}><MenuIcon height={45} width={28}/></TouchableOpacity>
         <Text style={{color:'#00A1A1',fontFamily:'Raleway-Medium',fontSize:20,textAlign:'center'}}>Servers</Text>
-        <TouchableOpacity onPress={toggleModal}><PlusIcon height={45} width={45}/></TouchableOpacity>
+        <View style={{width:28}}></View>
+        {/* <TouchableOpacity onPress={toggleModal}><PlusIcon height={45} width={45}/></TouchableOpacity> */}
       </View>
       <View style={{marginTop:10,display:'flex',flexDirection:'row',justifyContent:'space-between'}}>
         <TextInput
@@ -384,14 +385,14 @@ export function HomeScreen({navigation}) {
             onChangeSearch(searchtext)
             search()
           }}
-          style={{width:'65%',height:39,borderColor:'#00a1a1',
+          style={{width:'100%',height:39,borderColor:'#00a1a1',
           color:'#00a1a1'}}
           selectionColor='#00A1A1'
           dense={true}
           outlineColor='#00A1A1'
           activeOutlineColor='#00A1A1'
           underlineColorAndroid="transparent"
-          left={<TextInput.Icon icon="magnify" color="#00a1a1" style={{height:39}}/>}
+          left={<TextInput.Icon icon="magnify" color="#00a1a1" style={{height:24}}/>}
           theme={{
             colors: {
               primary: '#00a1a1',
@@ -401,7 +402,7 @@ export function HomeScreen({navigation}) {
             },
           }}
         />
-        <TouchableOpacity onPress={openMenu}style={{width:'30%'}}><TextInput
+        {/* <TouchableOpacity onPress={openMenu}style={{width:'30%'}}><TextInput
             mode="outlined"
             label="Order By"
             style={{height:39,borderColor:'#00a1a1',color:'#00a1a1'}}
@@ -424,13 +425,15 @@ export function HomeScreen({navigation}) {
                 placeholder:'#00A1A1'
               },
             }}
-          /></TouchableOpacity>
+          /></TouchableOpacity> */}
       </View>
       <FlatList
         style={{marginTop:30}}
         data={searchQuery?searchQuery.length==0?servers:filteredServers:servers}
         onRefresh={() => onRefresh()}
         refreshing={isFetching}
+        ListFooterComponent={<View style={{height:60}}>
+          </View>}
         renderItem={({item}) => (
           <>
           <TouchableOpacity
@@ -464,6 +467,8 @@ export function HomeScreen({navigation}) {
         extraData={rerenderFlatList}
         keyExtractor={item => item.slug}
       />
+      <TouchableOpacity onPress={toggleModal} style={{position: 'absolute',right: 30,
+    bottom: 30}}><PlusIcon height={50} width={50}/></TouchableOpacity>
     </View>
     <Modal isVisible={isModalVisible} style={{margin:0}}>
     <ScrollView

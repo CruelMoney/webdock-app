@@ -13,8 +13,9 @@ export async function startServer(api_key, slug) {
     let result = {status: request.status};
     if (result.status != 202) {
       result = {status: request.status, response: await request.json()};
+    }else{
+      result = {status: request.status, headers: request.headers}
     }
-    console.log(result);
 
     request = null;
     return result;
@@ -36,6 +37,8 @@ export async function stopServer(api_key, slug) {
     let result = {status: request.status};
     if (result.status != 202) {
       result = {status: request.status, response: await request.json()};
+    }else{
+      result = {status: request.status, headers: request.headers}
     }
 
     request = null;
@@ -58,6 +61,8 @@ export async function rebootServer(api_key, slug) {
     let result = {status: request.status};
     if (result.status != 202) {
       result = {status: request.status, response: await request.json()};
+    }else{
+      result = {status: request.status, headers: request.headers}
     }
 
     request = null;
@@ -84,6 +89,8 @@ export async function suspendServer(api_key, slug) {
     let result = {status: request.status};
     if (result.status != 202) {
       result = {status: request.status, response: await request.json()};
+    }else{
+      result = {status: request.status, headers: request.headers}
     }
     request = null;
     return result;

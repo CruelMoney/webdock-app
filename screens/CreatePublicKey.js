@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
     FlatList,
     Image,
@@ -14,6 +14,8 @@ import {
     Dimensions,
     Pressable,
     Linking,
+    Keyboard,
+    ActivityIndicator,
   } from 'react-native';
   import Icon from 'react-native-vector-icons/MaterialIcons';
   import {
@@ -34,12 +36,16 @@ import Toast from 'react-native-toast-message';
 import LinearGradient from 'react-native-linear-gradient';
 import Animated from 'react-native-reanimated';
 export default function CreatePublicKey({navigation}){
-    const [publicKeyName, setPublicKeyName] = React.useState('');
-    const [publicKey, setPublicKey] = React.useState('');
+    const [inputs,setInputs]=React.useState({
+      name: '',
+      key: ''
+    })
+    const [errors, setErrors] = React.useState({});
+
     const sendRequest = async () => {
         let userToken = null;
         userToken = await AsyncStorage.getItem('userToken');
-        let result = await postAccountPublicKeys(userToken, publicKeyName, publicKey);
+        let result = await postAccountPublicKeys(userToken, inputs['name'], inputs['key']);
         if (result.status == 201) {
           try {
             Toast.show({
@@ -49,11 +55,11 @@ export default function CreatePublicKey({navigation}){
               visibilityTime: 4000,
               autoHide: true,
             });
+            setSubmitting(false)
+            navigation.goBack()
           } catch (e) {
             alert(e);
           }
-          setPublicKey("");
-          setPublicKeyName("");
         } else if (result.status == 400) {
           try {
             Toast.show({
@@ -63,6 +69,7 @@ export default function CreatePublicKey({navigation}){
               visibilityTime:4000,
               autoHide:true
             })
+            setSubmitting(false)
           } catch (e) {
             alert(e);
           }
@@ -77,9 +84,35 @@ export default function CreatePublicKey({navigation}){
           }
         });
       };
-      const hasErrors = () => {
-        return !publicKeyName.includes('@');
+
+      const validate = () =>{
+        Keyboard.dismiss();
+        setSubmitting(true)
+        let isValid = true;
+
+        if (!inputs.name) {
+          handleError('Key name is required', 'name');
+          isValid = false;
+        }
+
+        if (!inputs.key) {
+          handleError('Public Key is required', 'key');
+          isValid = false;
+        }
+
+        if (isValid) {
+          sendRequest();
+        }else{
+          setSubmitting(false)
+        }
+      }
+      const handleOnchange = (text, input) => {
+        setInputs(prevState => ({...prevState, [input]: text}));
       };
+      const handleError = (error, input) => {
+        setErrors(prevState => ({...prevState, [input]: error}));
+      };
+      const [submitting,setSubmitting]=useState(false)
     return(
         <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',padding:'8%'}}>
             <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
@@ -100,8 +133,8 @@ export default function CreatePublicKey({navigation}){
                     <TextInput
                     mode="outlined"
                     label="Key name (e.g. Bob's Macbook)"
-                    value={publicKeyName}
-                    onChangeText={publicKeyName => setPublicKeyName(publicKeyName)}
+                    value={inputs['name']}
+                    onChangeText={text => handleOnchange(text, 'name')}
                     selectionColor='#00A1A1'
                     dense={true}
                     outlineColor='#00A1A1'
@@ -116,16 +149,17 @@ export default function CreatePublicKey({navigation}){
                         placeholder:'#00A1A1'
                         },
                     }}
-                    error={hasErrors()}
+                    onFocus={() => handleError(null, 'name')}
+                    error={errors.name}
                     />      
-                    <HelperText type="error" visible={hasErrors()}>
-                        Key name is required
+                    <HelperText type="error" visible={errors.name}>
+                        {errors.name}
                     </HelperText>
                     <TextInput
                     mode="outlined"
                     label="Your public key"
-                    value={publicKey}
-                    onChangeText={publicKey => setPublicKey(publicKey)}
+                    value={inputs['key']}
+                    onChangeText={text => handleOnchange(text, 'key')}
                     selectionColor='#00A1A1'
                     dense={true}
                     outlineColor='#00A1A1'
@@ -140,8 +174,13 @@ export default function CreatePublicKey({navigation}){
                         placeholder:'#00A1A1'
                         },
                     }}
+                    onFocus={() => handleError(null, 'key')}
+                    error={errors.key}
                     style={{marginTop:15}}
                     />
+                    <HelperText type="error" visible={errors.key}>
+                        {errors.key}
+                    </HelperText>
                 </View>
                 <View style={{display:'flex',flexDirection:'row',marginTop:20}}>
                     <View style={{backgroundColor:'#03A84E',width:1}}></View>
@@ -160,12 +199,15 @@ export default function CreatePublicKey({navigation}){
                     flex: 1,
                     justifyContent: 'flex-end',
                 }}>
-                <TouchableOpacity  onPress={sendRequest}>
-                <LinearGradient locations={[0.29,0.80]} start={{x: 0, y: 0}} end={{x: 1, y: 0}} colors={['#00A1A1', '#03A84E']} style={{borderRadius:5}}>
-                    <Text style={{padding:15,fontFamily:'Raleway-Bold',fontSize:18,color:'white',textAlign:'center'}}>
+                <TouchableOpacity onPress={validate}>
+                  <LinearGradient locations={[0.29,0.80]} start={{x: 0, y: 0}} end={{x: 1, y: 0}} colors={['#00A1A1', '#03A84E']} style={{borderRadius:5}}>
+                    {!submitting?
+                      <Text style={{padding:15,fontFamily:'Raleway-Bold',fontSize:18,color:'white',textAlign:'center'}}>
                         Add public key
-                    </Text>
-                    </LinearGradient>
+                      </Text>:
+                      <ActivityIndicator size="large" color="#ffffff" />
+                    }
+                  </LinearGradient>
                 </TouchableOpacity>
                 </View>
             </ScrollView>

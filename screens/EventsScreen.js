@@ -27,19 +27,9 @@ import {
 
 import {getEvents} from '../service/events';
 import AsyncStorage from '@react-native-community/async-storage';
+import MenuIcon from '../assets/menu-icon.svg';
+import { PureComponent } from 'react';
 
-const ListFooterComponent = () => (
-  <Text
-    style={{
-      fontSize: 16,
-      fontWeight: 'bold',
-      textAlign: 'center',
-      padding: 5,
-    }}
-  >
-    Loading...
-  </Text>
-);
 let stopFetchMore = true;
 
 export function EventsScreen({navigation}) {
@@ -52,7 +42,8 @@ export function EventsScreen({navigation}) {
       let userToken = null;
       try {
         userToken = await AsyncStorage.getItem('userToken');
-        getEvents(userToken,20).then(data => {
+        getEvents(userToken,1).then(data => {
+          setPage(page+1)
           setEvents(data);
           setIsLoading(false);
         });
@@ -74,28 +65,36 @@ export function EventsScreen({navigation}) {
     }
     return null;
   }
-  const Item = ({item}) => (
-    <View style={styles.item}>
-      <View style={styles.serveranddate}>
-        <Text>{item.serverSlug}</Text>
+  class Item extends PureComponent {
+    render(){
+      return(
+      <View style={{backgroundColor:'white',borderRadius:10}}>
+        <View style={{display:'flex',padding:15,flexDirection:'row',
+          alignItems:'center',justifyContent:'space-between'}}>
+          <View>
+            <View style={{display:'flex',flexDirection:'row'}}>
+              <Text style={{width:100,fontFamily:'Raleway-Regular',fontSize:12}}>{this.props.item.serverSlug}</Text>
+              <Text style={{fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{this.props.item.startTime}</Text>
+            </View>
+            <Text style={{fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{this.props.item.action}</Text>
+          </View>
+          {renderStatusIcon(this.props.item.status)}
+        </View>
       </View>
-      <View style={styles.midinfo}>
-        <Text style={styles.eventname}>{item.action}</Text>
-      </View>
-      <View style={styles.status}>
-      {renderStatusIcon(item.status)}
-      </View>
-    </View>
-  );
-
+      )
+    }
+  }
+  const [page,setPage]=useState(1)
   const loadMoreItems = async () => {
     setLoadingMore(true);
     if(!stopFetchMore){
     let userToken = null;
       try {
         userToken = await AsyncStorage.getItem('userToken');
-        getEvents(userToken,events.length+20).then(data => {
-          setEvents(data);
+        getEvents(userToken,page).then(data => {
+          setPage(page+1)
+          setEvents(events.concat(data));
+          console.log(events.length)
           setIsLoading(false);
           stopFetchMore=true;
         });
@@ -106,26 +105,50 @@ export function EventsScreen({navigation}) {
     }
   };
 
+  const renderLoader = () => {
+    return (
+      loadingMore ?
+        <View style={styles.loaderStyle}>
+          <ActivityIndicator size="medium" color="#00a1a1" />
+        </View> : null
+    );
+  };
+
   return (
+    <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',paddingTop:'8%',paddingHorizontal:'8%'}}>
+      <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+        <TouchableOpacity onPress={navigation.openDrawer}><MenuIcon height={45} width={28}/></TouchableOpacity>
+        <Text style={{color:'#00A1A1',fontFamily:'Raleway-Medium',fontSize:20,textAlign:'center'}}>Events</Text>
+        <View style={{width:50}}></View>
+      </View>
       <FlatList
         data={events}
+        style={{marginTop:30}}
+        initialNumToRender={10}
         renderItem={({item}) => (
+          <>
           <TouchableOpacity item={item}>
             <View>
               <Item item={item} />
-              <Divider />
             </View>
           </TouchableOpacity>
+          <View
+          style={{
+              height:10,
+              width: "100%",
+          }} />
+          </>
         )}
         keyExtractor={(item) => item.id}
+        ListFooterComponent={renderLoader}
         onEndReached={loadMoreItems}
         onEndReachedThreshold={0.5}
         onScrollBeginDrag={() => {
           stopFetchMore = false;
         }}
-        ListFooterComponent={() => loadingMore && <ListFooterComponent />}
+        // ListFooterComponent={() => loadingMore && <ListFooterComponent />}
       />
-    
+    </View>    
   );
 }
 const styles = StyleSheet.create({
@@ -144,6 +167,10 @@ const styles = StyleSheet.create({
   serveranddate: {
     width: '20%',
     alignItems: 'center',
+  },
+  loaderStyle: {
+    marginVertical: 16,
+    alignItems: "center",
   },
   midinfo: {
     width: '65%',

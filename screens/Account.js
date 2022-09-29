@@ -34,7 +34,7 @@ export default function Account({navigation}){
         account?
         <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',padding:'8%'}}>
             <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
-                <TouchableOpacity onPress={navigation.openDrawer}><MenuIcon height={45} width={50}/></TouchableOpacity>
+                <TouchableOpacity onPress={navigation.openDrawer}><MenuIcon height={45} width={28}/></TouchableOpacity>
                 <Text style={{color:'#00A1A1',fontFamily:'Raleway-Medium',
                     fontSize:20}}>Account</Text>
                 <View style={{width:50}}></View>

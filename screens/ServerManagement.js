@@ -17,30 +17,14 @@ import Toast from 'react-native-toast-message';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Modal from 'react-native-modal';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { createStackNavigator } from '@react-navigation/stack';
 
-const Tab = createMaterialTopTabNavigator();
+const Stack = createStackNavigator();
 export function ServerManagement({route, navigation}) {
   useEffect(() => {
     setTimeout(() => {
       navigation.setOptions({
         headerTitle: route.params.slug,
-        headerRight: () => (
-          <IconButton
-            icon="pencil"
-            color="white"
-            size={25}
-            onPress={() =>
-              // navigation.navigate('UpdateServerMetadata', {
-              //   slug: route.params.slug,
-              //   name: route.params.name,
-              //   description: route.params.description,
-              //   notes: route.params.notes,
-              //   nextActionDate: route.params.nextActionDate,
-              // })
-              toggleModal()
-            }
-          />
-        ),
       });
     }, 0);
   }, []);
@@ -132,53 +116,58 @@ export function ServerManagement({route, navigation}) {
 
   return (
     <>
-    <Tab.Navigator
-      swipeEnabled={true}
-      tabBarOptions={{
-        scrollEnabled: true,
-        activeTintColor: 'white',
-        labelStyle: {fontSize: 12, fontWeight: 'bold'},
-        style: {
-          backgroundColor: '#008570',
-          borderColor: '#008570',
-          activeTintColor: 'white',
-          borderTopColor: 'transparent',
-        },
-        indicatorStyle: {
-          backgroundColor: 'white',
-        },
-      }}>
-      <Tab.Screen
+    <Stack.Navigator
+      initialRouteName="Overview"
+      screenOptions={{headerShown: true}}>
+      <Stack.Screen
         name="Overview"
         component={ServerOverview}
-        initialParams={{slug: route.params.slug}}
+        options={{
+          headerShown: false
+        }}
+        initialParams={{slug: route.params.slug,name:route.params.name}}
       />
-      <Tab.Screen
+      <Stack.Screen
         name="Activity"
         component={ServerActivity}
-        initialParams={{slug: route.params.slug}}
+        options={{
+          headerShown: false
+        }}
+        initialParams={{slug: route.params.slug,name:route.params.name}}
       />
-      <Tab.Screen
+      <Stack.Screen
         name="Events"
         component={ServerEvents}
-        initialParams={{slug: route.params.slug}}
+        options={{
+          headerShown: false
+        }}
+        initialParams={{slug: route.params.slug,name:route.params.name}}
       />
-      <Tab.Screen
+      <Stack.Screen
         name="Snapshots"
         component={ServerSnapshots}
-        initialParams={{slug: route.params.slug}}
+        options={{
+          headerShown: false
+        }}
+        initialParams={{slug: route.params.slug,name:route.params.name}}
       />
-      <Tab.Screen
+      <Stack.Screen
         name="Shell Users"
         component={ServerShellUsers}
-        initialParams={{slug: route.params.slug}}
+        options={{
+          headerShown: false
+        }}
+        initialParams={{slug: route.params.slug,name:route.params.name}}
       />
-      <Tab.Screen
+      <Stack.Screen
         name="Scripts"
         component={ServerScripts}
-        initialParams={{slug: route.params.slug}}
+        options={{
+          headerShown: false
+        }}
+        initialParams={{slug: route.params.slug,name:route.params.name}}
       />
-    </Tab.Navigator>
+    </Stack.Navigator>
     <Modal isVisible={isModalVisible} style={{margin:0}}>
     <ScrollView
         contentContainerStyle={{

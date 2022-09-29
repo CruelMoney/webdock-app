@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, TouchableOpacity} from 'react-native';
 import {Dimensions} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {getMetrics} from '../service/serverMetrics';
 import {BarChart,LineChart} from 'react-native-chart-kit';
 import { ScrollView } from 'react-native-gesture-handler';
+import BackIcon from '../assets/back-icon.svg';
 export default function ServerActivity({route, navigation}) {
   const [metrics, setMetrics] = useState();
   useEffect(() => {
@@ -26,7 +27,12 @@ export default function ServerActivity({route, navigation}) {
     return unsubscribe;
   }, [route]);
   return (
-    <View>
+    <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',padding:'8%'}}>
+    <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+      <TouchableOpacity onPress={navigation.goBack}><BackIcon height={45} width={50}/></TouchableOpacity>
+      <Text style={{color:'#00A1A1',fontFamily:'Raleway-Medium',fontSize:20,textAlign:'center'}}>{route.params.name}</Text>
+      <View style={{width:50}}></View>
+    </View>
       <ScrollView>
       <Text>Memory Usage</Text>
       <LineChart

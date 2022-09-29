@@ -3,7 +3,6 @@ import {Text, Button, View, TextInput} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 
 import {HomeScreen} from '../screens/HomeScreen';
-import {ServerManagement} from '../screens/ServerManagement';
 import {DrawerContent} from '../screens/DrawerContent';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Header from '../shared/header';
@@ -13,7 +12,8 @@ import AccountPublicKeys from './AccountPublicKeys'
 import AccountScripts from './AccountScripts'
 import Account from './Account';
 import CreatePublicKey from './CreatePublicKey';
-
+import CreateAccountScript from './CreateAccountScript'
+import EditAccountScript from './EditAccountScript';
 const Stack = createStackNavigator();
 
 const screenOptionStyle = {
@@ -59,6 +59,20 @@ const AccountRootStack = ({navigation}) => {
       <Stack.Screen
         name="Scripts"
         component={AccountScripts}
+        options={{
+          headerShown: false
+        }}
+      />
+      <Stack.Screen
+        name="CreateAccountScript"
+        component={CreateAccountScript}
+        options={{
+          headerShown: false
+        }}
+      />
+      <Stack.Screen
+        name="EditAccountScript"
+        component={EditAccountScript}
         options={{
           headerShown: false
         }}

@@ -19,7 +19,7 @@ import {
   useColorScheme,
   View
 } from 'react-native';
-import {Provider} from 'react-native-paper';
+import {Provider, Snackbar} from 'react-native-paper';
 import Modal from 'react-native-modal';
 import {NavigationContainer, StackActions} from '@react-navigation/native';
 import {createDrawerNavigator} from '@react-navigation/drawer';
@@ -42,6 +42,8 @@ import UpdateServerMetadata from './screens/UpdateServerMetadata';
 import CreateServerScript from './screens/CreateServerScript';
 import NetInfo from "@react-native-community/netinfo";
 import { useState } from 'react';
+import { Dashboard } from './screens/Dashboard';
+import { ServerManagement } from './screens/ServerManagement';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -54,7 +56,6 @@ export default function App() {
     userToken: null,
   };
   const [netModalIsVisible,setNetModalIsVisible]=useState();
-
 
   const loginReducer = (prevState, action) => {
     switch (action.type) {
@@ -138,6 +139,7 @@ export default function App() {
     );
   }
 
+
   return (
     <Provider>
       <AuthContext.Provider value={authContext}>
@@ -147,6 +149,13 @@ export default function App() {
               <Drawer.Navigator
                 screenOptions={{headerShown: false}}
                 drawerContent={props => <DrawerContent {...props} />}>
+                <Drawer.Screen
+                  name="Dashboard"
+                  component={Dashboard}
+                  options={{
+                    headerShown: false,
+                  }}
+                />
                 <Drawer.Screen
                   name="Servers"
                   component={MainStackNavigator}
@@ -169,12 +178,11 @@ export default function App() {
                   }}
                 />
                 <Drawer.Screen
-                  name="CreateAccountScript"
-                  component={CreateAccountScript}
-                />
-                <Drawer.Screen
-                  name="CreateServerScript"
-                  component={CreateServerScript}
+                  name="ServerManagement"
+                  component={ServerManagement}
+                  options={{
+                    headerShown: false,
+                  }}
                 />
               </Drawer.Navigator>
             </>

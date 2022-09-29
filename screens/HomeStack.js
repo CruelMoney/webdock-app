@@ -37,7 +37,7 @@ const MainStackNavigator = ({navigation}) => {
           headerStyle: {
             backgroundColor: '#008570',
           },
-          headerShown: true,
+          headerShown: false,
         }}
       />
     </Stack.Navigator>

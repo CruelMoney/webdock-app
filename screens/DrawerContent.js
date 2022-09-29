@@ -79,7 +79,18 @@ export function DrawerContent(props) {
                                 size={size}
                                 />
                             )}
-                            label="Dashboard"
+                            label="Overview"
+                            onPress={() => {props.navigation.navigate('Dashboard')}}
+                        />
+                        <DrawerItem 
+                            icon={({color, size}) => (
+                                <Icon 
+                                name="dns" 
+                                color={color}
+                                size={size}
+                                />
+                            )}
+                            label="Servers"
                             onPress={() => {props.navigation.navigate('Servers')}}
                         />
                         <DrawerItem 

@@ -34,7 +34,10 @@ import {
 } from '../service/accountScripts';
 import Toast from 'react-native-toast-message';
 import Modal from 'react-native-modal';
-
+import DeleteIcon from '../assets/delete-icon.svg'
+import EditIcon from '../assets/edit-icon.svg'
+import BackIcon from '../assets/back-icon.svg'
+import PlusIcon from '../assets/plus-icon.svg'
 export default function AccountScripts({navigation}) {
   const [scripts, setScripts] = useState();
   useEffect(() => {
@@ -60,65 +63,53 @@ export default function AccountScripts({navigation}) {
     let userToken = null;
 
     userToken = await AsyncStorage.getItem('userToken');
-
-    Alert.alert('Delete Script', 'Do you really want to delete this script?', [
-      {
-        text: 'Cancel',
-        onPress: () => console.log('Cancel Pressed'),
-        style: 'cancel',
-      },
-      {
-        text: 'OK',
-        onPress: async () => {
-          var result = await deleteAccountScript(userToken, pkey);
-          if (result == 200) {
-            onBackgroundRefresh();
-            try {
-              Toast.show({
-                type: 'success',
-                position: 'bottom',
-                text1: 'Account script deleted successfully',
-                visibilityTime: 4000,
-                autoHide: true,
-              });
-            } catch (e) {
-              alert(e);
-            }
-            toggleModal();
-          } else if (result == 404) {
-            try {
-              Toast.show({
-                type: 'error',
-                position: 'bottom',
-                text1: 'Script not found',
-                visibilityTime: 4000,
-                autoHide: true,
-              });
-            } catch (e) {
-              alert(e);
-            }
-            toggleModal();
-          }
-        },
-      },
-    ]);
+    var result = await deleteAccountScript(userToken, pkey);
+    if (result == 200) {
+      onBackgroundRefresh();
+      try {
+        setIsDeleteModalVisible(false)
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Account script deleted successfully',
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      } catch (e) {
+        alert(e);
+      }
+    } else if (result == 404) {
+      try {
+        setIsDeleteModalVisible(false)
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: 'Script not found',
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      } catch (e) {
+        alert(e);
+      }
+    }
   };
   const Item = ({item}) => (
-    <View style={styles.item}>
-      <View style={styles.icon}>
-        <Icon
-          name="perm-data-setting"
-          size={25}
-          color="green"
-          onPress={() => {
-            deleteScriptAlert(item.id);
-          }}
-        />
+    <View style={{backgroundColor:'white',borderRadius:10,marginBottom:10}}>
+        <View style={{display:'flex',padding:15,flexDirection:'row',
+        alignItems:'center',justifyContent:'space-between'}}>
+          <View>
+            <Text style={{fontFamily:'Raleway-Regular',fontSize:12}}>{item.name}</Text>
+            <View style={{display:'flex',flexDirection:'row'}}>
+              <Text style={{width:100,fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{item.filename}</Text>
+            </View>
+          </View><View style={{display:'flex',flexDirection:'row'}}>
+          <TouchableOpacity onPress={()=>navigation.navigate("EditAccountScript",item)}><EditIcon width={25} height={25} /></TouchableOpacity>
+            <View style={{width:10}}></View>
+                      <TouchableOpacity onPress={()=>{setIsDeleteModalVisible(true) 
+            setSelectedScript(item)}}><DeleteIcon width={25} height={25}/></TouchableOpacity>
+          </View>
+        </View>
       </View>
-      <View style={styles.name}>
-        <Text>{item.name}</Text>
-      </View>
-    </View>
   );
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
@@ -145,394 +136,54 @@ export default function AccountScripts({navigation}) {
       alert(e);
     }
   };
-  const [isModalVisible, setModalVisible]=useState();
-  const [modalData, setModalData]=useState();
-  const toggleModal=(data)=>{
-    setModalData(data);
-      setModalVisible(!isModalVisible);
-  }
 
-
-  const [isModalVisible2, setModalVisible2]=useState();
-  const toggleModal2=()=>{
-      if(!isModalVisible2){
-        setScriptName(modalData.name);
-        setScriptFileName(modalData.filename);
-        setScriptFileContent(modalData.content);
-      }
-      setModalVisible2(!isModalVisible2);
-  }
-
-  const [scriptName, setScriptName] = React.useState();
-  const [scriptFileName, setScriptFileName] = React.useState();
-  const [scriptFileContent, setScriptFileContent] = React.useState();
-
-  const sendRequest = async () => {
-    let userToken = null;
-    userToken = await AsyncStorage.getItem('userToken');
-    let result = await patchAccountScripts(
-      userToken,
-      modalData.id,
-      scriptName,
-      scriptFileName,
-      scriptFileContent,
-    );
-    if (result.status == 200) {
-      try {
-        Toast.show({
-          type: 'success',
-          position: 'bottom',
-          text1: 'Updated account script',
-          visibilityTime: 4000,
-          autoHide: true,
-        });
-      } catch (e) {
-        alert(e);
-      }
-      toggleModal2();
-      toggleModal();
-      onBackgroundRefresh();
-    } else if (result.status == 404) {
-      try {
-        Toast.show({
-          type: 'error',
-          position: 'bottom',
-          text1: 'Script not found!',
-          visibilityTime: 4000,
-          autoHide: true,
-        });
-      } catch (e) {
-        alert(e);
-      }
-      toggleModal2();
-      toggleModal();
-    } else if (result.status == 400) {
-      try {
-        Toast.show({
-          type: 'error',
-          position: 'bottom',
-          text1: result.response.message,
-          visibilityTime: 4000,
-          autoHide: true,
-        });
-      } catch (e) {
-        alert(e);
-      }
-    }
-  }
-
-  const [newScriptName,setNewScriptName]=useState();
-  const [newScriptFileName,setNewScriptFileName]=useState();
-  const [newScriptFileContent,setNewScriptFileContent]=useState();
-
-  const [isModalVisible3, setModalVisible3]=useState();
-  const toggleModal3=()=>{
-      if(!isModalVisible3){
-        setNewScriptName("");
-        setNewScriptFileName("");
-        setNewScriptFileContent("");
-      }
-      setModalVisible3(!isModalVisible3);
-  }
-
-  const sendCreateScriptRequest = async () => {
-    let userToken = null;
-    userToken = await AsyncStorage.getItem('userToken');
-    let result = await postAccountScripts(
-      userToken,
-      newScriptName,
-      newScriptFileName,
-      newScriptFileContent,
-    );
-    if (result.status == 201) {
-      try {
-        Toast.show({
-          type: 'success',
-          position: 'bottom',
-          text1: 'The newly created account script',
-          visibilityTime: 4000,
-          autoHide: true
-        });
-      } catch (e) {
-        alert(e);
-      }
-      toggleModal3();
-    } else if (result.status == 400) {
-      try {
-        Toast.show({
-          type: 'error',
-          position: 'bottom',
-          text1: result.response.message,
-          visibilityTime: 4000,
-          autoHide: true,
-        });
-      } catch (e) {
-        alert(e);
-      }
-    }
-  };
-
+  const [isDeleteModalVisible,setIsDeleteModalVisible]=React.useState(false)
+  const [selectedScript,setSelectedScript]=React.useState()
   return (
     <>
-    <View width="100%" height="100%">
+    <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',padding:'8%'}}>
+      <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+        <TouchableOpacity onPress={navigation.goBack}><BackIcon height={45} width={50}/></TouchableOpacity>
+        <Text style={{color:'#00A1A1',fontFamily:'Raleway-Medium',fontSize:20,textAlign:'center'}}>Scripts</Text>
+        <TouchableOpacity onPress={()=>navigation.navigate("CreateAccountScript")}><PlusIcon height={45} width={45}/></TouchableOpacity>
+      </View>
       <FlatList
+        style={{marginTop:20}}
         data={scripts}
         onRefresh={() => onRefresh()}
         refreshing={isFetching}
         renderItem={({item}) => (
-          <TouchableOpacity
-            onPress={() =>
-              toggleModal(item)
-            }>
+          <TouchableOpacity>
             <View>
               <Item item={item} />
-              <Divider />
             </View>
           </TouchableOpacity>
         )}
         keyExtractor={item => item.id}
       />
-      <FAB
-        style={styles.fab}
-        color="white"
-        icon="plus"
-        animated={true}
-        accessibilityLabel="Create new script"
-        onPress={toggleModal3}
-      />
     </View>
-    <Modal isVisible={isModalVisible}>
-    <View style={styles.content}>
-        <View style={{width:'100%'}}>
-        <View style={{flexDirection:'row', alignItems:'center',justifyContent:'space-between'}}>
-              <Text style={{textAlign:'center',paddingStart:20,fontSize:18}}>{modalData?modalData.name:''}</Text>
-
-        <View style={{flexDirection: 'row-reverse'}}>
-          <View style={styles.closebutton}>
-            <IconButton
-              icon="close"
-              color="black"
-              size={25}
-              onPress={toggleModal}
-            />
-            </View>
+    <Modal
+        testID={'modal'}
+        isVisible={isDeleteModalVisible}
+        swipeDirection={['up', 'left', 'right', 'down']}
+        onSwipeComplete={()=>setIsDeleteModalVisible(false)}
+        style={{justifyContent: 'flex-end',margin: 0}}>
+        <View style={{backgroundColor:'white',padding:30,borderTopStartRadius:10, borderTopEndRadius:10}}>
+          <Text style={{fontFamily:'Raleway-Medium',fontSize:18,color:'#00a1a1',marginVertical:10}}>Remove {selectedScript?selectedScript.name:null}</Text>
+          <Text style={{fontFamily:'Raleway-Regular',fontSize:12,color:'#000000',marginVertical:10}}>Please confirm you want to remove this script</Text>
+          <View style={{display:'flex',flexDirection:'row',marginVertical:10}}>
+            <View style={{backgroundColor:'#03A84E',width:1}}></View>
+            <Text style={{fontFamily:'Raleway-Regular',fontSize:12,color:'#000000',marginStart:10}}>This will not remove any scripts from any of your servers. You are simply removing this script from the globally available scripts saved against your user account.</Text>
           </View>
-          </View>
-        </View>
-        <View style={{padding: 20}}>
-            <Text><Text style={{fontWeight:'bold'}}>Name: </Text>{modalData?modalData.name:''}</Text>
-            <Text><Text style={{fontWeight:'bold'}}>Description: </Text>{modalData?modalData.description:''}</Text>
-            <Text><Text style={{fontWeight:'bold'}}>Filename: </Text>{modalData?modalData.filename:''}</Text>
-          </View>
-          <View
-          style={{
-            padding: 20,
-            width:'100%',
-          }}>
-          <View style={{flexDirection:'row',justifyContent:'space-between'}}>
-            
-            <Button
-              mode="contained"
-              icon="delete"
-              theme={{
-                colors: {
-                  primary: '#F44336',
-                },
-              }}
-              onPress={()=>deleteScriptAlert(modalData.id)}
-              >
-              Delete
-            </Button>
-            <Button
-              mode="contained"
-              icon="pencil"
-              theme={{
-                colors: {
-                  primary: '#008570',
-                },
-              }}
-              onPress={()=>toggleModal2()}
-              >
-              EDIT
-            </Button>
-          </View>
-          </View>
-    </View>
-    </Modal>
-    <Modal isVisible={isModalVisible2} style={{margin:0}}>
-    <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: 'space-between',
-          flexDirection: 'column',
-        }}
-        style={{backgroundColor: 'white', paddingBottom: 20}}>
-        <View style={{flex: 1, justifyContent: 'flex-start'}}>
-        <View style={{flexDirection: 'row-reverse'}}>
-
-          <View style={styles.closebutton}>
-            <IconButton
-              icon="close"
-              color="black"
-              size={25}
-              onPress={toggleModal2}
-            />
-          </View>
-          </View>
-
-
-          <Text style={styles.titleText}>Editing {modalData?modalData.name:null}</Text>
-          <View style={{padding: 20}}>
-            <TextInput
-              mode="outlined"
-              label="Descriptive Name"
-              value={scriptName}
-              onChangeText={scriptName => setScriptName(scriptName)}
-              theme={{
-                colors: {
-                  primary: '#00a1a1',
-                },
-              }}
-            />
-            <TextInput
-              mode="outlined"
-              label="Filename"
-              value={scriptFileName}
-              onChangeText={scriptFileName => setScriptFileName(scriptFileName)}
-              theme={{
-                colors: {
-                  primary: '#00a1a1',
-                },
-              }}
-            />
-            <TextInput
-              mode="outlined"
-              label="File contents"
-              multiline
-              numberOfLines={10}
-              value={scriptFileContent}
-              onChangeText={scriptFileContent =>
-                setScriptFileContent(scriptFileContent)
-              }
-              theme={{
-                colors: {
-                  primary: '#00a1a1',
-                },
-              }}
-              style={{paddingTop: 20}}
-            />
+          <View style={{width:'100%',marginVertical:15,display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+            <TouchableOpacity onPress={()=>setIsDeleteModalVisible(false)} style={{width:'45%',height:40,backgroundColor:'#00a1a1',borderRadius:4,justifyContent:'center'}}>
+                <Text style={{fontFamily:'Raleway-Bold',fontSize:16,color:"#FFFFFF",textAlign:'center'}}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={()=>deleteScriptAlert(selectedScript.id)} style={{width:'45%',height:40,backgroundColor:'#D94B4B',borderRadius:4,justifyContent:'center'}}>
+                <Text style={{fontFamily:'Raleway-Bold',fontSize:16,color:"#FFFFFF",textAlign:'center'}}>Delete</Text>
+            </TouchableOpacity>
           </View>
         </View>
-        <View
-          style={{
-            padding: 20,
-            width: Dimensions.get('window').width,
-            marginBottom: 20,
-            flex: 1,
-            justifyContent: 'flex-end',
-          }}>
-          <Button
-            mode="contained"
-            theme={{
-              colors: {
-                primary: '#008570',
-              },
-            }}
-            onPress={sendRequest}>
-            Save Script
-          </Button>
-        </View>
-      </ScrollView>
-      <Toast ref={ref => Toast.setRef(ref)}/>
-    </Modal>
-    <Modal isVisible={isModalVisible3} style={{margin:0}} animationIn="slideInLeft" animationOutTiming={1}>
-    <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: 'space-between',
-          flexDirection: 'column',
-        }}
-        style={{backgroundColor: 'white', paddingBottom: 20}}>
-        <View style={{flex: 1, justifyContent: 'flex-start'}}>
-          <View style={{flexDirection:'row-reverse'}}>
-          <View style={styles.closebutton}>
-            <IconButton
-              icon="close"
-              color="black"
-              size={25}
-              onPress={toggleModal3}
-            />
-          </View>
-          </View>
-
-          <Text style={styles.titleText}>Add Script to account</Text>
-          <View style={{padding: 20}}>
-            <TextInput
-              mode="outlined"
-              label="Descriptive Name"
-              value={newScriptName}
-              onChangeText={newScriptName => setNewScriptName(newScriptName)}
-              theme={{
-                colors: {
-                  primary: '#00a1a1',
-                },
-              }}
-            />
-            <TextInput
-              mode="outlined"
-              label="Filename"
-              value={newScriptFileName}
-              onChangeText={newScriptFileName => setNewScriptFileName(newScriptFileName)}
-              theme={{
-                colors: {
-                  primary: '#00a1a1',
-                },
-              }}
-            />
-            <TextInput
-              mode="outlined"
-              label="File contents"
-              multiline
-              numberOfLines={10}
-              value={newScriptFileContent}
-              onChangeText={newScriptFileContent =>
-                setNewScriptFileContent(newScriptFileContent)
-              }
-              theme={{
-                colors: {
-                  primary: '#00a1a1',
-                },
-              }}
-              style={{paddingTop: 20}}
-            />
-          </View>
-        </View>
-        <View
-          style={{
-            padding: 20,
-            width: Dimensions.get('window').width,
-
-            marginBottom: 20,
-            flex: 1,
-            justifyContent: 'flex-end',
-          }}>
-          <Text style={{marginBottom: 20}}>
-            This will add a globally available File or Script to your account
-            which you can deploy to any server.
-          </Text>
-          <Button
-            mode="contained"
-            theme={{
-              colors: {
-                primary: '#008570',
-              },
-            }}
-            onPress={sendCreateScriptRequest}>
-            Save Script
-          </Button>
-        </View>
-      </ScrollView>
-      <Toast ref={ref => Toast.setRef(ref)}/>
     </Modal>
     </>
   );
