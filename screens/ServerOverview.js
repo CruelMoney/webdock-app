@@ -52,6 +52,7 @@ import MoreIcon from '../assets/more-icon.svg'
 import LinkIcon from '../assets/link-icon.svg'
 import UtilizationIcon from '../assets/utilization-icon.svg'
 import { getEventsByCallbackId } from '../service/events';
+import LinearGradient from 'react-native-linear-gradient';
 
 export default function ServerOverview({route, navigation}) {
   const [visible, setVisible] = React.useState(false);
@@ -114,7 +115,7 @@ export default function ServerOverview({route, navigation}) {
         //   visibilityTime: 2000,
         //   autoHide: true,
         // });
-        setCallbackId(result.headers.get("X-Callback-ID"));
+        setCallbackId(result.headers.get("x-callback-id"));
         setVisibleSnack(true)
       } catch (e) {
         alert(e);
@@ -586,8 +587,8 @@ export default function ServerOverview({route, navigation}) {
                 {"label":"Events","icon":<EventsIcon width={19} height={19} color="#00a1a1" />,"navigate":"Events"},
                 {"label":"Utilization","icon":<UtilizationIcon width={19} height={19} color="#00a1a1" />,"navigate":"Utilization"},
                 {"label":"Snapshots","icon":<SnapshotIcon width={19} height={19} color="#00a1a1" />,"navigate":"Snapshots"},
-                {"label":"Shell users","icon":<UsersIcon width={19} height={19} color="#00a1a1" />,"navigate":"Shell users"},
-                {"label":"Public Keys","icon":<PubicKeyIcon width={19} height={19} color="#00a1a1" />,"navigate":"Public Keys"}]
+                {"label":"Shell users","icon":<UsersIcon width={19} height={19} color="#00a1a1" />,"navigate":"Shell Users"},
+                {"label":"Scripts","icon":<ScriptsIcon width={19} height={19} color="#00a1a1" />,"navigate":"Scripts"}]
   
   const [startModal,setStartModal]=useState(false)
   const [restartModal,setRestartModal]=useState(false)
@@ -620,7 +621,7 @@ export default function ServerOverview({route, navigation}) {
               <Menu.Item
                 icon="pencil"
                 onPress={() => {
-                  setSuspendModal(true);
+                  navigation.navigate("UpdateServerMetadata");
                 }}
                 title="EDIT METADATA"
               />
@@ -1023,13 +1024,30 @@ export default function ServerOverview({route, navigation}) {
     <Modal
         testID={'modal'}
         isVisible={aliasModal}
-        swipeDirection={['up', 'left', 'right', 'down']}
-        onSwipeComplete={()=>setAliasModal(false)}
+        // swipeDirection={['up', 'left', 'right', 'down']}
+        // onSwipeComplete={()=>setAliasModal(false)}
         style={{justifyContent: 'flex-end',margin: 0}}>
         <View style={{backgroundColor:'white',padding:30,borderTopStartRadius:10, borderTopEndRadius:10}}>
           <Text style={{fontFamily:'Raleway-Medium',fontSize:18,color:'#00a1a1',marginVertical:10}}>Aliases</Text>
-          <DataTable>
-            {server.aliases.map((item) => (
+          <DataTable style={{height:'80%'}}>
+            <FlatList 
+              data={server.aliases}
+              renderItem={({item}) => (
+                <DataTable.Row key={item}>
+                  <DataTable.Cell>
+                    <View style={{display:'flex',flexDirection:'column',marginVertical:10}}>
+                      <TouchableOpacity style={{flexDirection:'row',alignItems:'center'}} onPress={()=>handleClick(item)}>
+                      <View style={{width:12,height:12,justifyContent:'center',alignItems:'center',backgroundColor:'rgba(0,161,161,0.26)',borderRadius:15/2}}>
+                          <LinkIcon width={8} height={8} />
+                      </View>
+                      <Text style={{fontFamily:'Raleway-Light',fontSize:12,marginStart:5}}>{item}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </DataTable.Cell>
+                </DataTable.Row>
+              )}
+            />
+            {/* {server.aliases.map((item) => (
               <DataTable.Row key={item}>
               <DataTable.Cell>
               <View style={{display:'flex',flexDirection:'column',marginVertical:10}}>
@@ -1042,11 +1060,15 @@ export default function ServerOverview({route, navigation}) {
             </View>
               </DataTable.Cell>
             </DataTable.Row>
-            ))}
+            ))} */}
             </DataTable>
           <View style={{width:'100%',marginVertical:15,display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
-            <TouchableOpacity onPress={()=>setAliasModal(false)} style={{width:'100%',height:40,backgroundColor:'#00A1A1',borderRadius:4,justifyContent:'center'}}>
-                <Text style={{fontFamily:'Raleway-Bold',fontSize:16,color:"#FFFFFF",textAlign:'center'}}>Okay thanks</Text>
+          <TouchableOpacity style={{width:"100%"}} onPress={()=>setAliasModal(false)}>
+              <LinearGradient locations={[0.29,0.80]} start={{x: 0, y: 0}} end={{x: 1, y: 0}} colors={['#00A1A1', '#03A84E']} style={{borderRadius:5}}>
+                  <Text style={{padding:15,fontFamily:'Raleway-Bold',fontSize:18,color:'white',textAlign:'center'}}>
+                    Okay, thanks
+                  </Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         </View>

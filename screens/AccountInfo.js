@@ -1,10 +1,15 @@
 import AsyncStorage from '@react-native-community/async-storage';
 import React,{useState,useEffect} from 'react';
-import {ActivityIndicator, Linking,View} from 'react-native';
-import {Card,Avatar,Title,Paragraph,Button, Divider } from 'react-native-paper';
+import {ActivityIndicator, Linking,View,Text} from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import {Card,Avatar,Title,Paragraph,Button, Divider, TextInput } from 'react-native-paper';
 import { getAccountInformations } from '../service/accountInformations';
+import MenuIcon from '../assets/menu-icon.svg'
+import PlusIcon from '../assets/plus-icon.svg'
+import DeleteIcon from '../assets/delete-icon.svg';
+import BackIcon from '../assets/back-icon.svg';
 
-export default function AccountInfo(){
+export default function AccountInfo({navigation}){
 
     const [account, setAccount]=useState();
     useEffect(() => {
@@ -20,34 +25,127 @@ export default function AccountInfo(){
           }
         },1000);
       }, []);
+      const handleClick = (url) => {
+        if(!url.includes("https://") && !url.includes("http://")){
+          url="https://"+url
+        }
+        Linking.canOpenURL(url).then(supported => {
+          if (supported) {
+            Linking.openURL(url);
+          } else {
+            console.log("Don't know how to open URI: " + url);
+          }
+        });
+      };
     return(
-        account?
-        <Card style={{margin:10,padding:10}}>
-            <Avatar.Image style={{alignSelf:'center'}}
-                                source={{
-                                    uri:"https:" + account.userAvatar
-                                }}
-                                size={100}
-                            />
-                <Card.Content style={{margin:10}}>
-                    <Title style={{textAlign:'center'}}>{account.companyName}</Title>
-                </Card.Content>
-                <Card.Content style={{margin:10}}>
-                    <Title style={{textAlign:'center'}}>{account.userName}</Title>
-                    <Paragraph style={{textAlign:'center'}}>{account.userEmail}</Paragraph>
-                </Card.Content>
-                <Divider />
-                <Card.Content style={{margin:10}}>
-                    <Title style={{textAlign:'center'}}>Account Credit Balance</Title>
-                    <Paragraph style={{color:'green',fontSize:18,textAlign:'center'}}>{account.accountBalanceRaw} {account.accountBalanceCurrency}</Paragraph>
-                </Card.Content>
-                <Divider />
-                <Card.Actions style={{justifyContent:'center'}}>
-                    <Paragraph style={{textAlign:'center'}} onPress={()=> Linking.openURL("https://webdock.io/en/docs/webdock/billing-pricing")}>Want to know how to get credit? Click here!</Paragraph>
-                </Card.Actions>
-        </Card>
+    <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',padding:'8%'}}>
+        <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+          <TouchableOpacity onPress={navigation.goBack}><BackIcon height={45} width={50}/></TouchableOpacity>
+          <Text style={{color:'#00A1A1',fontFamily:'Raleway-Medium',fontSize:20,textAlign:'center'}}>General</Text>
+          <View style={{width:50}}></View>
+        </View>
+        {account?
+        <>
+        <View style={{marginTop:20}}>
+            <Text style={{fontFamily:'Raleway-Medium',fontSize:18}}>Basic Information</Text>
+            <TextInput
+                    mode="outlined"
+                    label="Name"
+                    value={account.userName}
+                    autoFocus={true}
+                    editable={false}
+                    selectionColor='#00A1A1'
+                    dense={true}
+                    outlineColor='#00A1A1'
+                    activeOutlineColor='#00A1A1'
+                    underlineColorAndroid="transparent"
+                    underlineColor='transparent'
+                    activeUnderlineColor='transparent'
+                    theme={{
+                        colors: {
+                        primary: '#00a1a1',
+                        accent: '#00a1a1',
+                        placeholder:'#00A1A1'
+                        },
+                    }}
+                    style={{marginTop:10,fontFamily:'Raleway-Regular',fontSize:16}}
+                    />   
+                        <TextInput
+                    mode="outlined"
+                    label="Email"
+                    value={account.userEmail}
+                    autoFocus={true}
+                    editable={false}
+                    selectionColor='#00A1A1'
+                    dense={true}
+                    outlineColor='#00A1A1'
+                    activeOutlineColor='#00A1A1'
+                    underlineColorAndroid="transparent"
+                    underlineColor='transparent'
+                    activeUnderlineColor='transparent'
+                    theme={{
+                        colors: {
+                        primary: '#00a1a1',
+                        accent: '#00a1a1',
+                        placeholder:'#00A1A1'
+                        },
+                    }}
+                    style={{marginTop:10,fontFamily:'Raleway-Regular',fontSize:16}}
+                    />  
+                        <TextInput
+                    mode="outlined"
+                    label="Company Name"
+                    value={account.companyName}
+                    autoFocus={true}
+                    editable={false}
+                    selectionColor='#00A1A1'
+                    dense={true}
+                    outlineColor='#00A1A1'
+                    activeOutlineColor='#00A1A1'
+                    underlineColorAndroid="transparent"
+                    underlineColor='transparent'
+                    activeUnderlineColor='transparent'
+                    theme={{
+                        colors: {
+                        primary: '#00a1a1',
+                        accent: '#00a1a1',
+                        placeholder:'#00A1A1'
+                        },
+                    }}
+                    style={{marginTop:10,fontFamily:'Raleway-Regular',fontSize:16}}
+                    />  
+                    <TextInput
+                    mode="outlined"
+                    label="Account Credit Balance"
+                    value={account.accountBalanceRaw+" "+account.accountBalanceCurrency}
+                    autoFocus={true}
+                    editable={false}
+                    selectionColor='#00A1A1'
+                    dense={true}
+                    outlineColor='#00A1A1'
+                    activeOutlineColor='#00A1A1'
+                    underlineColorAndroid="transparent"
+                    underlineColor='transparent'
+                    activeUnderlineColor='transparent'
+                    theme={{
+                        colors: {
+                        primary: '#00a1a1',
+                        accent: '#00a1a1',
+                        placeholder:'#00A1A1'
+                        },
+                    }}
+                    style={{marginTop:10,fontFamily:'Raleway-Regular',fontSize:16}}
+                    />
+                    <TouchableOpacity onPress={()=> handleClick("https://webdock.io/en/docs/webdock/billing-pricing")} style={{display:'flex',flexDirection:'row',marginTop:20}}>
+                        <View style={{backgroundColor:'#03A84E',width:1}}></View>
+                        <Text style={{fontFamily:'Raleway-Regular',fontSize:14,color:'#5F5F5F',marginStart:10}}>Want to know how to get credit? Click here!</Text>
+                    </TouchableOpacity>
+        </View>
+        </>
         :<View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
             <ActivityIndicator size="large" color="#008570"/>
         </View>
+        }
+    </View>
     )
 }

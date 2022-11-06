@@ -14,6 +14,7 @@ import Account from './Account';
 import CreatePublicKey from './CreatePublicKey';
 import CreateAccountScript from './CreateAccountScript'
 import EditAccountScript from './EditAccountScript';
+import AccountInfo from './AccountInfo';
 const Stack = createStackNavigator();
 
 const screenOptionStyle = {
@@ -31,6 +32,13 @@ const AccountRootStack = ({navigation}) => {
       <Stack.Screen
         name="Account"
         component={Account}
+        options={{
+          headerShown: false
+        }}
+      />
+      <Stack.Screen
+        name="AccountInfo"
+        component={AccountInfo}
         options={{
           headerShown: false
         }}

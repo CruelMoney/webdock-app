@@ -123,11 +123,14 @@ export default function AccountPublicKeys({navigation}) {
       <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
         <TouchableOpacity onPress={navigation.goBack}><BackIcon height={45} width={50}/></TouchableOpacity>
         <Text style={{color:'#00A1A1',fontFamily:'Raleway-Medium',fontSize:20,textAlign:'center'}}>Public keys</Text>
-        <TouchableOpacity onPress={()=>navigation.navigate("CreatePublicKeys")}><PlusIcon height={45} width={45}/></TouchableOpacity>
+        <View style={{width:50}}></View>
       </View>
       <FlatList
         style={{marginTop:20}}
         data={publicKeys}
+        showsVerticalScrollIndicator={false}
+        ListFooterComponent={<View style={{height:60}}>
+          </View>}
         onRefresh={() => onRefresh()}
         refreshing={isFetching}
         renderItem={({item}) => (
@@ -140,6 +143,8 @@ export default function AccountPublicKeys({navigation}) {
         keyExtractor={item => item.id}
         ListEmptyComponent={EmptyListMessage}
       />
+      <TouchableOpacity onPress={()=>navigation.navigate("CreatePublicKeys")} style={{position: 'absolute',right: 30,
+    bottom: 30}}><PlusIcon height={50} width={50}/></TouchableOpacity>
     </View>
     <Modal
         testID={'modal'}

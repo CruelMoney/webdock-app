@@ -132,11 +132,11 @@ export function HomeScreen({navigation}) {
 
   const renderStatusIcon=(icon)=>{
     if(icon=="error"){
-      return <PowerIcon width={14} height={14} color="red"/>;
+      return <PowerIcon width={14} height={14} fill="red"/>;
     }else if(icon=="running"){
-      return <PowerIcon width={14} height={14} />;
+      return <PowerIcon width={14} height={14} fill="#4C9F5A"/>;
     }else if(icon=="stopped"){
-      return <PowerIcon width={14} height={14} color="#F44336" />;
+      return <PowerIcon width={14} height={14} fill="#E15241" />;
     }else if(icon=="provisioning"||icon=="rebooting"||icon=="starting"||icon=="stopping"||icon=="reinstalling"){
       return <ActivityIndicator animating={true} size={10} color={Colors.blue400}/>;
     }

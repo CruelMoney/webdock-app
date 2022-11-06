@@ -33,7 +33,11 @@ import SelectBox from 'react-native-multi-selectbox';
 import Modal from "react-native-modal";
 import { xorBy } from 'lodash';
 import { getAccountPublicKeys } from '../service/accountPublicKeys';
-
+import DeleteIcon from '../assets/delete-icon.svg'
+import EditIcon from '../assets/edit-icon.svg'
+import BackIcon from '../assets/back-icon.svg'
+import PlusIcon from '../assets/plus-icon.svg'
+import PlayIcon from '../assets/play-icon.svg'
 export default function ServerShellUsers({route, navigation}) {
   const [K_OPTIONS,setkoptions] = useState();
   const [shellUsers, setShellUsers] = useState();
@@ -166,11 +170,21 @@ export default function ServerShellUsers({route, navigation}) {
     );
   };
   const Item = ({item}) => (
-    <View style={styles.item}>
-      <View style={styles.name}>
-        <Text>{item.username}</Text>
+    <>
+      <View style={{backgroundColor:'white',borderRadius:10,marginBottom:10}}>
+        <View style={{display:'flex',padding:15,flexDirection:'row',
+        alignItems:'center',justifyContent:'space-between'}}>
+          <View>
+            <Text style={{fontFamily:'Raleway-Regular',fontSize:12}}>{item.username}</Text>
+            <View style={{display:'flex',flexDirection:'row'}}>
+              <Text style={{width:100,fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{item.created}</Text>
+            </View>
+          </View>
+          <TouchableOpacity onPress={()=>{setIsDeleteModalVisible(true) 
+            setSelectedShellUser(item)}}><DeleteIcon /></TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </>
   );
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
@@ -274,31 +288,35 @@ export default function ServerShellUsers({route, navigation}) {
               }
             }
   }
+
+  const [isDeleteModalVisible,setIsDeleteModalVisible]=React.useState(false)
+  const [selectedShellUser,setSelectedShellUser]=React.useState("");
   return (
     <>
-    <View width="100%" height="100%">
+    <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',padding:'8%'}}>
+      <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+        <TouchableOpacity onPress={navigation.goBack}><BackIcon height={45} width={50}/></TouchableOpacity>
+        <Text style={{color:'#00A1A1',fontFamily:'Raleway-Medium',fontSize:20,textAlign:'center'}}>{route.params.slug}</Text>
+        <View style={{width:50}}></View>
+      </View>
       <FlatList
         data={shellUsers}
+        style={{marginTop:20}}
+        showsVerticalScrollIndicator={false}
         onRefresh={() => onRefresh()}
         refreshing={isFetching}
+        ListFooterComponent={<View style={{height:60}}></View>}
         renderItem={({item}) => (
           <TouchableOpacity onPress={()=>modalOpen(item)}>
             <View>
               <Item item={item} />
-              <Divider />
             </View>
           </TouchableOpacity>
         )}
         keyExtractor={item => item.id}
       />
-      <FAB
-        style={styles.fab}
-        color="white"
-        icon="plus"
-        animated={true}
-        accessibilityLabel="Create new shell user"
-        onPress={()=>toggleModal2()}
-      />
+      <TouchableOpacity onPress={()=>toggleModal2()} style={{position: 'absolute',right: 30,
+    bottom: 30}}><PlusIcon height={50} width={50}/></TouchableOpacity>
     </View>
     <Modal isVisible={isModalVisible}>
     

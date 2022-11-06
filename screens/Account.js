@@ -26,10 +26,9 @@ export default function Account({navigation}){
         },1000);
       }, []);
 
-    const tabs=[{"label":"General","icon":<UserIcon width={30} height={30} color="#00a1a1" />,"navigate":"General"},
+    const tabs=[{"label":"General","icon":<UserIcon width={30} height={30} color="#00a1a1" />,"navigate":"AccountInfo"},
                 {"label":"Public Keys","icon":<PubicKeyIcon width={30} height={30} color="#00a1a1" />,"navigate":"PublicKeys"},
-                {"label":"Scripts","icon":<ScriptsIcon width={30} height={30} color="#00a1a1" />,"navigate":"Scripts"},
-                {"label":"Team","icon":<TeamIcon width={30} height={30} color="#00a1a1" />,"navigate":"Teams"}]
+                {"label":"Scripts","icon":<ScriptsIcon width={30} height={30} color="#00a1a1" />,"navigate":"Scripts"}]
     return(
         account?
         <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',padding:'8%'}}>

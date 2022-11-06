@@ -2,7 +2,7 @@ import {api_url} from '../config/config';
 
 export async function getEvents(api_key,page){
     try{
-        let request=await fetch(api_url+"events?per_page=20&page="+page,{
+        let request=await fetch(api_url+"events?per_page=20000&page="+page,{
             method:'GET',
             headers: {
                 'Authorization': 'Bearer '+api_key
@@ -11,7 +11,9 @@ export async function getEvents(api_key,page){
         });
         let result=await request.json();
         request=null;
-        return result;
+        return result.filter(item=>{
+            return item.status=="error"
+        });
     }catch(error){
         console.log("Api call error");
         alert(error.message);

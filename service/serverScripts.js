@@ -84,7 +84,12 @@ export async function deleteServerScript(api_key, slug, scriptId) {
         },
       },
     );
-    let result = await request.status;
+    let result = { status: request.status }
+    if (result.status != 202) {
+      result = {status: request.status};
+    }else{
+      result = {status: request.status, headers: request.headers}
+    }
     request = null;
     return result;
   } catch (error) {
@@ -107,7 +112,11 @@ export async function executeServerScript(api_key, slug, scriptId) {
       },
     );
     let result = {status: request.status};
-    console.log(result);
+    if (result.status != 202) {
+      result = {status: request.status};
+    }else{
+      result = {status: request.status, headers: request.headers}
+    }
     request = null;
     return result;
   } catch (error) {

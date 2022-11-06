@@ -27,11 +27,12 @@ import {
   TextInput,
 } from 'react-native-paper';
 import Modal from "react-native-modal";
-
-import {Avatar, Divider} from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 import { deleteServerSnapshot, getServerSnapshots } from '../service/serverSnapshots';
 import { createSnapshotForServer, restoreFromSnapshot } from '../service/serverActions';
+import BackIcon from '../assets/back-icon.svg';
+import PlusIcon from '../assets/plus-icon.svg'
+import DeleteIcon from '../assets/delete-icon.svg';
 export default function ServerSnapshots({route, navigation}) {
   const [serverSnapshots, setSnapshots] = useState();
   useEffect(() => {
@@ -53,56 +54,6 @@ export default function ServerSnapshots({route, navigation}) {
     return unsubscribe;
   }, [route]);
 
-  const deleteSnapshotsAlert = async pkey => {
-    let userToken = null;
-
-    userToken = await AsyncStorage.getItem('userToken');
-
-    Alert.alert(
-      'Delete Snapshot',
-      'Do you really want to delete this snapshot?',
-      [
-        {
-          text: 'Cancel',
-          onPress: () => console.log('Cancel Pressed'),
-          style: 'cancel',
-        },
-        {
-          text: 'OK',
-          onPress: async () => {
-            var result = await deleteServerSnapshot(userToken,route.params.slug, pkey);
-            if (result == 202) {
-              onBackgroundRefresh();
-              try {
-                Toast.show({
-                  type: 'success',
-                  position: 'bottom',
-                  text1: 'Account script deleted successfully',
-                  visibilityTime: 4000,
-                  autoHide: true,
-                });
-              } catch (e) {
-                alert(e);
-              }
-              toggleModal();
-            } else if (result == 404) {
-              try {
-                Toast.show({
-                  type: 'error',
-                  position: 'bottom',
-                  text1: 'Script not found',
-                  visibilityTime: 4000,
-                  autoHide: true,
-                });
-              } catch (e) {
-                alert(e);
-              }
-            }
-          },
-        },
-      ],
-    );
-  };
 
   const createSnapshot = async (name) => {
     let userToken = null;
@@ -153,13 +104,37 @@ export default function ServerSnapshots({route, navigation}) {
   };
 
   const Item = ({item}) => (
-    <View style={styles.item}>
-      <View style={styles.name}>
-      <Text>{item.name}<Text> - {item.type}</Text></Text>
-      
+    <>
+      <View style={{backgroundColor:'white',borderRadius:10,marginBottom:10}}>
+        <View style={{display:'flex',padding:15,flexDirection:'row',
+        alignItems:'center',justifyContent:'space-between'}}>
+          <View>
+            <Text style={{fontFamily:'Raleway-Regular',fontSize:12}}>{item.name}</Text>
+            <View style={{display:'flex',flexDirection:'row'}}>
+              <Text style={{width:100,fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{item.type}</Text>
+            </View>
+          </View>
+          <View style={{display:'flex',flexDirection:'row', justifyContent:'space-between'}}>
+          {/* {item.completed?<TouchableOpacity onPress={()=>{
+            setSelectedSnapshot(item);
+            setIsDeleteModalVisible(true)}}>
+              <View style={{width:30,height:23,justifyContent:'center',alignItems:'center'}}>
+            <View style={{width:23,height:23,justifyContent:'center',alignItems:'center',backgroundColor:'rgba(3,155,229,0.26)',borderRadius:23/2}}>
+            <Icon
+              name="history"
+              size={15}
+              color="#449ADF"
+              onPress={() => setStartModal(true)}
+            />
+            </View>
+            </View></TouchableOpacity>:null} */}
+          {item.deletable?<TouchableOpacity style={{width:30,justifyContent:'center',alignItems:'center'}} onPress={()=>{
+            setSelectedSnapshot(item);
+            setIsDeleteModalVisible(true)}}><DeleteIcon /></TouchableOpacity>:null}
+          </View>
+          </View>
       </View>
-      <View style={styles.status}></View>
-    </View>
+    </>
   );
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
@@ -205,19 +180,15 @@ export default function ServerSnapshots({route, navigation}) {
     );
     if (result.status == 202) {
       try {
-        Toast.show({
-          type: 'success',
-          position: 'bottom',
-          text1: 'Snapshot restore initiated',
-          visibilityTime: 4000,
-          autoHide: true
-        });
+        toggleModal();
+        setCallbackId(result.headers.get("x-callback-id"));
+        setVisibleSnack(true)
       } catch (e) {
         alert(e);
       }
-      toggleModal();
     } else if (result.status == 400) {
       try {
+        toggleModal();
         Toast.show({
           type: 'error',
           position: 'bottom',
@@ -237,6 +208,7 @@ export default function ServerSnapshots({route, navigation}) {
           visibilityTime: 4000,
           autoHide: true
         });
+        toggleModal();
       } catch (e) {
         alert(e);
       }
@@ -246,94 +218,156 @@ export default function ServerSnapshots({route, navigation}) {
   const [modalData,setModalData]=useState();
   const modalOpen = (item) => {
       toggleModal();
-      setModalData(item);
+      setSelectedSnapshot(item);
   }
   const [newSnapshotName,setNewSnapshotName]=useState();
 
+  const [isDeleteModalVisible,setIsDeleteModalVisible]=useState(false)
+  const [selectedSnapshot,setSelectedSnapshot]=useState()
+
+  const [callbackId,setCallbackId]=useState()
+
+  const [visibleSnack, setVisibleSnack] = useState(false);
+
+  const onToggleSnackBar = () => setVisibleSnack(!visibleSnack);
+
+  const onDismissSnackBar = () => setVisibleSnack(false);
+
+  const deleteSnapshotsAlert = async pkey => {
+    let userToken = null;
+    console.log("test")
+
+    userToken = await AsyncStorage.getItem('userToken');
+
+    var result = await deleteServerSnapshot(userToken,route.params.slug, pkey);
+    if (result.status == 202) {
+      onBackgroundRefresh();
+      try {
+        setIsDeleteModalVisible(false)
+        setCallbackId(result.headers.get("x-callback-id"));
+        setVisibleSnack(true)
+      } catch (e) {
+        alert(e);
+      }
+    } else if (result.status == 404) {
+      try {
+        setIsDeleteModalVisible(false)
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: 'Script not found',
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      } catch (e) {
+        alert(e);
+      }
+    }
+  };
   return (
       <>
-    <View width="100%" height="100%">
-      <FlatList
+    <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',padding:'8%'}}>
+    <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+      <TouchableOpacity onPress={navigation.goBack}><BackIcon height={45} width={50}/></TouchableOpacity>
+      <Text style={{color:'#00A1A1',fontFamily:'Raleway-Medium',fontSize:20,textAlign:'center'}}>{route.params.slug}</Text>
+      <View style={{width:50}}></View>
+    </View>
+    <FlatList
+        style={{marginTop:20}}
         data={serverSnapshots}
         onRefresh={() => onRefresh()}
         refreshing={isFetching}
+        showsVerticalScrollIndicator={false}
+        ListFooterComponent={<View style={{height:60}}>
+        </View>}
         renderItem={({item}) => (
-          <TouchableOpacity
-            onPress={()=>modalOpen(item)}>
+          <>
+          <TouchableOpacity onPress={()=>modalOpen(item)}>
             <View>
               <Item item={item} />
-              <Divider />
             </View>
           </TouchableOpacity>
+                    </>
         )}
         keyExtractor={item => item.id}
       />
-      <FAB
-        style={styles.fab}
-        color="white"
-        icon="plus"
-        animated={true}
-        accessibilityLabel="Create new script"
-        onPress={()=>toggleModal2()}
-      />
+      <TouchableOpacity onPress={()=>toggleModal2()} style={{position: 'absolute',right: 30,
+    bottom: 30}}><PlusIcon height={50} width={50}/></TouchableOpacity>
       
     </View>
-    <Modal isVisible={isModalVisible}>
-    
-    <View style={styles.content}>
-        <View style={{width:'100%'}}>
-        <View style={{flexDirection: 'row-reverse'}}>
-          <View style={styles.closebutton}>
-            <IconButton
-              icon="close"
-              color="black"
-              size={25}
-              onPress={toggleModal}
-            />
-            </View>
+    {/* Delete Snapshot Modal */}
+    <Modal
+        testID={'modal'}
+        isVisible={isDeleteModalVisible}
+        swipeDirection={['up', 'left', 'right', 'down']}
+        onSwipeComplete={()=>setIsDeleteModalVisible(false)}
+        style={{justifyContent: 'flex-end',margin: 0}}>
+        <View style={{backgroundColor:'white',padding:30,borderTopStartRadius:10, borderTopEndRadius:10}}>
+          <Text style={{fontFamily:'Raleway-Medium',fontSize:18,color:'#00a1a1',marginVertical:10}}>Delete snapshot {selectedSnapshot?selectedSnapshot.name:null}</Text>
+          <Text style={{fontFamily:'Raleway-Regular',fontSize:12,color:'#000000',marginVertical:10}}>Please confirm you want to delete this snapshot</Text>
+          <View style={{display:'flex',flexDirection:'row',marginVertical:10}}>
+            <View style={{backgroundColor:'#03A84E',width:1}}></View>
+            <Text style={{fontFamily:'Raleway-Regular',fontSize:12,color:'#000000',marginStart:10}}>This will permanently delete all copies of this snapshot. This action cannot be undone.</Text>
+          </View>
+          <View style={{width:'100%',marginVertical:15,display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+            <TouchableOpacity onPress={()=>setIsDeleteModalVisible(false)} style={{width:'45%',height:40,backgroundColor:'#00a1a1',borderRadius:4,justifyContent:'center'}}>
+                <Text style={{fontFamily:'Raleway-Bold',fontSize:16,color:"#FFFFFF",textAlign:'center'}}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={()=>deleteSnapshotsAlert(selectedSnapshot.id)} style={{width:'45%',height:40,backgroundColor:'#D94B4B',borderRadius:4,justifyContent:'center'}}>
+                <Text style={{fontFamily:'Raleway-Bold',fontSize:16,color:"#FFFFFF",textAlign:'center'}}>Delete</Text>
+            </TouchableOpacity>
           </View>
         </View>
-        <View style={{padding: 20}}>
-            <Text><Text style={{fontWeight:'bold'}}>Type: </Text>{modalData?modalData.type:''}</Text>
-            <Text><Text style={{fontWeight:'bold'}}>Date/Time: </Text>{modalData?modalData.date:''}</Text>
-            <Text><Text style={{fontWeight:'bold'}}>Name: </Text>{modalData?modalData.name:''}</Text>
-            <Text><Text style={{fontWeight:'bold'}}>Size: </Text>{modalData?modalData.size:''}</Text>
+    </Modal>
+    {/* Snackbar for event log */}
+    <Snackbar
+    visible={visibleSnack}
+    onDismiss={onDismissSnackBar}
+    action={{
+      label: 'view event log',
+      onPress: () => {
+        navigation.navigate("Events",{"callbackId":callbackId})
+      },
+      
+    }}
+    style={{backgroundColor:'#008570',fontFamily:'Raleway-Regular'}}
+    theme={{
+      colors: {
+        accent: '#ffeb3b',
+      },
+    }}>
+    You have running jobs ...
+  </Snackbar>
+    <Modal
+        testID={'modal'}
+        isVisible={isModalVisible}
+        swipeDirection={['up', 'left', 'right', 'down']}
+        onSwipeComplete={()=>setModalVisible(false)}
+        style={{justifyContent: 'flex-end',margin: 0}}>
+        <View style={{backgroundColor:'white',padding:30,borderTopStartRadius:10, borderTopEndRadius:10}}>
+          <Text style={{fontFamily:'Raleway-Medium',fontSize:18,color:'#00a1a1',marginVertical:10}}>Restore {route.params.slug} from a snapshot</Text>
+          <View style={{borderColor:'#AEAEAE',borderStyle:'dashed',borderWidth:1,borderRadius:4,padding:20}}>
+            <Text style={{fontSize:10}}>Name: {selectedSnapshot?selectedSnapshot.name:null}</Text>
+            <Text style={{fontSize:10}}>Type: {selectedSnapshot?selectedSnapshot.type:null}</Text>
+            <Text style={{fontSize:10}}>Date: {selectedSnapshot?selectedSnapshot.date:null}</Text>
           </View>
-          <View
-          style={{
-            padding: 20,
-            width:'100%',
-          }}>
-          <View style={{flexDirection:'row',justifyContent:'space-between'}}>
-            <Button
-              mode="contained"
-              icon="replay"
-              theme={{
-                colors: {
-                  primary: '#008570',
-                },
-              }}
-              onPress={()=>restoreThisSnapshot(modalData.id)}
-              >
-              Restore
-            </Button>
-            <Button
-              mode="contained"
-              disabled={!(modalData?modalData.deletable:false)}
-              icon="delete"
-              theme={{
-                colors: {
-                  primary: '#F44336',
-                },
-              }}
-              onPress={()=>deleteSnapshotsAlert(modalData.id)}
-              >
-              Delete
-            </Button>
+          <View style={{display:'flex',flexDirection:'row',marginVertical:10}}>
+            <View style={{backgroundColor:'#03A84E',width:1}}></View>
+            <Text style={{fontFamily:'Raleway-Regular',fontSize:12,color:'#000000',marginStart:10}}>Here you initiate the restore procedure. This will in effect replace this server with the snapshot you choose. The server will keep its current IP addresses, profile and alias.</Text>
           </View>
+          <View style={{display:'flex',flexDirection:'row',marginVertical:10}}>
+            <View style={{backgroundColor:'#f44336',width:1}}></View>
+            <Text style={{fontFamily:'Raleway-Regular',fontSize:12,color:'#000000',marginStart:10}}><Text style={{fontFamily:'Raleway-Bold'}}>To be sure you know what is happening:</Text> Any data not backed up or already snapshot on this server will be replaced with the snapshot you choose, and will be lost.</Text>
           </View>
-    </View>
-    
+          <View style={{width:'100%',marginVertical:15,display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+            <TouchableOpacity onPress={()=>setModalVisible(false)} style={{width:'45%',height:40,backgroundColor:'#00a1a1',borderRadius:4,justifyContent:'center'}}>
+                <Text style={{fontFamily:'Raleway-Bold',fontSize:16,color:"#FFFFFF",textAlign:'center'}}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={()=>restoreThisSnapshot(selectedSnapshot.id)} style={{width:'45%',height:40,backgroundColor:'#449ADF',borderRadius:4,justifyContent:'center'}}>
+                <Text style={{fontFamily:'Raleway-Bold',fontSize:16,color:"#FFFFFF",textAlign:'center'}}>Restore</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
     </Modal>
     <Modal isVisible={isModalVisible2}>
     

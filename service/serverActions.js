@@ -118,6 +118,8 @@ export async function restoreFromSnapshot(api_key, slug,snapshot_Id) {
     let result = {status: request.status};
     if (result.status != 202) {
       result = {status: request.status, response: await request.json()};
+    }else{
+      result = {status: request.status, headers: request.headers}
     }
     request = null;
     return result;

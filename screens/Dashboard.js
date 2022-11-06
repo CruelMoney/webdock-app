@@ -106,13 +106,13 @@ export function Dashboard({navigation}) {
   };
   const renderEventStatusIcon=(icon)=>{
     if(icon=="error"){
-      return <Icon name="info-outline" size={25} color="red" />;
+      return <Icon name="info-outline" size={14} color="red" />;
     }else if(icon=="finished"){
-      return <Icon name="done" size={25} color="green" />;
+      return <Icon name="done" size={14} color="green" />;
     }else if(icon=="waiting"){
-      return <ActivityIndicator animating={true} size={20} color={Colors.blue400}/>;
+      return <ActivityIndicator animating={true} size={10} color={Colors.blue400}/>;
     }else if(icon=="working"){
-      return <ActivityIndicator animating={true} size={20} color={Colors.blue400} />
+      return <ActivityIndicator animating={true} size={10} color={Colors.blue400} />
 
     }
     return null;
@@ -124,13 +124,16 @@ export function Dashboard({navigation}) {
         <View style={{display:'flex',padding:15,flexDirection:'row',
           alignItems:'center',justifyContent:'space-between'}}>
           <View>
-            <View style={{display:'flex',flexDirection:'row'}}>
-              <Text style={{width:100,fontFamily:'Raleway-Regular',fontSize:12}}>{this.props.item.serverSlug}</Text>
+            <View style={{display:'flex',flexDirection:'row',alignItems:'center'}}>
+              {renderEventStatusIcon(this.props.item.status)}
+              <Text style={{marginStart:5,width:100,fontFamily:'Raleway-Regular',fontSize:12}}>{this.props.item.serverSlug}</Text>
               <Text style={{fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{this.props.item.startTime}</Text>
             </View>
             <Text style={{fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{this.props.item.action}</Text>
           </View>
-          {renderEventStatusIcon(this.props.item.status)}
+          { this.props.item.status!="waiting" && this.props.item.status!="finished" && this.props.item.status!="working"?
+          <ArrowIcon width={15} height={15}/>
+          :null}
         </View>
       </View>
       )
@@ -138,11 +141,11 @@ export function Dashboard({navigation}) {
   }
   const renderStatusIcon=(icon)=>{
     if(icon=="error"){
-      return <PowerIcon width={14} height={14} color="red"/>;
+      return <PowerIcon width={14} height={14} fill="red"/>;
     }else if(icon=="running"){
-      return <PowerIcon width={14} height={14} />;
+      return <PowerIcon width={14} height={14} fill="#4C9F5A"/>;
     }else if(icon=="stopped"){
-      return <PowerIcon width={14} height={14} color="#F44336" />;
+      return <PowerIcon width={14} height={14} fill="#E15241" />;
     }else if(icon=="provisioning"||icon=="rebooting"||icon=="starting"||icon=="stopping"||icon=="reinstalling"){
       return <ActivityIndicator animating={true} size={10} color={Colors.blue400}/>;
     }

@@ -31,9 +31,14 @@ import {
 } from 'react-native-paper';
 import {Avatar, Divider} from 'react-native-paper';
 import Toast from 'react-native-toast-message';
-import Modal from 'react-native-modal';
 import {createServerScript, deleteServerScript, executeServerScript, getServerScripts} from '../service/serverScripts';
 import { getAccountScripts } from '../service/accountScripts';
+import Modal from 'react-native-modal';
+import DeleteIcon from '../assets/delete-icon.svg'
+import EditIcon from '../assets/edit-icon.svg'
+import BackIcon from '../assets/back-icon.svg'
+import PlusIcon from '../assets/plus-icon.svg'
+import PlayIcon from '../assets/play-icon.svg'
 export default function ServerScripts({route, navigation}) {
   const [serverScripts, setScripts] = useState();
   const [modifiedScripts,setModifiedScripts]=useState();
@@ -63,74 +68,67 @@ export default function ServerScripts({route, navigation}) {
     return unsubscribe;
   }, [route]);
 
+  const [callbackId,setCallbackId]=useState()
+
+  const [visibleSnack, setVisibleSnack] = useState(false);
+
+  const onToggleSnackBar = () => setVisibleSnack(!visibleSnack);
+
+  const onDismissSnackBar = () => setVisibleSnack(false);
+
   const deleteScriptAlert = async pkey => {
     let userToken = null;
 
     userToken = await AsyncStorage.getItem('userToken');
-
-    Alert.alert(
-      'Delete Server Script',
-      'Do you really want to delete this script?',
-      [
-        {
-          text: 'Cancel',
-          onPress: () => console.log('Cancel Pressed'),
-          style: 'cancel',
-        },
-        {
-          text: 'OK',
-          onPress: async () => {
-            var result = await deleteServerScript(userToken,route.params.slug, pkey);
-            if (result == 202) {
-              onBackgroundRefresh();
-              try {
-                toggleModal();
-                Toast.show({
-                  type: 'success',
-                  position: 'bottom',
-                  text1: 'Server script deleted successfully',
-                  visibilityTime: 4000,
-                  autoHide: true,
-                });
-              } catch (e) {
-                alert(e);
-              }
-            } else if (result == 404) {
-              try {
-                Toast.show({
-                  type: 'error',
-                  position: 'bottom',
-                  text1: 'Script not found',
-                  visibilityTime: 4000,
-                  autoHide: true,
-                });
-                toggleModal();
-              } catch (e) {
-                alert(e);
-              }
-            }
-          },
-        },
-      ],
-    );
+    var result = await deleteServerScript(userToken,route.params.slug, pkey);
+    
+    if (result.status == 202) {
+      onBackgroundRefresh();
+      try {
+        setIsDeleteModalVisible(false)
+        setCallbackId(result.headers.get("x-callback-id"));
+        setVisibleSnack(true)
+      } catch (e) {
+        alert(e);
+      }
+    } else if (result.status == 404) {
+      try {
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: 'Script not found',
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+        setIsDeleteModalVisible(false)
+      } catch (e) {
+        alert(e);
+      }
+    }
   };
   const Item = ({item}) => (
-    <View style={styles.item}>
-      <View style={styles.icon}>
-        <Icon
-          name="perm-data-setting"
-          size={25}
-          color="green"
-          onPress={() => {
-            deleteScriptAlert(item.id);
-          }}
-        />
+    <View style={{backgroundColor:'white',borderRadius:10,marginBottom:10}}>
+        <View style={{display:'flex',padding:15,flexDirection:'row',
+        alignItems:'center',justifyContent:'space-between'}}>
+          <View>
+            <Text style={{fontFamily:'Raleway-Regular',fontSize:12}}>{item.name}</Text>
+            <View style={{display:'flex',flexDirection:'row'}}>
+              <Text style={{width:100,fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{item.path}</Text>
+            </View>
+          </View><View style={{display:'flex',flexDirection:'row',alignItems:'center'}}>
+          <View style={{width:25,height:25,justifyContent:'center',alignItems:'center',backgroundColor:'rgba(76,159,90,0.26)',borderRadius:25/2}}>
+          <TouchableOpacity onPress={() => setIsExecuteModalVisible(true)}><Icon
+            name="play-arrow"
+            size={20}
+            color="#4C9F5A"
+          /></TouchableOpacity>
+          </View>
+            <View style={{width:10}}></View>
+                      <TouchableOpacity onPress={()=>{setIsDeleteModalVisible(true) 
+            setSelectedScript(item)}}><DeleteIcon width={25} height={25}/></TouchableOpacity>
+          </View>
+        </View>
       </View>
-      <View style={styles.name}>
-        <Text>{item.name}</Text>
-      </View>
-      <View style={styles.status}></View>
-    </View>
   );
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
@@ -177,19 +175,15 @@ export default function ServerScripts({route, navigation}) {
     );
     if (result.status == 202) {
       try {
-        Toast.show({
-          type: 'success',
-          position: 'bottom',
-          text1: 'Server script execution initiated',
-          visibilityTime: 4000,
-          autoHide: true,
-        });
+        setIsExecuteModalVisible(false)
+        setCallbackId(result.headers.get("x-callback-id"));
+        setVisibleSnack(true)
       } catch (e) {
         alert(e);
       }
-      toggleModal();
     } else if (result.status == 404) {
       try {
+        setIsExecuteModalVisible(false)
         Toast.show({
           type: 'error',
           position: 'bottom',
@@ -200,7 +194,6 @@ export default function ServerScripts({route, navigation}) {
       } catch (e) {
         alert(e);
       }
-      toggleModal();
     } 
   }
   const [isModalVisible2, setModalVisible2]=useState();
@@ -263,38 +256,97 @@ export default function ServerScripts({route, navigation}) {
       }
     }
   };
-
+  const [isDeleteModalVisible,setIsDeleteModalVisible]=React.useState(false)
+  const [isExecuteModalVisible,setIsExecuteModalVisible]=React.useState(false)
   return (
     <>
-    <View width="100%" height="100%">
+    <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',padding:'8%'}}>
+      <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+        <TouchableOpacity onPress={navigation.goBack}><BackIcon height={45} width={50}/></TouchableOpacity>
+        <Text style={{color:'#00A1A1',fontFamily:'Raleway-Medium',fontSize:20,textAlign:'center'}}>{route.params.slug}</Text>
+        <View style={{width:50}}></View>
+      </View>
       <FlatList
         data={serverScripts}
+        style={{marginTop:20}}
+        showsVerticalScrollIndicator={false}
         onRefresh={() => onRefresh()}
         refreshing={isFetching}
+        ListFooterComponent={<View style={{height:60}}></View>}
         renderItem={({item}) => (
-          <TouchableOpacity
-            onPress={() =>
-              modalOpen(item)
-            }>
+          <TouchableOpacity>
             <View>
               <Item item={item} />
-              <Divider />
             </View>
           </TouchableOpacity>
         )}
         keyExtractor={item => item.id}
       />
-      <FAB
-        style={styles.fab}
-        color="white"
-        icon="plus"
-        animated={true}
-        accessibilityLabel="Create new script"
-        onPress={() =>
-          toggleModal2()
-        }
-      />
+      
+      <TouchableOpacity onPress={()=>toggleModal2()} style={{position: 'absolute',right: 30,
+    bottom: 30}}><PlusIcon height={50} width={50}/></TouchableOpacity>
     </View>
+    {/* Snackbar for event log */}
+    <Snackbar
+    visible={visibleSnack}
+    onDismiss={onDismissSnackBar}
+    action={{
+      label: 'view event log',
+      onPress: () => {
+        navigation.navigate("Events",{"callbackId":callbackId})
+      },
+      
+    }}
+    style={{backgroundColor:'#008570',fontFamily:'Raleway-Regular'}}
+    theme={{
+      colors: {
+        accent: '#ffeb3b',
+      },
+    }}>
+    You have running jobs ...
+    </Snackbar>
+  {/* Delete Server Script Modal */}
+    <Modal
+        testID={'modal'}
+        isVisible={isDeleteModalVisible}
+        swipeDirection={['up', 'left', 'right', 'down']}
+        onSwipeComplete={()=>setIsDeleteModalVisible(false)}
+        style={{justifyContent: 'flex-end',margin: 0}}>
+        <View style={{backgroundColor:'white',padding:30,borderTopStartRadius:10, borderTopEndRadius:10}}>
+          <Text style={{fontFamily:'Raleway-Medium',fontSize:18,color:'#00a1a1',marginVertical:10}}>Remove script {selectedScript?selectedScript.name:null}</Text>
+          <Text style={{fontFamily:'Raleway-Regular',fontSize:12,color:'#000000',marginVertical:10}}>Please confirm you want to remove this script</Text>
+
+          <View style={{width:'100%',marginVertical:15,display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+            <TouchableOpacity onPress={()=>setIsDeleteModalVisible(false)} style={{width:'45%',height:40,backgroundColor:'#00a1a1',borderRadius:4,justifyContent:'center'}}>
+                <Text style={{fontFamily:'Raleway-Bold',fontSize:16,color:"#FFFFFF",textAlign:'center'}}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={()=>deleteScriptAlert(selectedScript.id)} style={{width:'45%',height:40,backgroundColor:'#D94B4B',borderRadius:4,justifyContent:'center'}}>
+                <Text style={{fontFamily:'Raleway-Bold',fontSize:16,color:"#FFFFFF",textAlign:'center'}}>Remove</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+    </Modal>
+      {/* Execute Server Script Modal */}
+      <Modal
+        testID={'modal'}
+        isVisible={isExecuteModalVisible}
+        swipeDirection={['up', 'left', 'right', 'down']}
+        onSwipeComplete={()=>setIsExecuteModalVisible(false)}
+        style={{justifyContent: 'flex-end',margin: 0}}>
+        <View style={{backgroundColor:'white',padding:30,borderTopStartRadius:10, borderTopEndRadius:10}}>
+          <Text style={{fontFamily:'Raleway-Medium',fontSize:18,color:'#00a1a1',marginVertical:10}}>Execute script {selectedScript?selectedScript.name:null}</Text>
+          <Text style={{fontFamily:'Raleway-Regular',fontSize:12,color:'#000000',marginVertical:10}}>Please confirm you want to execute this script</Text>
+
+          <View style={{width:'100%',marginVertical:15,display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+            <TouchableOpacity onPress={()=>setIsExecuteModalVisible(false)} style={{width:'45%',height:40,backgroundColor:'#00a1a1',borderRadius:4,justifyContent:'center'}}>
+                <Text style={{fontFamily:'Raleway-Bold',fontSize:16,color:"#FFFFFF",textAlign:'center'}}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={()=>runScript(selectedScript.id)} style={{width:'45%',height:40,backgroundColor:'#449ADF',borderRadius:4,justifyContent:'center'}}>
+                <Text style={{fontFamily:'Raleway-Bold',fontSize:16,color:"#FFFFFF",textAlign:'center'}}>Execute</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+    </Modal>
     <Modal isVisible={isModalVisible}>
     <View style={styles.content}>
         <View style={{width:'100%'}}>

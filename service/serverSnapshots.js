@@ -30,8 +30,12 @@ export async function deleteServerSnapshot(api_key, slug, snapshotId) {
         },
       },
     );
-    let result = await request.status;
-    request = null;
+    let result = {status: request.status};
+    if (result.status != 202) {
+      result = {status: request.status};
+    }else{
+      result = {status: request.status, headers: request.headers}
+    }
     return result;
   } catch (error) {
     console.log('Api call error');

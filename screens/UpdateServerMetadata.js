@@ -25,26 +25,32 @@ import {
 import Toast from 'react-native-toast-message';
 import {getServerBySlug, updateServerMetadata} from '../service/servers';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import DeleteIcon from '../assets/delete-icon.svg'
+import EditIcon from '../assets/edit-icon.svg'
+import BackIcon from '../assets/back-icon.svg'
+import PlusIcon from '../assets/plus-icon.svg'
+import PlayIcon from '../assets/play-icon.svg'
+import LinearGradient from 'react-native-linear-gradient';
+import { Keyboard } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 
 export default function UpdateServerMetadata({route, navigation}) {
-  const [name, setName] = React.useState();
-  const [description, setDescription] = React.useState();
-  const [notes, setNotes] = React.useState();
-  const [nextActionDate, setNextActionDate] = React.useState();
+
+  const [inputs,setInputs]=React.useState({
+    name: route.params.name,
+    description: route.params.description,
+    actionDate:new Date(route.params.nextActionDate) || new Date(),
+    notes:route.params.notes
+  })
+  const [errors, setErrors] = React.useState({});
+
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      //onBackgroundRefresh();
-      setName(route.params.name);
-      setDescription(route.params.description);
-      setNotes(route.params.notes);
-      setDate(new Date(route.params.nextActionDate) || new Date());
+      // onBackgroundRefresh();
     });
 
     setTimeout(async () => {
-      setName(route.params.name);
-      setDescription(route.params.description);
-      setNotes(route.params.notes);
-      setDate(new Date(route.params.nextActionDate) || new Date());
     }, 0);
     return unsubscribe;
   }, [route]);
@@ -54,13 +60,14 @@ export default function UpdateServerMetadata({route, navigation}) {
     let result = await updateServerMetadata(
       userToken,
       route.params.slug,
-      name,
-      description,
-      notes,
+      inputs['name'],
+      inputs['description'],
+      inputs['notes'],
       fdate,
     );
     if (result.status == 200) {
       try {
+        navigation.goBack();
         Toast.show({
           type: 'success',
           position: 'bottom',
@@ -71,9 +78,9 @@ export default function UpdateServerMetadata({route, navigation}) {
       } catch (e) {
         alert(e);
       }
-      navigation.goBack();
     } else if (result.status == 404) {
       try {
+        navigation.goBack();
         Toast.show({
           type: 'error',
           position: 'bottom',
@@ -84,7 +91,6 @@ export default function UpdateServerMetadata({route, navigation}) {
       } catch (e) {
         alert(e);
       }
-      navigation.goBack();
     }
   };
   //datepicker
@@ -103,7 +109,6 @@ export default function UpdateServerMetadata({route, navigation}) {
     const currentDate = selectedDate || date;
     setShow(Platform.OS === 'ios');
     setDate(currentDate);
-    console.log(currentDate);
     setFDate(
       new Date(currentDate.getTime() - currentDate.getTimezoneOffset() * 60000)
         .toISOString()
@@ -120,98 +125,178 @@ export default function UpdateServerMetadata({route, navigation}) {
     showMode('date');
   };
 
+  const validate = () =>{
+    Keyboard.dismiss();
+    setSubmitting(true)
+    let isValid = true;
+
+    if (!inputs.name) {
+      handleError('Server name is required', 'name');
+      isValid = false;
+    }
+
+    if (isValid) {
+      sendRequest();
+    }else{
+      setSubmitting(false)
+    }
+  }
+  const handleOnchange = (text, input) => {
+    setInputs(prevState => ({...prevState, [input]: text}));
+  };
+  const handleError = (error, input) => {
+    setErrors(prevState => ({...prevState, [input]: error}));
+  };
+  const [submitting,setSubmitting]=useState(false)
+
   return (
-    <View style={{height: Dimensions.get('window').height}}>
+    <SafeAreaView>
+      <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',padding:'8%'}}>
+      <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+        <TouchableOpacity onPress={navigation.goBack}><BackIcon height={45} width={50}/></TouchableOpacity>
+        <Text style={{color:'#00A1A1',fontFamily:'Raleway-Medium',fontSize:20,textAlign:'center'}}>Edit metadata</Text>
+        <View style={{width:50}}></View>
+      </View>
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
           justifyContent: 'space-between',
           flexDirection: 'column',
-        }}
-        style={{backgroundColor: 'white', paddingBottom: 20}}>
+        }}>
         <View style={{flex: 1, justifyContent: 'flex-start'}}>
-          <View style={styles.closebutton}>
-            <IconButton
-              icon="close"
-              color="black"
-              size={25}
-              onPress={() => navigation.goBack()}
-            />
+          <View style={{display:'flex',flexDirection:'row',marginTop:20}}>
+              <View style={{backgroundColor:'#03A84E',width:1}}></View>
+              <Text style={{fontFamily:'Raleway-Regular',fontSize:12,color:'#5F5F5F',marginStart:10}}>Changing the name field just updates the descriptive name for your Server and does not affect the unique server shortname (slug)</Text>
           </View>
-
-          <Text style={styles.titleText}>Update Server Metadata</Text>
-          <View style={{padding: 20}}>
+          <View style={{marginTop: 5}}>
             <TextInput
               mode="outlined"
-              label="Name"
-              value={name}
-              onChangeText={name => setName(name)}
+              label="Server name"
+              value={inputs['name']}
+              onChangeText={text => handleOnchange(text, 'name')}
+              selectionColor='#00A1A1'
+              dense={true}
+              outlineColor='#00A1A1'
+              activeOutlineColor='#00A1A1'
+              underlineColorAndroid="transparent"
+              underlineColor='transparent'
+              activeUnderlineColor='transparent'
               theme={{
-                colors: {
+                  colors: {
                   primary: '#00a1a1',
-                },
+                  accent: '#00a1a1',
+                  placeholder:'#00A1A1'
+                  },
               }}
-            />
+              onFocus={() => handleError(null, 'name')}
+              error={errors.name}
+              />  
+              <HelperText type="error" visible={errors.name}>
+                        {errors.name}
+                    </HelperText>  
             <TextInput
               mode="outlined"
-              label="Description"
-              value={description}
-              onChangeText={description => setDescription(description)}
+              label="What's installed here?"
+              value={inputs['description']}
+              onChangeText={text => handleOnchange(text, 'description')}
+              selectionColor='#00A1A1'
+              dense={true}
+              outlineColor='#00A1A1'
+              activeOutlineColor='#00A1A1'
+              underlineColorAndroid="transparent"
+              underlineColor='transparent'
+              activeUnderlineColor='transparent'
               theme={{
-                colors: {
+                  colors: {
                   primary: '#00a1a1',
-                },
+                  accent: '#00a1a1',
+                  placeholder:'#00A1A1'
+                  },
               }}
-            />
-            <TouchableOpacity onPress={showDatepicker}>
+              onFocus={() => handleError(null, 'description')}
+              error={errors.description}
+              /> 
+              <HelperText type="error" visible={errors.description}>
+                        {errors.description}
+                    </HelperText>
+              <View style={{display:'flex',flexDirection:'row',marginBottom:20}}>
+                <View style={{backgroundColor:'#03A84E',width:1}}></View>
+                <Text style={{fontFamily:'Raleway-Regular',fontSize:12,color:'#5F5F5F',marginStart:10}}>Here you can define a date where you need to take some action regarding this server. You can then sort your server list by this date in Metadata view on the All Servers page.</Text>
+              </View>
+              <TouchableOpacity onPress={showDatepicker}>
               <TextInput
                 mode="outlined"
                 label="Next Action Date"
-                disabled
+                editable={false}
                 value={fdate.toString()}
                 onChangeText={nextActionDate => setFDate(nextActionDate)}
+                selectionColor='#00A1A1'
+                dense={true}
+                outlineColor='#00A1A1'
+                activeOutlineColor='#00A1A1'
+                underlineColorAndroid="transparent"
+                underlineColor='transparent'
+                activeUnderlineColor='transparent'
                 theme={{
-                  colors: {
+                    colors: {
                     primary: '#00a1a1',
-                  },
+                    accent: '#00a1a1',
+                    placeholder:'#00A1A1'
+                    },
                 }}
+                onFocus={() => handleError(null, 'actionDate')}
+                error={errors.actionDate}
               />
+              <HelperText type="error" visible={errors.actionDate}>
+                        {errors.actionDate}
+                    </HelperText>
             </TouchableOpacity>
             <TextInput
               mode="outlined"
-              label="Notes"
+              label="Internal notes or comments"
               multiline
-              numberOfLines={3}
-              value={notes}
-              onChangeText={notes => setNotes(notes)}
+              numberOfLines={5}
+              value={inputs['notes']}
+              onChangeText={text => handleOnchange(text, 'notes')}
+              selectionColor='#00A1A1'
+              dense={true}
+              outlineColor='#00A1A1'
+              activeOutlineColor='#00A1A1'
+              underlineColorAndroid="transparent"
+              underlineColor='transparent'
+              activeUnderlineColor='transparent'
               theme={{
-                colors: {
+                  colors: {
                   primary: '#00a1a1',
-                },
+                  accent: '#00a1a1',
+                  placeholder:'#00A1A1'
+                  },
               }}
-              style={{paddingTop: 20}}
-            />
+              onFocus={() => handleError(null, 'notes')}
+              error={errors.notes}
+              /> 
+              <HelperText type="error" visible={errors.notes}>
+                        {errors.notes}
+                    </HelperText>
           </View>
-        </View>
-        <View
+          </View>
+          <View
           style={{
-            padding: 20,
-            width: Dimensions.get('window').width,
-            marginBottom: 20,
-            flex: 1,
-            justifyContent: 'flex-end',
+              flex: 1,
+              justifyContent: 'flex-end',
           }}>
-          <Button
-            mode="contained"
-            theme={{
-              colors: {
-                primary: '#008570',
-              },
-            }}
-            onPress={sendRequest}>
-            Update Server Metadata
-          </Button>
-        </View>
+          <TouchableOpacity onPress={validate}>
+            <LinearGradient locations={[0.29,0.80]} start={{x: 0, y: 0}} end={{x: 1, y: 0}} colors={['#00A1A1', '#03A84E']} style={{borderRadius:5}}>
+              {!submitting?
+                <Text style={{padding:15,fontFamily:'Raleway-Bold',fontSize:18,color:'white',textAlign:'center'}}>
+                  Update Data
+                </Text>:
+                <ActivityIndicator size="large" color="#ffffff" style={{padding:10}} />
+              }
+            </LinearGradient>
+          </TouchableOpacity>
+          </View>
+      </ScrollView>
         {show && (
           <DateTimePicker
             testID="dateTimePicker"
@@ -223,8 +308,8 @@ export default function UpdateServerMetadata({route, navigation}) {
             onChange={onChange}
           />
         )}
-      </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 

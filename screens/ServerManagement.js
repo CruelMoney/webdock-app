@@ -10,6 +10,7 @@ import ServerEvents from './ServerEvents';
 import ServerSnapshots from './ServerSnapshots';
 import ServerShellUsers from './ServerShellUsers';
 import ServerScripts from './ServerScripts';
+import UpdateServerMetadata from './UpdateServerMetadata';
 import Header from '../shared/header';
 import {IconButton, TextInput,Button} from 'react-native-paper';
 import {getServerBySlug, updateServerMetadata} from '../service/servers';
@@ -166,6 +167,14 @@ export function ServerManagement({route, navigation}) {
           headerShown: false
         }}
         initialParams={{slug: route.params.slug,name:route.params.name}}
+      />
+      <Stack.Screen
+        name="UpdateServerMetadata"
+        component={UpdateServerMetadata}
+        options={{
+          headerShown: false
+        }}
+        initialParams={{slug: route.params.slug,name:route.params.name,nextActionDate:route.params.nextActionDate,description:route.params.description,notes:route.params.notes}}
       />
     </Stack.Navigator>
     <Modal isVisible={isModalVisible} style={{margin:0}}>

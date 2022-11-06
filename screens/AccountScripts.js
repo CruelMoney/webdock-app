@@ -145,13 +145,16 @@ export default function AccountScripts({navigation}) {
       <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
         <TouchableOpacity onPress={navigation.goBack}><BackIcon height={45} width={50}/></TouchableOpacity>
         <Text style={{color:'#00A1A1',fontFamily:'Raleway-Medium',fontSize:20,textAlign:'center'}}>Scripts</Text>
-        <TouchableOpacity onPress={()=>navigation.navigate("CreateAccountScript")}><PlusIcon height={45} width={45}/></TouchableOpacity>
+        <View style={{width:50}}></View>
       </View>
       <FlatList
         style={{marginTop:20}}
+        showsVerticalScrollIndicator={false}
         data={scripts}
         onRefresh={() => onRefresh()}
         refreshing={isFetching}
+        ListFooterComponent={<View style={{height:60}}>
+          </View>}
         renderItem={({item}) => (
           <TouchableOpacity>
             <View>
@@ -161,6 +164,8 @@ export default function AccountScripts({navigation}) {
         )}
         keyExtractor={item => item.id}
       />
+      <TouchableOpacity onPress={()=>navigation.navigate("CreateAccountScript")} style={{position: 'absolute',right: 30,
+    bottom: 30}}><PlusIcon height={50} width={50}/></TouchableOpacity>
     </View>
     <Modal
         testID={'modal'}

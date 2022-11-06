@@ -11,11 +11,10 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
+import LinearGradient from 'react-native-linear-gradient';
 import {
   Avatar,
   Divider,
-  Modal,
   Portal,
   Text,
   Button,
@@ -24,7 +23,8 @@ import {
   Colors,
   ActivityIndicator,
 } from 'react-native-paper';
-
+import Modal from 'react-native-modal';
+import ArrowIcon from '../assets/arrow-icon.svg'
 import {getEvents} from '../service/events';
 import AsyncStorage from '@react-native-community/async-storage';
 import MenuIcon from '../assets/menu-icon.svg';
@@ -36,7 +36,8 @@ export function EventsScreen({navigation}) {
   const [events, setEvents] = useState();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-
+  const [eventDetailsModal,setEventDetailsModal] = useState(false)
+  const [eventDetails,setEventDetails] = useState(false)
   useEffect(() => {
     setTimeout(async () => {
       let userToken = null;
@@ -54,13 +55,13 @@ export function EventsScreen({navigation}) {
   }, []);
   const renderStatusIcon=(icon)=>{
     if(icon=="error"){
-      return <Icon name="info-outline" size={25} color="red" />;
+      return <Icon name="info-outline" size={14} color="red" />;
     }else if(icon=="finished"){
-      return <Icon name="done" size={25} color="green" />;
+      return <Icon name="done" size={14} color="green" />;
     }else if(icon=="waiting"){
-      return <ActivityIndicator animating={true} size={20} color={Colors.blue400}/>;
+      return <ActivityIndicator animating={true} size={10} color={Colors.blue400}/>;
     }else if(icon=="working"){
-      return <ActivityIndicator animating={true} size={20} color={Colors.blue400} />
+      return <ActivityIndicator animating={true} size={10} color={Colors.blue400} />
 
     }
     return null;
@@ -71,14 +72,22 @@ export function EventsScreen({navigation}) {
       <View style={{backgroundColor:'white',borderRadius:10}}>
         <View style={{display:'flex',padding:15,flexDirection:'row',
           alignItems:'center',justifyContent:'space-between'}}>
-          <View>
-            <View style={{display:'flex',flexDirection:'row'}}>
-              <Text style={{width:100,fontFamily:'Raleway-Regular',fontSize:12}}>{this.props.item.serverSlug}</Text>
+          <View style={{width:'90%'}}>
+            <View style={{display:'flex',flexDirection:'row',alignItems:'center'}}>
+              {renderStatusIcon(this.props.item.status)}
+              <Text style={{marginStart:5,width:100,fontFamily:'Raleway-Regular',fontSize:12}}>{this.props.item.serverSlug}</Text>
               <Text style={{fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{this.props.item.startTime}</Text>
             </View>
             <Text style={{fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{this.props.item.action}</Text>
           </View>
-          {renderStatusIcon(this.props.item.status)}
+          <View>
+          { this.props.item.status!="waiting" && this.props.item.status!="finished" && this.props.item.status!="working"?
+          <TouchableOpacity onPress={()=>{
+            setEventDetailsModal(true)
+            setEventDetails(this.props.item)
+          }}><ArrowIcon width={15} height={15}/></TouchableOpacity>
+          :null}
+          </View>
         </View>
       </View>
       )
@@ -115,6 +124,7 @@ export function EventsScreen({navigation}) {
   };
 
   return (
+    <>
     <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',paddingTop:'8%',paddingHorizontal:'8%'}}>
       <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
         <TouchableOpacity onPress={navigation.openDrawer}><MenuIcon height={45} width={28}/></TouchableOpacity>
@@ -148,7 +158,32 @@ export function EventsScreen({navigation}) {
         }}
         // ListFooterComponent={() => loadingMore && <ListFooterComponent />}
       />
-    </View>    
+      {/* Alias domains Modal */}
+    </View>   
+    <Modal
+    testID={'modal'}
+    isVisible={eventDetailsModal}
+    swipeDirection={['up', 'left', 'right', 'down']}
+    onSwipeComplete={()=>setEventDetailsModal(false)}
+    style={{justifyContent: 'flex-end',margin: 0}}>
+    <View style={{backgroundColor:'white',padding:30,borderTopStartRadius:10, borderTopEndRadius:10}}>
+      <Text style={{fontFamily:'Raleway-Medium',fontSize:18,color:'#00a1a1',marginVertical:10}}>Error details</Text>
+      <Text style={{fontFamily:'Raleway-Regular',fontSize:12}}>We are sorry but we could not complete your command. In most cases an Administrator has already been notified. In some cases you can figure out what went wrong and fix it yourself by looking at the command output below.</Text>
+      <View style={{borderColor:'#AEAEAE',borderStyle:'dashed',borderWidth:1,borderRadius:4,padding:20,marginVertical:15}}>
+            <Text style={{fontFamily:'Raleway-Regular',fontSize:10}}>{eventDetails.message}</Text>
+          </View>
+      <View style={{width:'100%',marginVertical:15,display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+        <TouchableOpacity style={{width:"100%"}} onPress={()=>setEventDetailsModal(false)}>
+              <LinearGradient locations={[0.29,0.80]} start={{x: 0, y: 0}} end={{x: 1, y: 0}} colors={['#00A1A1', '#03A84E']} style={{borderRadius:5}}>
+                  <Text style={{padding:15,fontFamily:'Raleway-Bold',fontSize:18,color:'white',textAlign:'center'}}>
+                    Okay, thanks
+                  </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+      </View>
+    </View>
+    </Modal> 
+    </>
   );
 }
 const styles = StyleSheet.create({
