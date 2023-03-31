@@ -162,6 +162,8 @@ export default function CreatePublicKey({navigation}){
                     onChangeText={text => handleOnchange(text, 'key')}
                     selectionColor='#00A1A1'
                     dense={true}
+                    multiline
+                    numberOfLines={5}
                     outlineColor='#00A1A1'
                     activeOutlineColor='#00A1A1'
                     underlineColorAndroid="transparent"
@@ -200,7 +202,7 @@ export default function CreatePublicKey({navigation}){
                     justifyContent: 'flex-end',
                 }}>
                 <TouchableOpacity onPress={validate}>
-                  <LinearGradient locations={[0.29,0.80]} start={{x: 0, y: 0}} end={{x: 1, y: 0}} colors={['#00A1A1', '#03A84E']} style={{borderRadius:5}}>
+                  <LinearGradient locations={[0.29,0.80]} start={{x: 0, y: 0}} end={{x: 1, y: 0}} colors={['#00A1A1', '#03A84E']} style={{borderRadius:5,display:'flex',justifyContent:'center',alignItems:'center'}}>
                     {!submitting?
                       <Text style={{padding:15,fontFamily:'Raleway-Bold',fontSize:18,color:'white',textAlign:'center'}}>
                         Add public key

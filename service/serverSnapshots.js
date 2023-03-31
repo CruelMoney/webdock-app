@@ -33,8 +33,8 @@ export async function deleteServerSnapshot(api_key, slug, snapshotId) {
     let result = {status: request.status};
     if (result.status != 202) {
       result = {status: request.status};
-    }else{
-      result = {status: request.status, headers: request.headers}
+    } else {
+      result = {status: request.status, headers: request.headers};
     }
     return result;
   } catch (error) {

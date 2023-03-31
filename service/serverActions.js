@@ -13,8 +13,8 @@ export async function startServer(api_key, slug) {
     let result = {status: request.status};
     if (result.status != 202) {
       result = {status: request.status, response: await request.json()};
-    }else{
-      result = {status: request.status, headers: request.headers}
+    } else {
+      result = {status: request.status, headers: request.headers};
     }
 
     request = null;
@@ -37,8 +37,8 @@ export async function stopServer(api_key, slug) {
     let result = {status: request.status};
     if (result.status != 202) {
       result = {status: request.status, response: await request.json()};
-    }else{
-      result = {status: request.status, headers: request.headers}
+    } else {
+      result = {status: request.status, headers: request.headers};
     }
 
     request = null;
@@ -61,8 +61,8 @@ export async function rebootServer(api_key, slug) {
     let result = {status: request.status};
     if (result.status != 202) {
       result = {status: request.status, response: await request.json()};
-    }else{
-      result = {status: request.status, headers: request.headers}
+    } else {
+      result = {status: request.status, headers: request.headers};
     }
 
     request = null;
@@ -89,8 +89,8 @@ export async function suspendServer(api_key, slug) {
     let result = {status: request.status};
     if (result.status != 202) {
       result = {status: request.status, response: await request.json()};
-    }else{
-      result = {status: request.status, headers: request.headers}
+    } else {
+      result = {status: request.status, headers: request.headers};
     }
     request = null;
     return result;
@@ -99,7 +99,7 @@ export async function suspendServer(api_key, slug) {
     alert(error.message);
   }
 }
-export async function restoreFromSnapshot(api_key, slug,snapshot_Id) {
+export async function restoreFromSnapshot(api_key, slug, snapshot_Id) {
   try {
     let request = await fetch(
       api_url + 'servers/' + slug + '/actions/restore',
@@ -111,15 +111,15 @@ export async function restoreFromSnapshot(api_key, slug,snapshot_Id) {
           Authorization: 'Bearer ' + api_key,
         },
         body: JSON.stringify({
-          snapshotId:snapshot_Id
+          snapshotId: snapshot_Id,
         }),
       },
     );
     let result = {status: request.status};
     if (result.status != 202) {
       result = {status: request.status, response: await request.json()};
-    }else{
-      result = {status: request.status, headers: request.headers}
+    } else {
+      result = {status: request.status, headers: request.headers};
     }
     request = null;
     return result;
@@ -128,7 +128,7 @@ export async function restoreFromSnapshot(api_key, slug,snapshot_Id) {
     alert(error.message);
   }
 }
-export async function createSnapshotForServer(api_key, slug,name) {
+export async function createSnapshotForServer(api_key, slug, snapshotname) {
   try {
     let request = await fetch(
       api_url + 'servers/' + slug + '/actions/snapshot',
@@ -140,7 +140,7 @@ export async function createSnapshotForServer(api_key, slug,name) {
           Authorization: 'Bearer ' + api_key,
         },
         body: JSON.stringify({
-          name:name
+          name: snapshotname,
         }),
       },
     );
@@ -155,7 +155,7 @@ export async function createSnapshotForServer(api_key, slug,name) {
     alert(error.message);
   }
 }
-export async function dryRunForServerProfileChange(api_key, slug,profileSlug) {
+export async function dryRunForServerProfileChange(api_key, slug, profileSlug) {
   try {
     let request = await fetch(
       api_url + 'servers/' + slug + '/actions/resize/dryrun',
@@ -167,7 +167,7 @@ export async function dryRunForServerProfileChange(api_key, slug,profileSlug) {
           Authorization: 'Bearer ' + api_key,
         },
         body: JSON.stringify({
-          profileSlug:profileSlug
+          profileSlug: profileSlug,
         }),
       },
     );
@@ -179,22 +179,19 @@ export async function dryRunForServerProfileChange(api_key, slug,profileSlug) {
     alert(error.message);
   }
 }
-export async function changeServerProfile(api_key, slug,profileSlug) {
+export async function changeServerProfile(api_key, slug, profileSlug) {
   try {
-    let request = await fetch(
-      api_url + 'servers/' + slug + '/actions/resize',
-      {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + api_key,
-        },
-        body: JSON.stringify({
-          profileSlug:profileSlug
-        }),
+    let request = await fetch(api_url + 'servers/' + slug + '/actions/resize', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + api_key,
       },
-    );
+      body: JSON.stringify({
+        profileSlug: profileSlug,
+      }),
+    });
     let result = {status: request.status};
     if (result.status != 202) {
       result = {status: request.status, response: await request.json()};
@@ -206,4 +203,3 @@ export async function changeServerProfile(api_key, slug,profileSlug) {
     alert(error.message);
   }
 }
-

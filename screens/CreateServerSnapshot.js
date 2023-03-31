@@ -20,11 +20,10 @@ import LinearGradient from 'react-native-linear-gradient';
 import {ActivityIndicator} from 'react-native';
 import {Keyboard} from 'react-native';
 import GradientButton from '../components/GradientButton';
-export default function CreateAccountScript({navigation}) {
+import {createSnapshotForServer} from '../service/serverActions';
+export default function CreateServerSnapshot({route, navigation}) {
   const [inputs, setInputs] = React.useState({
     name: '',
-    filename: '',
-    content: '',
   });
   const [errors, setErrors] = React.useState({});
   useEffect(() => {
@@ -35,18 +34,17 @@ export default function CreateAccountScript({navigation}) {
   const sendRequest = async () => {
     let userToken = null;
     userToken = await AsyncStorage.getItem('userToken');
-    let result = await postAccountScripts(
+    let result = await createSnapshotForServer(
       userToken,
+      route.params.slug,
       inputs.name,
-      inputs.filename,
-      inputs.content,
     );
-    if (result.status == 201) {
+    if (result.status == 202) {
       try {
         Toast.show({
           type: 'success',
           position: 'bottom',
-          text1: 'The newly created account script',
+          text1: 'Snapshot creation initiated',
           visibilityTime: 4000,
           autoHide: true,
         });
@@ -75,17 +73,7 @@ export default function CreateAccountScript({navigation}) {
     let isValid = true;
 
     if (!inputs.name) {
-      handleError('Script name is required', 'name');
-      isValid = false;
-    }
-
-    if (!inputs.filename) {
-      handleError('Script filename is required', 'filename');
-      isValid = false;
-    }
-
-    if (!inputs.content) {
-      handleError('File content is required', 'content');
+      handleError('Snapshot name is required', 'name');
       isValid = false;
     }
 
@@ -102,7 +90,6 @@ export default function CreateAccountScript({navigation}) {
     setErrors(prevState => ({...prevState, [input]: error}));
   };
   const [submitting, setSubmitting] = useState(false);
-
   return (
     <View
       width="100%"
@@ -124,7 +111,7 @@ export default function CreateAccountScript({navigation}) {
             fontFamily: 'Raleway-Medium',
             fontSize: 20,
           }}>
-          Add script
+          Create new snapshot
         </Text>
         <View style={{width: 50}}></View>
       </View>
@@ -138,7 +125,7 @@ export default function CreateAccountScript({navigation}) {
           <View style={{marginTop: 25}}>
             <TextInput
               mode="outlined"
-              label="Descriptive name"
+              label="Snapshot name"
               value={inputs['name']}
               onChangeText={text => handleOnchange(text, 'name')}
               selectionColor="#00A1A1"
@@ -161,58 +148,6 @@ export default function CreateAccountScript({navigation}) {
             <HelperText type="error" visible={errors.name}>
               {errors.name}
             </HelperText>
-            <TextInput
-              mode="outlined"
-              label="Filename"
-              value={inputs['filename']}
-              onChangeText={text => handleOnchange(text, 'filename')}
-              selectionColor="#00A1A1"
-              dense={true}
-              outlineColor="#00A1A1"
-              activeOutlineColor="#00A1A1"
-              underlineColorAndroid="transparent"
-              underlineColor="transparent"
-              activeUnderlineColor="transparent"
-              theme={{
-                colors: {
-                  primary: '#00a1a1',
-                  accent: '#00a1a1',
-                  placeholder: '#00A1A1',
-                },
-              }}
-              onFocus={() => handleError(null, 'filename')}
-              error={errors.filename}
-            />
-            <HelperText type="error" visible={errors.filename}>
-              {errors.filename}
-            </HelperText>
-            <TextInput
-              mode="outlined"
-              label="File contents"
-              multiline
-              numberOfLines={10}
-              value={inputs['content']}
-              onChangeText={text => handleOnchange(text, 'content')}
-              selectionColor="#00A1A1"
-              dense={true}
-              outlineColor="#00A1A1"
-              activeOutlineColor="#00A1A1"
-              underlineColorAndroid="transparent"
-              underlineColor="transparent"
-              activeUnderlineColor="transparent"
-              theme={{
-                colors: {
-                  primary: '#00a1a1',
-                  accent: '#00a1a1',
-                  placeholder: '#00A1A1',
-                },
-              }}
-              onFocus={() => handleError(null, 'content')}
-              error={errors.content}
-            />
-            <HelperText type="error" visible={errors.content}>
-              {errors.content}
-            </HelperText>
           </View>
           <View style={{display: 'flex', flexDirection: 'row', marginTop: 20}}>
             <View style={{backgroundColor: '#03A84E', width: 1}}></View>
@@ -223,8 +158,10 @@ export default function CreateAccountScript({navigation}) {
                 color: '#5F5F5F',
                 marginStart: 10,
               }}>
-              This will add a globally available File or Script to your account
-              which you can deploy to any server.
+              Webdock Snapshots are easy to use, reliable and redundant on- and
+              off-site backups for your Webdock server. Webdock performs backups
+              without causing any interruption of your running system. We
+              provide 8 backup slots in total.
             </Text>
           </View>
         </View>
@@ -234,28 +171,52 @@ export default function CreateAccountScript({navigation}) {
             justifyContent: 'flex-end',
           }}>
           <TouchableOpacity onPress={validate}>
-            <GradientButton text="Add script" submitting={submitting} />
+            <GradientButton text="Create Snapshot" submitting={submitting} />
             {/* <LinearGradient locations={[0.29,0.80]} start={{x: 0, y: 0}} end={{x: 1, y: 0}} colors={['#00A1A1', '#03A84E']} style={{borderRadius:5}}>
-              {!submitting?
-                <Text style={{padding:15,fontFamily:'Raleway-Bold',fontSize:18,color:'white',textAlign:'center'}}>
-                  Add script
-                </Text>:
-                <ActivityIndicator size="large" color="#ffffff" style={{padding:10}} />
-              }
-            </LinearGradient> */}
+            {!submitting?
+              <Text style={{padding:15,fontFamily:'Raleway-Bold',fontSize:18,color:'white',textAlign:'center'}}>
+                Add script
+              </Text>:
+              <ActivityIndicator size="large" color="#ffffff" style={{padding:10}} />
+            }
+          </LinearGradient> */}
           </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   closebutton: {
     alignItems: 'flex-end',
   },
   titleText: {
     fontSize: 20,
+    textAlign: 'center',
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
     textAlign: 'center',
   },
 });

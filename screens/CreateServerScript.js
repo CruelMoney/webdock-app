@@ -53,7 +53,7 @@ export default function CreateServerScript({route, navigation}) {
       } catch (e) {
         alert(e);
       }
-    }, 1000);
+    }, 0);
 
     return unsubscribe;
   }, [navigation]);

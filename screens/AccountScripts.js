@@ -34,10 +34,10 @@ import {
 } from '../service/accountScripts';
 import Toast from 'react-native-toast-message';
 import Modal from 'react-native-modal';
-import DeleteIcon from '../assets/delete-icon.svg'
-import EditIcon from '../assets/edit-icon.svg'
-import BackIcon from '../assets/back-icon.svg'
-import PlusIcon from '../assets/plus-icon.svg'
+import DeleteIcon from '../assets/delete-icon.svg';
+import EditIcon from '../assets/edit-icon.svg';
+import BackIcon from '../assets/back-icon.svg';
+import PlusIcon from '../assets/plus-icon.svg';
 export default function AccountScripts({navigation}) {
   const [scripts, setScripts] = useState();
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function AccountScripts({navigation}) {
       } catch (e) {
         alert(e);
       }
-    }, 1000);
+    }, 0);
     return unsubscribe;
   }, [navigation]);
 
@@ -67,7 +67,7 @@ export default function AccountScripts({navigation}) {
     if (result == 200) {
       onBackgroundRefresh();
       try {
-        setIsDeleteModalVisible(false)
+        setIsDeleteModalVisible(false);
         Toast.show({
           type: 'success',
           position: 'bottom',
@@ -80,7 +80,7 @@ export default function AccountScripts({navigation}) {
       }
     } else if (result == 404) {
       try {
-        setIsDeleteModalVisible(false)
+        setIsDeleteModalVisible(false);
         Toast.show({
           type: 'error',
           position: 'bottom',
@@ -94,22 +94,47 @@ export default function AccountScripts({navigation}) {
     }
   };
   const Item = ({item}) => (
-    <View style={{backgroundColor:'white',borderRadius:10,marginBottom:10}}>
-        <View style={{display:'flex',padding:15,flexDirection:'row',
-        alignItems:'center',justifyContent:'space-between'}}>
-          <View>
-            <Text style={{fontFamily:'Raleway-Regular',fontSize:12}}>{item.name}</Text>
-            <View style={{display:'flex',flexDirection:'row'}}>
-              <Text style={{width:100,fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{item.filename}</Text>
-            </View>
-          </View><View style={{display:'flex',flexDirection:'row'}}>
-          <TouchableOpacity onPress={()=>navigation.navigate("EditAccountScript",item)}><EditIcon width={25} height={25} /></TouchableOpacity>
-            <View style={{width:10}}></View>
-                      <TouchableOpacity onPress={()=>{setIsDeleteModalVisible(true) 
-            setSelectedScript(item)}}><DeleteIcon width={25} height={25}/></TouchableOpacity>
+    <View
+      style={{backgroundColor: 'white', borderRadius: 10, marginBottom: 10}}>
+      <View
+        style={{
+          display: 'flex',
+          padding: 15,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+        <View style={{width: '75%'}}>
+          <Text style={{fontFamily: 'Raleway-Regular', fontSize: 12}}>
+            {item.name}
+          </Text>
+          <View style={{display: 'flex', flexDirection: 'row'}}>
+            <Text
+              style={{
+                fontFamily: 'Raleway-Light',
+                fontSize: 10,
+                color: '#8F8F8F',
+              }}>
+              {item.filename}
+            </Text>
           </View>
         </View>
+        <View style={{display: 'flex', flexDirection: 'row', width: '20%'}}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('EditAccountScript', item)}>
+            <EditIcon width={25} height={25} />
+          </TouchableOpacity>
+          <View style={{width: 10}}></View>
+          <TouchableOpacity
+            onPress={() => {
+              setIsDeleteModalVisible(true);
+              setSelectedScript(item);
+            }}>
+            <DeleteIcon fill="#D94B4B" width={25} height={25} />
+          </TouchableOpacity>
+        </View>
       </View>
+    </View>
   );
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
@@ -137,59 +162,161 @@ export default function AccountScripts({navigation}) {
     }
   };
 
-  const [isDeleteModalVisible,setIsDeleteModalVisible]=React.useState(false)
-  const [selectedScript,setSelectedScript]=React.useState()
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = React.useState(false);
+  const [selectedScript, setSelectedScript] = React.useState();
   return (
     <>
-    <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',padding:'8%'}}>
-      <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
-        <TouchableOpacity onPress={navigation.goBack}><BackIcon height={45} width={50}/></TouchableOpacity>
-        <Text style={{color:'#00A1A1',fontFamily:'Raleway-Medium',fontSize:20,textAlign:'center'}}>Scripts</Text>
-        <View style={{width:50}}></View>
-      </View>
-      <FlatList
-        style={{marginTop:20}}
-        showsVerticalScrollIndicator={false}
-        data={scripts}
-        onRefresh={() => onRefresh()}
-        refreshing={isFetching}
-        ListFooterComponent={<View style={{height:60}}>
-          </View>}
-        renderItem={({item}) => (
-          <TouchableOpacity>
-            <View>
-              <Item item={item} />
-            </View>
+      <View
+        width="100%"
+        height="100%"
+        style={{backgroundColor: '#F4F8F8', padding: '8%'}}>
+        <View
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+          <TouchableOpacity onPress={navigation.goBack}>
+            <BackIcon height={45} width={50} />
           </TouchableOpacity>
-        )}
-        keyExtractor={item => item.id}
-      />
-      <TouchableOpacity onPress={()=>navigation.navigate("CreateAccountScript")} style={{position: 'absolute',right: 30,
-    bottom: 30}}><PlusIcon height={50} width={50}/></TouchableOpacity>
-    </View>
-    <Modal
+          <Text
+            style={{
+              color: '#00A1A1',
+              fontFamily: 'Raleway-Medium',
+              fontSize: 20,
+              textAlign: 'center',
+            }}>
+            Scripts
+          </Text>
+          <View style={{width: 50}}></View>
+        </View>
+        <FlatList
+          style={{marginTop: 20}}
+          showsVerticalScrollIndicator={false}
+          data={scripts}
+          onRefresh={() => onRefresh()}
+          refreshing={isFetching}
+          ListFooterComponent={<View style={{height: 60}}></View>}
+          renderItem={({item}) => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('EditAccountScript', item)}>
+              <View>
+                <Item item={item} />
+              </View>
+            </TouchableOpacity>
+          )}
+          keyExtractor={item => item.id}
+        />
+        <TouchableOpacity
+          onPress={() => navigation.navigate('CreateAccountScript')}
+          style={{position: 'absolute', right: 30, bottom: 30}}>
+          <PlusIcon height={50} width={50} />
+        </TouchableOpacity>
+      </View>
+      <Modal
         testID={'modal'}
         isVisible={isDeleteModalVisible}
         swipeDirection={['up', 'left', 'right', 'down']}
-        onSwipeComplete={()=>setIsDeleteModalVisible(false)}
-        style={{justifyContent: 'flex-end',margin: 0}}>
-        <View style={{backgroundColor:'white',padding:30,borderTopStartRadius:10, borderTopEndRadius:10}}>
-          <Text style={{fontFamily:'Raleway-Medium',fontSize:18,color:'#00a1a1',marginVertical:10}}>Remove {selectedScript?selectedScript.name:null}</Text>
-          <Text style={{fontFamily:'Raleway-Regular',fontSize:12,color:'#000000',marginVertical:10}}>Please confirm you want to remove this script</Text>
-          <View style={{display:'flex',flexDirection:'row',marginVertical:10}}>
-            <View style={{backgroundColor:'#03A84E',width:1}}></View>
-            <Text style={{fontFamily:'Raleway-Regular',fontSize:12,color:'#000000',marginStart:10}}>This will not remove any scripts from any of your servers. You are simply removing this script from the globally available scripts saved against your user account.</Text>
+        onSwipeComplete={() => setIsDeleteModalVisible(false)}
+        style={{justifyContent: 'flex-end', margin: 0}}>
+        <View
+          style={{
+            backgroundColor: 'white',
+            padding: 30,
+            borderTopStartRadius: 10,
+            borderTopEndRadius: 10,
+          }}>
+          <Text
+            style={{
+              fontFamily: 'Raleway-Medium',
+              fontSize: 18,
+              color: '#00a1a1',
+              marginVertical: 10,
+            }}>
+            Remove {selectedScript ? selectedScript.name : null}
+          </Text>
+          <Text
+            style={{
+              fontFamily: 'Raleway-Regular',
+              fontSize: 12,
+              color: '#000000',
+              marginVertical: 10,
+            }}>
+            Please confirm you want to remove this script
+          </Text>
+          <View
+            style={{display: 'flex', flexDirection: 'row', marginVertical: 10}}>
+            <View style={{backgroundColor: '#03A84E', width: 1}}></View>
+            <Text
+              style={{
+                fontFamily: 'Raleway-Regular',
+                fontSize: 12,
+                color: '#000000',
+                marginStart: 10,
+              }}>
+              This will not remove any scripts from any of your servers. You are
+              simply removing this script from the globally available scripts
+              saved against your user account.
+            </Text>
           </View>
-          <View style={{width:'100%',marginVertical:15,display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
-            <TouchableOpacity onPress={()=>setIsDeleteModalVisible(false)} style={{width:'45%',height:40,backgroundColor:'#00a1a1',borderRadius:4,justifyContent:'center'}}>
-                <Text style={{fontFamily:'Raleway-Bold',fontSize:16,color:"#FFFFFF",textAlign:'center'}}>Cancel</Text>
+          <View
+            style={{
+              width: '100%',
+              marginVertical: 15,
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+            <TouchableOpacity
+              onPress={() => setIsDeleteModalVisible(false)}
+              style={{
+                width: '45%',
+                height: 40,
+                backgroundColor: '#00a1a1',
+                borderRadius: 4,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Raleway-Bold',
+                  fontSize: 16,
+                  color: '#FFFFFF',
+                  textAlign: 'center',
+                  textAlignVertical: 'center',
+                  includeFontPadding: false,
+                }}>
+                Cancel
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={()=>deleteScriptAlert(selectedScript.id)} style={{width:'45%',height:40,backgroundColor:'#D94B4B',borderRadius:4,justifyContent:'center'}}>
-                <Text style={{fontFamily:'Raleway-Bold',fontSize:16,color:"#FFFFFF",textAlign:'center'}}>Delete</Text>
+            <TouchableOpacity
+              onPress={() => deleteScriptAlert(selectedScript.id)}
+              style={{
+                width: '45%',
+                height: 40,
+                backgroundColor: '#D94B4B',
+                borderRadius: 4,
+                flexDirection: 'row',
+                justifyContent: 'center',
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Raleway-Bold',
+                  fontSize: 16,
+                  textAlignVertical: 'center',
+                  color: '#FFFFFF',
+                  textAlign: 'center',
+                  includeFontPadding: false,
+                }}>
+                Delete
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
-    </Modal>
+      </Modal>
     </>
   );
 }
@@ -226,7 +353,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.1)',
   },
   content1: {
-    width:'100%',
+    width: '100%',
     backgroundColor: 'white',
     padding: 0,
     borderRadius: 8,
@@ -235,7 +362,7 @@ const styles = StyleSheet.create({
   contentTitle: {
     fontSize: 20,
     marginBottom: 12,
-    textAlign:'center'
+    textAlign: 'center',
   },
   titleText: {
     fontSize: 20,

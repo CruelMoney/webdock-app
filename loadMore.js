@@ -1,6 +1,6 @@
 let lastItem = null;
 
-export const loadMore = (arr,qty) =>
+export const loadMore = (arr, qty) =>
   new Promise((resolve, reject) => {
     let newArr;
     const lastItemIndex = arr.indexOf(lastItem);
@@ -16,5 +16,5 @@ export const loadMore = (arr,qty) =>
     }
     setTimeout(() => {
       resolve(newArr);
-    }, 1000);
+    }, 0);
   });

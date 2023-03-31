@@ -17,7 +17,7 @@ import {
   StyleSheet,
   Text,
   useColorScheme,
-  View
+  View,
 } from 'react-native';
 import {Provider, Snackbar} from 'react-native-paper';
 import Modal from 'react-native-modal';
@@ -40,10 +40,10 @@ import {AccountRootStack} from './screens/AccountRootStack';
 import Toast from 'react-native-toast-message';
 import UpdateServerMetadata from './screens/UpdateServerMetadata';
 import CreateServerScript from './screens/CreateServerScript';
-import NetInfo from "@react-native-community/netinfo";
-import { useState } from 'react';
-import { Dashboard } from './screens/Dashboard';
-import { ServerManagement } from './screens/ServerManagement';
+import NetInfo from '@react-native-community/netinfo';
+import {useState} from 'react';
+import {Dashboard} from './screens/Dashboard';
+import {ServerManagement} from './screens/ServerManagement';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -55,7 +55,7 @@ export default function App() {
     isLoading: true,
     userToken: null,
   };
-  const [netModalIsVisible,setNetModalIsVisible]=useState();
+  const [netModalIsVisible, setNetModalIsVisible] = useState();
 
   const loginReducer = (prevState, action) => {
     switch (action.type) {
@@ -111,13 +111,13 @@ export default function App() {
   useEffect(() => {
     setTimeout(async () => {
       //setIsLoading(false);
-      NetInfo.fetch().then((status)=>{
-        if(status.isConnected){
+      NetInfo.fetch().then(status => {
+        if (status.isConnected) {
           setNetModalIsVisible(false);
-        }else{
+        } else {
           setNetModalIsVisible(true);
         }
-      })
+      });
       let userToken = null;
       try {
         userToken = await AsyncStorage.getItem('userToken');
@@ -125,20 +125,19 @@ export default function App() {
         alert(e);
       }
       dispatch({type: 'RETRIEVE_TOKEN', token: userToken});
-    }, 1000);
+    }, 0);
   }, []);
 
   if (loginState.isLoading) {
     return (
       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Image 
-          source={require('./assets/cube-anim-2x.gif')}  
-          style={{width: 100, height: 100 }}
+        <Image
+          source={require('./assets/cube-anim-2x.gif')}
+          style={{width: '80%'}}
         />
       </View>
     );
   }
-
 
   return (
     <Provider>
@@ -174,7 +173,7 @@ export default function App() {
                   name="Events"
                   component={EventsStackNavigator}
                   options={{
-                    headerShown: false
+                    headerShown: false,
                   }}
                 />
                 <Drawer.Screen
@@ -189,14 +188,14 @@ export default function App() {
           ) : (
             <RootStack />
           )}
-          <Toast ref={ref => Toast.setRef(ref)} style={{zIndex:200000}}/>
+          <Toast ref={ref => Toast.setRef(ref)} style={{zIndex: 200000}} />
         </NavigationContainer>
-        <Toast ref={ref => Toast.setRef(ref)} style={{zIndex:200000}} />
+        <Toast ref={ref => Toast.setRef(ref)} style={{zIndex: 200000}} />
       </AuthContext.Provider>
       <Modal isVisible={netModalIsVisible}>
-            <View>
-              <Text>No internet</Text>
-            </View>
+        <View>
+          <Text>No internet</Text>
+        </View>
       </Modal>
     </Provider>
   );
