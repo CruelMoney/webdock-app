@@ -385,7 +385,7 @@ export default function ServerOverview({route, navigation}) {
     UAH: '₴', // Ukrainian Hryvnia
     VND: '₫', // Vietnamese Dong
   };
-  const [isModalVisible, setModalVisible] = useState();
+  const [isModalVisible, setModalVisible] = useState(false);
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
@@ -743,11 +743,11 @@ export default function ServerOverview({route, navigation}) {
       icon: <EventsIcon width={19} height={19} color="#00a1a1" />,
       navigate: 'Events',
     },
-    {
-      label: 'Utilization',
-      icon: <UtilizationIcon width={19} height={19} color="#00a1a1" />,
-      navigate: 'Utilization',
-    },
+    // {
+    //   label: 'Utilization',
+    //   icon: <UtilizationIcon width={19} height={19} color="#00a1a1" />,
+    //   navigate: 'Utilization',
+    // },
     {
       label: 'Snapshots',
       icon: <SnapshotIcon width={19} height={19} color="#00a1a1" />,
@@ -1147,6 +1147,7 @@ export default function ServerOverview({route, navigation}) {
                         .map(item => {
                           return (
                             <View
+                              key={item.id}
                               style={{
                                 display: 'flex',
                                 flexDirection: 'row',
@@ -1178,12 +1179,17 @@ export default function ServerOverview({route, navigation}) {
           <View>
             <View
               style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'row',
                 marginTop: 1,
                 backgroundColor: 'white',
               }}>
               <View
                 style={{
                   display: 'flex',
+                  width: '90%',
                   padding: 15,
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -1206,6 +1212,13 @@ export default function ServerOverview({route, navigation}) {
                       : null}
                   </Text>
                 </View>
+              </View>
+              <View
+                style={{display: 'flex', flexDirection: 'row', width: '10%'}}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('ChangeProfile')}>
+                  <EditIcon width={25} height={25} />
+                </TouchableOpacity>
               </View>
             </View>
           </View>
@@ -1362,6 +1375,7 @@ export default function ServerOverview({route, navigation}) {
           <View style={{width: '100%', height: 20}}></View>
         </ScrollView>
       </View>
+      {/* {ChangeProfile} */}
       <Modal isVisible={isModalVisible} style={{margin: 0}}>
         <ScrollView
           contentContainerStyle={{
@@ -1430,7 +1444,7 @@ export default function ServerOverview({route, navigation}) {
 
                       {itemsCharge
                         ? itemsCharge.map(item => (
-                            <DataTable.Row>
+                            <DataTable.Row key={item.text}>
                               <DataTable.Cell>{item.text}</DataTable.Cell>
                               <DataTable.Cell numeric>
                                 {item.price.amount / 100 +

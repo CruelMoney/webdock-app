@@ -29,7 +29,6 @@ import {
   Paragraph,
   Menu,
 } from 'react-native-paper';
-import RNPickerSelect from 'react-native-picker-select';
 import {Avatar, Divider} from 'react-native-paper';
 import {getServers, provisionAServer} from '../service/servers';
 import {AuthContext} from '../components/context';
@@ -52,6 +51,7 @@ import SearchIcon from '../assets/search-icon.svg';
 import PowerIcon from '../assets/power-icon.svg';
 import DropdownIcon from '../assets/dropdown-icon.svg';
 import ArrowIcon from '../assets/arrow-icon.svg';
+import LoadingList from '../components/LoadingList';
 export function HomeScreen({navigation}) {
   const [servers, setServers] = useState();
   const [locations, setLocations] = useState();
@@ -59,6 +59,7 @@ export function HomeScreen({navigation}) {
   const [images, setImages] = useState();
   const [snapshots, setSnapshots] = useState();
   useEffect(() => {
+    setAPIBusy(true);
     const unsubscribe = navigation.addListener('focus', () => {
       onBackgroundRefresh();
     });
@@ -111,8 +112,10 @@ export function HomeScreen({navigation}) {
         alert(e);
       }
     }, 0);
+    setAPIBusy(false);
   }, [navigation]);
   useEffect(() => {
+    setAPIBusy(true);
     setTimeout(async () => {
       let userToken = null;
       try {
@@ -128,8 +131,10 @@ export function HomeScreen({navigation}) {
         alert(e);
       }
     }, 0);
+    setAPIBusy(false);
   }, [newServerLocation]);
   const onBackgroundRefresh = async () => {
+    setAPIBusy(true);
     let userToken = null;
     try {
       userToken = await AsyncStorage.getItem('userToken');
@@ -148,6 +153,7 @@ export function HomeScreen({navigation}) {
     } catch (e) {
       alert(e);
     }
+    setAPIBusy(false);
   };
 
   const renderStatusIcon = icon => {
@@ -211,6 +217,7 @@ export function HomeScreen({navigation}) {
   );
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
+    setAPIBusy(true);
     setIsFetching(true);
     let userToken = null;
     try {
@@ -231,6 +238,7 @@ export function HomeScreen({navigation}) {
     } catch (e) {
       alert(e);
     }
+    setAPIBusy(false);
   };
   var currency_symbols = {
     USD: '$', // US Dollar
@@ -474,6 +482,7 @@ export function HomeScreen({navigation}) {
     }
   };
   const [rerenderFlatList, setRerenderFlatList] = useState(false);
+  const [isAPIbusy, setAPIBusy] = useState(false);
   return (
     <>
       <View
@@ -572,60 +581,65 @@ export function HomeScreen({navigation}) {
             }}
           /></TouchableOpacity> */}
         </View>
-        <FlatList
-          style={{marginTop: 30}}
-          data={
-            searchQuery
-              ? searchQuery.length == 0
-                ? servers
-                : filteredServers
-              : servers
-          }
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
-          onRefresh={() => onRefresh()}
-          refreshing={isFetching}
-          ListFooterComponent={<View style={{height: 60}}></View>}
-          renderItem={({item}) => (
-            <>
-              <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate('ServerManagement', {
-                    slug: item.slug,
-                    name: item.name,
-                    description: item.description,
-                    notes: item.notes,
-                    nextActionDate: item.nextActionDate,
-                  })
-                }>
-                <View>
-                  <Item
-                    title={item.name}
-                    alias={item.aliases[0]}
-                    dc={item.location}
-                    profile={item.profile}
-                    ipv4={item.ipv4}
-                    status={item.status}
-                  />
-                </View>
-              </TouchableOpacity>
-              <View
-                style={{
-                  height: 10,
-                  width: '100%',
-                }}
-              />
-            </>
-          )}
-          extraData={rerenderFlatList}
-          keyExtractor={item => item.slug}
-        />
+        {!isAPIbusy ? (
+          <FlatList
+            style={{marginTop: 30}}
+            data={
+              searchQuery
+                ? searchQuery.length == 0
+                  ? servers
+                  : filteredServers
+                : servers
+            }
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+            onRefresh={() => onRefresh()}
+            refreshing={isFetching}
+            ListFooterComponent={<View style={{height: 60}}></View>}
+            renderItem={({item}) => (
+              <>
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('ServerManagement', {
+                      slug: item.slug,
+                      name: item.name,
+                      description: item.description,
+                      notes: item.notes,
+                      nextActionDate: item.nextActionDate,
+                    })
+                  }>
+                  <View>
+                    <Item
+                      title={item.name}
+                      alias={item.aliases[0]}
+                      dc={item.location}
+                      profile={item.profile}
+                      ipv4={item.ipv4}
+                      status={item.status}
+                    />
+                  </View>
+                </TouchableOpacity>
+                <View
+                  style={{
+                    height: 10,
+                    width: '100%',
+                  }}
+                />
+              </>
+            )}
+            extraData={rerenderFlatList}
+            keyExtractor={item => item.slug}
+          />
+        ) : (
+          <LoadingList />
+        )}
         <TouchableOpacity
           onPress={toggleModal}
-          style={{position: 'absolute', right: 30, bottom: 30}}>
+          style={{position: 'absolute', right: 20, bottom: 20}}>
           <PlusIcon height={50} width={50} />
         </TouchableOpacity>
       </View>
+
       <Modal isVisible={isModalVisible} style={{margin: 0}}>
         <ScrollView
           contentContainerStyle={{
@@ -726,26 +740,26 @@ export function HomeScreen({navigation}) {
                   ))
                 : null}
               <Text style={styles.titleText}>Image</Text>
-              {images ? (
+              {/* {images ? (
                 <RNPickerSelect
                   onValueChange={value => setNewServerImage(value)}
                   items={images}
                   style={{borderColor: 'black'}}
                 />
-              ) : null}
+              ) : null} */}
               {newServerImage === 'snapshot' ? (
                 <>
                   <Text>
                     Choose from any existing snapshot or suspended server in
                     your account{' '}
                   </Text>
-                  {snapshots ? (
+                  {/* {snapshots ? (
                     <RNPickerSelect
                       onValueChange={value => setNewServerSnapshot(value)}
                       items={snapshots}
                       style={{borderColor: 'black'}}
                     />
-                  ) : null}
+                  ) : null} */}
                 </>
               ) : null}
             </View>

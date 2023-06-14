@@ -16,33 +16,48 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {ActivityIndicator, Colors, FAB, Searchbar, IconButton,TextInput,Button, Card, Title, Paragraph, Menu} from 'react-native-paper';
-import RNPickerSelect from 'react-native-picker-select';
+import {
+  ActivityIndicator,
+  Colors,
+  FAB,
+  Searchbar,
+  IconButton,
+  TextInput,
+  Button,
+  Card,
+  Title,
+  Paragraph,
+  Menu,
+} from 'react-native-paper';
 import {Avatar, Divider} from 'react-native-paper';
 import {getServers, provisionAServer} from '../service/servers';
 import {AuthContext} from '../components/context';
 import Modal from 'react-native-modal';
 import AsyncStorage from '@react-native-community/async-storage';
-import { getImages, getLocations, getProfiles } from '../service/serverConfiguration';
-import { SvgUri, SvgXml } from 'react-native-svg';
+import {
+  getImages,
+  getLocations,
+  getProfiles,
+} from '../service/serverConfiguration';
+import {SvgUri, SvgXml} from 'react-native-svg';
 import SVGCpu from '../assets/icon-cpu.svg';
 import SVGRam from '../assets/icon-ram2.svg';
 import SVGStorage from '../assets/icon-storage.svg';
 import IconOcticons from 'react-native-vector-icons/Octicons';
-import { getServerSnapshots } from '../service/serverSnapshots';
-import MenuIcon from '../assets/menu-icon.svg'
-import PlusIcon from '../assets/plus-icon.svg'
-import SearchIcon from '../assets/search-icon.svg'
-import PowerIcon from '../assets/power-icon.svg'
+import {getServerSnapshots} from '../service/serverSnapshots';
+import MenuIcon from '../assets/menu-icon.svg';
+import PlusIcon from '../assets/plus-icon.svg';
+import SearchIcon from '../assets/search-icon.svg';
+import PowerIcon from '../assets/power-icon.svg';
 import DropdownIcon from '../assets/dropdown-icon.svg';
 import ArrowIcon from '../assets/arrow-icon.svg';
-import { getEventsPerPage } from '../service/events';
+import {getEventsPerPage} from '../service/events';
 
 export function Dashboard({navigation}) {
   const [servers, setServers] = useState();
   const [events, setEvents] = useState();
-  const [profiles,setProfiles]=useState([]);
-  const [locations,setLocations]=useState();
+  const [profiles, setProfiles] = useState([]);
+  const [locations, setLocations] = useState();
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       onBackgroundRefresh();
@@ -52,14 +67,14 @@ export function Dashboard({navigation}) {
       try {
         userToken = await AsyncStorage.getItem('userToken');
         getLocations(userToken).then(data => {
-          setLocations(data)
+          setLocations(data);
         });
-        locations?.map(item=>{
-          getProfiles(userToken,item.id).then(datas => {
+        locations?.map(item => {
+          getProfiles(userToken, item.id).then(datas => {
             setProfiles(prevState => [...prevState, ...datas]);
-            console.log(prevState => [...prevState, ...datas])
-          })
-        })
+            console.log(prevState => [...prevState, ...datas]);
+          });
+        });
         getServers(userToken).then(data => {
           const sorter = (a, b) => {
             var dA = a.date.split(' ');
@@ -69,11 +84,11 @@ export function Dashboard({navigation}) {
 
             return dateB - dateA;
           };
-          setServers((data.sort(sorter)).slice(0,4));
+          setServers(data.sort(sorter).slice(0, 4));
         });
         userToken = await AsyncStorage.getItem('userToken');
-        getEventsPerPage(userToken,5).then(data => {
-            setEvents(data.slice(0,3));
+        getEventsPerPage(userToken, 5).then(data => {
+          setEvents(data.slice(0, 3));
         });
       } catch (e) {
         alert(e);
@@ -95,78 +110,145 @@ export function Dashboard({navigation}) {
           return dateB - dateA;
         };
 
-        setServers((data.sort(sorter)).slice(0,4));
+        setServers(data.sort(sorter).slice(0, 4));
       });
-      getEventsPerPage(userToken,5).then(data => {
-        setEvents(data.slice(0,3));
-        });
+      getEventsPerPage(userToken, 5).then(data => {
+        setEvents(data.slice(0, 3));
+      });
     } catch (e) {
       alert(e);
     }
   };
-  const renderEventStatusIcon=(icon)=>{
-    if(icon=="error"){
+  const renderEventStatusIcon = icon => {
+    if (icon == 'error') {
       return <Icon name="info-outline" size={14} color="red" />;
-    }else if(icon=="finished"){
+    } else if (icon == 'finished') {
       return <Icon name="done" size={14} color="green" />;
-    }else if(icon=="waiting"){
-      return <ActivityIndicator animating={true} size={10} color={Colors.blue400}/>;
-    }else if(icon=="working"){
-      return <ActivityIndicator animating={true} size={10} color={Colors.blue400} />
-
+    } else if (icon == 'waiting') {
+      return (
+        <ActivityIndicator animating={true} size={10} color={Colors.blue400} />
+      );
+    } else if (icon == 'working') {
+      return (
+        <ActivityIndicator animating={true} size={10} color={Colors.blue400} />
+      );
     }
     return null;
-  }
+  };
   class EventItem extends PureComponent {
-    render(){
-      return(
-      <View style={{backgroundColor:'white',borderRadius:10}}>
-        <View style={{display:'flex',padding:15,flexDirection:'row',
-          alignItems:'center',justifyContent:'space-between'}}>
-          <View>
-            <View style={{display:'flex',flexDirection:'row',alignItems:'center'}}>
-              {renderEventStatusIcon(this.props.item.status)}
-              <Text style={{marginStart:5,width:100,fontFamily:'Raleway-Regular',fontSize:12}}>{this.props.item.serverSlug}</Text>
-              <Text style={{fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{this.props.item.startTime}</Text>
+    render() {
+      return (
+        <View style={{backgroundColor: 'white', borderRadius: 10}}>
+          <View
+            style={{
+              display: 'flex',
+              padding: 15,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+            <View>
+              <View
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}>
+                {renderEventStatusIcon(this.props.item.status)}
+                <Text
+                  style={{
+                    marginStart: 5,
+                    width: 100,
+                    fontFamily: 'Raleway-Regular',
+                    fontSize: 12,
+                  }}>
+                  {this.props.item.serverSlug}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: 'Raleway-Light',
+                    fontSize: 10,
+                    color: '#8F8F8F',
+                  }}>
+                  {this.props.item.startTime}
+                </Text>
+              </View>
+              <Text
+                style={{
+                  fontFamily: 'Raleway-Light',
+                  fontSize: 10,
+                  color: '#8F8F8F',
+                }}>
+                {this.props.item.action}
+              </Text>
             </View>
-            <Text style={{fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{this.props.item.action}</Text>
+            {this.props.item.status != 'waiting' &&
+            this.props.item.status != 'finished' &&
+            this.props.item.status != 'working' ? (
+              <ArrowIcon width={15} height={15} />
+            ) : null}
           </View>
-          { this.props.item.status!="waiting" && this.props.item.status!="finished" && this.props.item.status!="working"?
-          <ArrowIcon width={15} height={15}/>
-          :null}
         </View>
-      </View>
-      )
+      );
     }
   }
-  const renderStatusIcon=(icon)=>{
-    if(icon=="error"){
-      return <PowerIcon width={14} height={14} fill="red"/>;
-    }else if(icon=="running"){
-      return <PowerIcon width={14} height={14} fill="#4C9F5A"/>;
-    }else if(icon=="stopped"){
+  const renderStatusIcon = icon => {
+    if (icon == 'error') {
+      return <PowerIcon width={14} height={14} fill="red" />;
+    } else if (icon == 'running') {
+      return <PowerIcon width={14} height={14} fill="#4C9F5A" />;
+    } else if (icon == 'stopped') {
       return <PowerIcon width={14} height={14} fill="#E15241" />;
-    }else if(icon=="provisioning"||icon=="rebooting"||icon=="starting"||icon=="stopping"||icon=="reinstalling"){
-      return <ActivityIndicator animating={true} size={10} color={Colors.blue400}/>;
+    } else if (
+      icon == 'provisioning' ||
+      icon == 'rebooting' ||
+      icon == 'starting' ||
+      icon == 'stopping' ||
+      icon == 'reinstalling'
+    ) {
+      return (
+        <ActivityIndicator animating={true} size={10} color={Colors.blue400} />
+      );
     }
     return null;
-  }
+  };
 
-  const Item = ({title, alias, dc, profile, ipv4,status}) => (
+  const Item = ({title, alias, dc, profile, ipv4, status}) => (
     <>
-    <View style={{backgroundColor:'white',borderRadius:10}}>
-      <View style={{display:'flex',padding:15,flexDirection:'row',
-      alignItems:'center',justifyContent:'space-between'}}>
-        <View>
-          <View style={{display:'flex',flexDirection:'row',alignItems:'center'}}>
-            {renderStatusIcon(status)} 
-            <Text style={{fontFamily:'Raleway-Regular',fontSize:12}}>  {title}</Text>
+      <View style={{backgroundColor: 'white', borderRadius: 10}}>
+        <View
+          style={{
+            display: 'flex',
+            padding: 15,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+          <View>
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}>
+              {renderStatusIcon(status)}
+              <Text style={{fontFamily: 'Raleway-Regular', fontSize: 12}}>
+                {' '}
+                {title}
+              </Text>
+            </View>
+            <Text
+              style={{
+                fontFamily: 'Raleway-Light',
+                fontSize: 10,
+                color: '#8F8F8F',
+              }}>
+              {profile} · {ipv4}
+            </Text>
           </View>
-          <Text style={{fontFamily:'Raleway-Light',fontSize:10,color:'#8F8F8F'}}>{profile} · {ipv4}</Text>
+          <ArrowIcon width={15} height={15} />
         </View>
-        <ArrowIcon width={15} height={15}/>
       </View>
-    </View>
     </>
   );
   const [isFetching, setIsFetching] = useState(false);
@@ -185,7 +267,7 @@ export function Dashboard({navigation}) {
           return dateB - dateA;
         };
 
-        setServers((data.sort(sorter)).slice(0,4));
+        setServers(data.sort(sorter).slice(0, 4));
         setIsFetching(false);
       });
     } catch (e) {
@@ -195,89 +277,145 @@ export function Dashboard({navigation}) {
 
   return (
     <>
-    <SafeAreaView style={{width:'100%',height:"100%",backgroundColor:'#F4F8F8'}}>
-    <View width="100%" height="100%" style={{backgroundColor:'#F4F8F8',padding:'8%'}}>
-      <View style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
-        <TouchableOpacity onPress={navigation.openDrawer}><MenuIcon height={45} width={28}/></TouchableOpacity>
-        <Text style={{color:'#00A1A1',fontFamily:'Raleway-Medium',fontSize:20,textAlign:'center'}}>Overview</Text>
-        <View style={{width:28}}></View>
-      </View>
-      <View style={{marginTop:20,display:'flex',flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}>
-        <Text style={{fontFamily:'Raleway-Medium',fontSize:18}}>Servers</Text>
-        <TouchableOpacity onPress={()=>navigation.navigate('Servers')}>
-            <Text style={{fontFamily:'Raleway-Regular',fontSize:10,color:'#747474'}}>All Servers →</Text>
-        </TouchableOpacity>
-      </View>
-      <FlatList
-        style={{marginTop:10}}
-        data={servers}
-        scrollEnabled={false}
-        // onRefresh={() => onRefresh()}
-        // refreshing={isFetching}
-        renderItem={({item}) => (
-          <>
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate('ServerManagement', {
-                slug: item.slug,
-                name: item.name,
-                description: item.description,
-                notes: item.notes,
-                nextActionDate: item.nextActionDate,
-              })}
-            >
-            <View>
-              <Item
-                title={item.name}
-                alias={item.aliases[0]}
-                dc={item.location}
-                profile={item.profile}
-                // profile={profiles.filter(obj => {
-                //   return obj.slug === item.profile}).name}
-                ipv4={item.ipv4}
-                status={item.status}
-              />
-            </View>
-          </TouchableOpacity>
+      <SafeAreaView
+        style={{width: '100%', height: '100%', backgroundColor: '#F4F8F8'}}>
+        <View
+          width="100%"
+          height="100%"
+          style={{backgroundColor: '#F4F8F8', padding: '8%'}}>
           <View
-          style={{
-              height:10,
-              width: "100%",
-          }} />
-          </>
-        )}
-        keyExtractor={item => item.slug}
-      />
-      <View style={{marginTop:20,display:'flex',flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}>
-        <Text style={{fontFamily:'Raleway-Medium',fontSize:18}}>Events</Text>
-        <TouchableOpacity onPress={()=>navigation.navigate('Events')}>
-            <Text style={{fontFamily:'Raleway-Regular',fontSize:10,color:'#747474'}}>All Events →</Text>
-        </TouchableOpacity>
-      </View>
-      <FlatList
-        style={{marginTop:10}}
-        data={events}
-        scrollEnabled={false}
-        // onRefresh={() => onRefresh()}
-        // refreshing={isFetching}
-        keyExtractor={(item, index) => item.id}
-        renderItem={({item}) => (
-          <>
-          <TouchableOpacity item={item}>
-            <View>
-              <EventItem item={item} />
-            </View>
-          </TouchableOpacity>
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+            <TouchableOpacity onPress={navigation.openDrawer}>
+              <MenuIcon height={45} width={28} />
+            </TouchableOpacity>
+            <Text
+              style={{
+                color: '#00A1A1',
+                fontFamily: 'Raleway-Medium',
+                fontSize: 20,
+                textAlign: 'center',
+              }}>
+              Overview
+            </Text>
+            <View style={{width: 28}}></View>
+          </View>
           <View
-          style={{
-              height:10,
-              width: "100%",
-          }} />
-          </>
-        )}
-      />
-    </View>
-    </SafeAreaView>
+            style={{
+              marginTop: 20,
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+            <Text style={{fontFamily: 'Raleway-Medium', fontSize: 18}}>
+              Servers
+            </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Servers')}>
+              <Text
+                style={{
+                  fontFamily: 'Raleway-Regular',
+                  fontSize: 10,
+                  color: '#747474',
+                }}>
+                All Servers →
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            style={{marginTop: 10}}
+            data={servers}
+            scrollEnabled={false}
+            // onRefresh={() => onRefresh()}
+            // refreshing={isFetching}
+            renderItem={({item}) => (
+              <>
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('ServerManagement', {
+                      slug: item.slug,
+                      name: item.name,
+                      description: item.description,
+                      notes: item.notes,
+                      nextActionDate: item.nextActionDate,
+                      location: item.location,
+                      profile: item.profile,
+                    })
+                  }>
+                  <View>
+                    <Item
+                      title={item.name}
+                      alias={item.aliases[0]}
+                      dc={item.location}
+                      profile={item.profile}
+                      // profile={profiles.filter(obj => {
+                      //   return obj.slug === item.profile}).name}
+                      ipv4={item.ipv4}
+                      status={item.status}
+                    />
+                  </View>
+                </TouchableOpacity>
+                <View
+                  style={{
+                    height: 10,
+                    width: '100%',
+                  }}
+                />
+              </>
+            )}
+            keyExtractor={item => item.slug}
+          />
+          <View
+            style={{
+              marginTop: 20,
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+            <Text style={{fontFamily: 'Raleway-Medium', fontSize: 18}}>
+              Events
+            </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Events')}>
+              <Text
+                style={{
+                  fontFamily: 'Raleway-Regular',
+                  fontSize: 10,
+                  color: '#747474',
+                }}>
+                All Events →
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            style={{marginTop: 10}}
+            data={events}
+            scrollEnabled={false}
+            // onRefresh={() => onRefresh()}
+            // refreshing={isFetching}
+            keyExtractor={(item, index) => item.id}
+            renderItem={({item}) => (
+              <>
+                <TouchableOpacity item={item}>
+                  <View>
+                    <EventItem item={item} />
+                  </View>
+                </TouchableOpacity>
+                <View
+                  style={{
+                    height: 10,
+                    width: '100%',
+                  }}
+                />
+              </>
+            )}
+          />
+        </View>
+      </SafeAreaView>
     </>
   );
 }

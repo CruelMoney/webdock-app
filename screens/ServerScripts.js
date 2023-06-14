@@ -15,7 +15,6 @@ import {
   Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import RNPickerSelect from 'react-native-picker-select';
 
 import {
   Button,
@@ -46,7 +45,6 @@ import PlusIcon from '../assets/plus-icon.svg';
 import PlayIcon from '../assets/play-icon.svg';
 export default function ServerScripts({route, navigation}) {
   const [serverScripts, setScripts] = useState();
-  const [modifiedScripts, setModifiedScripts] = useState();
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       onBackgroundRefresh();
@@ -58,13 +56,6 @@ export default function ServerScripts({route, navigation}) {
         userToken = await AsyncStorage.getItem('userToken');
         getServerScripts(userToken, route.params.slug).then(data => {
           setScripts(data);
-        });
-        getAccountScripts(userToken).then(data => {
-          var array = [];
-          data.map(item => {
-            array.push({label: item.name, value: item.id, key: item.id});
-          });
-          setModifiedScripts(array);
         });
       } catch (e) {
         alert(e);
@@ -122,7 +113,7 @@ export default function ServerScripts({route, navigation}) {
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-        <View>
+        <View style={{width: '80%'}}>
           <Text style={{fontFamily: 'Raleway-Regular', fontSize: 12}}>
             {item.name}
           </Text>
@@ -140,27 +131,29 @@ export default function ServerScripts({route, navigation}) {
         </View>
         <View
           style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
-          <View
-            style={{
-              width: 25,
-              height: 25,
-              justifyContent: 'center',
-              alignItems: 'center',
-              backgroundColor: 'rgba(76,159,90,0.26)',
-              borderRadius: 25 / 2,
-            }}>
-            <TouchableOpacity onPress={() => setIsExecuteModalVisible(true)}>
-              <Icon name="play-arrow" size={20} color="#4C9F5A" />
+          <View style={{display: 'flex', flexDirection: 'row', width: '20%'}}>
+            <View
+              style={{
+                width: 25,
+                height: 25,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'rgba(76,159,90,0.26)',
+                borderRadius: 25 / 2,
+              }}>
+              <TouchableOpacity onPress={() => setIsExecuteModalVisible(true)}>
+                <Icon name="play-arrow" size={20} color="#4C9F5A" />
+              </TouchableOpacity>
+            </View>
+            <View style={{width: 10}}></View>
+            <TouchableOpacity
+              onPress={() => {
+                setIsDeleteModalVisible(true);
+                setSelectedScript(item);
+              }}>
+              <DeleteIcon fill="#D94B4B" width={25} height={25} />
             </TouchableOpacity>
           </View>
-          <View style={{width: 10}}></View>
-          <TouchableOpacity
-            onPress={() => {
-              setIsDeleteModalVisible(true);
-              setSelectedScript(item);
-            }}>
-            <DeleteIcon width={25} height={25} />
-          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -237,61 +230,7 @@ export default function ServerScripts({route, navigation}) {
     setModalVisible2(!isModalVisible2);
   };
   const [selectedScript, setSelectedScript] = React.useState('');
-  const [filepath, setFilepath] = React.useState('');
-  const [checkedExecutable, setCheckedExecutable] = React.useState(false);
-  const [checkedRunThisNow, setCheckedRunThisNow] = React.useState(false);
 
-  const sendRequest = async () => {
-    let userToken = null;
-    userToken = await AsyncStorage.getItem('userToken');
-    let result = await createServerScript(
-      userToken,
-      route.params.slug,
-      selectedScript,
-      filepath,
-      checkedExecutable,
-      checkedRunThisNow,
-    );
-    if (result.status == 202) {
-      try {
-        toggleModal2();
-        Toast.show({
-          type: 'success',
-          position: 'bottom',
-          text1: 'Server script deployment initiated',
-          visibilityTime: 4000,
-          autoHide: true,
-        });
-      } catch (e) {
-        alert(e);
-      }
-    } else if (result.status == 400) {
-      try {
-        Toast.show({
-          type: 'error',
-          position: 'bottom',
-          text1: result.response.message,
-          visibilityTime: 4000,
-          autoHide: true,
-        });
-      } catch (e) {
-        alert(e);
-      }
-    } else if (result.status == 404) {
-      try {
-        toggleModal2();
-        Toast.show({
-          type: 'error',
-          position: 'bottom',
-          text1: 'Server or script not found!',
-          visibilityTime: 4000,
-          autoHide: true,
-        });
-      } catch (e) {
-        alert(e);
-      }
-    }
-  };
   const [isDeleteModalVisible, setIsDeleteModalVisible] = React.useState(false);
   const [isExecuteModalVisible, setIsExecuteModalVisible] = React.useState(
     false,
@@ -341,8 +280,8 @@ export default function ServerScripts({route, navigation}) {
         />
 
         <TouchableOpacity
-          onPress={() => toggleModal2()}
-          style={{position: 'absolute', right: 30, bottom: 30}}>
+          onPress={() => navigation.navigate('CreateServerScript')}
+          style={{position: 'absolute', right: 20, bottom: 20}}>
           <PlusIcon height={50} width={50} />
         </TouchableOpacity>
       </View>
@@ -419,6 +358,7 @@ export default function ServerScripts({route, navigation}) {
                 style={{
                   fontFamily: 'Raleway-Bold',
                   fontSize: 16,
+                  includeFontPadding: false,
                   color: '#FFFFFF',
                   textAlign: 'center',
                 }}>
@@ -436,6 +376,7 @@ export default function ServerScripts({route, navigation}) {
               }}>
               <Text
                 style={{
+                  includeFontPadding: false,
                   fontFamily: 'Raleway-Bold',
                   fontSize: 16,
                   color: '#FFFFFF',
@@ -504,6 +445,7 @@ export default function ServerScripts({route, navigation}) {
                   fontSize: 16,
                   color: '#FFFFFF',
                   textAlign: 'center',
+                  includeFontPadding: false,
                 }}>
                 Cancel
               </Text>
@@ -523,6 +465,7 @@ export default function ServerScripts({route, navigation}) {
                   fontSize: 16,
                   color: '#FFFFFF',
                   textAlign: 'center',
+                  includeFontPadding: false,
                 }}>
                 Execute
               </Text>
@@ -606,119 +549,6 @@ export default function ServerScripts({route, navigation}) {
                   runScript(modalData.id);
                 }}>
                 RUN
-              </Button>
-            </View>
-          </View>
-        </View>
-      </Modal>
-      <Modal isVisible={isModalVisible2}>
-        <View style={styles.content}>
-          <View style={{width: '100%'}}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}>
-              <Text
-                style={{textAlign: 'center', paddingStart: 20, fontSize: 18}}>
-                {'Create new server script'}
-              </Text>
-
-              <View style={{flexDirection: 'row-reverse'}}>
-                <View style={styles.closebutton}>
-                  <IconButton
-                    icon="close"
-                    color="black"
-                    size={25}
-                    onPress={toggleModal2}
-                  />
-                </View>
-              </View>
-            </View>
-          </View>
-          <View style={{padding: 20}}>
-            {modifiedScripts ? (
-              <RNPickerSelect
-                style={{
-                  inputIOS: {
-                    color: 'black',
-                    paddingTop: 13,
-                    paddingHorizontal: 10,
-                    paddingBottom: 12,
-                  },
-                  inputAndroid: {
-                    color: 'black',
-                  },
-                  placeholderColor: 'black',
-                }}
-                onValueChange={value => setSelectedScript(value)}
-                items={modifiedScripts}
-              />
-            ) : (
-              <View>
-                <Text>Loading</Text>
-              </View>
-            )}
-
-            <TextInput
-              mode="outlined"
-              label="Absolute path and filename on server"
-              value={filepath}
-              onChangeText={filepath => setFilepath(filepath)}
-              theme={{
-                colors: {
-                  primary: '#00a1a1',
-                },
-              }}
-            />
-          </View>
-          <View style={{paddingLeft: 20}}>
-            <View
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}>
-              <Checkbox
-                status={checkedExecutable ? 'checked' : 'unchecked'}
-                onPress={() => {
-                  setCheckedExecutable(!checkedExecutable);
-                }}
-              />
-              <Text>Make file executable</Text>
-            </View>
-            <View
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}>
-              <Checkbox
-                status={checkedRunThisNow ? 'checked' : 'unchecked'}
-                onPress={() => {
-                  setCheckedRunThisNow(!checkedRunThisNow);
-                }}
-              />
-              <Text>Run this now</Text>
-            </View>
-          </View>
-          <View
-            style={{
-              padding: 20,
-              width: '100%',
-            }}>
-            <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
-              <Button
-                mode="contained"
-                icon="play"
-                theme={{
-                  colors: {
-                    primary: '#008570',
-                  },
-                }}
-                onPress={sendRequest}>
-                Deploy this Script
               </Button>
             </View>
           </View>

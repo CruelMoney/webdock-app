@@ -20,11 +20,16 @@ import Modal from 'react-native-modal';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {createStackNavigator} from '@react-navigation/stack';
 import CreateServerSnapshot from './CreateServerSnapshot';
+import {createServerScript} from '../service/serverScripts';
+import CreateServerScript from './CreateServerScript';
+import CreateServerShellUsers from './CreateServerShellUsers';
+import ChangeProfile from './ChangeProfile';
 
 const Stack = createStackNavigator();
 export function ServerManagement({route, navigation}) {
   useEffect(() => {
     setTimeout(() => {
+      console.log(route.params);
       navigation.setOptions({
         headerTitle: route.params.slug,
       });
@@ -184,8 +189,43 @@ export function ServerManagement({route, navigation}) {
           }}
         />
         <Stack.Screen
+          name="ChangeProfile"
+          component={ChangeProfile}
+          options={{
+            headerShown: false,
+          }}
+          initialParams={{
+            slug: route.params.slug,
+            name: route.params.name,
+            location: route.params.location,
+            profile: route.params.profile,
+          }}
+        />
+        <Stack.Screen
           name="CreateServerSnapshot"
           component={CreateServerSnapshot}
+          options={{
+            headerShown: false,
+          }}
+          initialParams={{
+            slug: route.params.slug,
+            name: route.params.name,
+          }}
+        />
+        <Stack.Screen
+          name="CreateServerScript"
+          component={CreateServerScript}
+          options={{
+            headerShown: false,
+          }}
+          initialParams={{
+            slug: route.params.slug,
+            name: route.params.name,
+          }}
+        />
+        <Stack.Screen
+          name="CreateServerShellUsers"
+          component={CreateServerShellUsers}
           options={{
             headerShown: false,
           }}

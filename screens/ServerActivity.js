@@ -27,12 +27,10 @@ export default function ServerActivity({route, navigation}) {
     return unsubscribe;
   }, [route]);
   return (
-    <View
-      width="100%"
-      height="100%"
-      style={{backgroundColor: '#F4F8F8', padding: '8%'}}>
+    <View width="100%" height="100%" style={{backgroundColor: '#F4F8F8'}}>
       <View
         style={{
+          padding: '8%',
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
@@ -53,47 +51,58 @@ export default function ServerActivity({route, navigation}) {
         <View style={{width: 50}}></View>
       </View>
       <ScrollView>
-        <Text>Memory Usage</Text>
         <LineChart
+          height={250}
+          verticalLabelRotation={125}
           data={{
             datasets: [
               {
                 data: metrics
-                  ? metrics.memory.usageSamplings.map(item => {
+                  ? metrics.memory.usageSamplings.slice(-5).map(item => {
                       return item.amount;
                     })
                   : [0],
               },
+              {
+                data: metrics
+                  ? metrics.memory.usageSamplings.slice(-5).map(item => {
+                      return item.amount + 10;
+                    })
+                  : [0],
+                strokeWidth: 2,
+              },
             ],
             labels: metrics
-              ? metrics.memory.usageSamplings.map(item => {
+              ? metrics.memory.usageSamplings.slice(-5).map(item => {
                   return item.timestamp;
                 })
               : [null],
+            legend: ['Memory In', 'Memory Out'],
           }}
-          width={Dimensions.get('window').width} // from react-native
-          height={220}
+          width={Dimensions.get('window').width - 20}
+          // height={400}
           yAxisInterval={1} // optional, defaults to 1
           chartConfig={{
-            backgroundColor: '#e26a00',
-            backgroundGradientFrom: '#fb8c00',
-            backgroundGradientTo: '#ffa726',
+            backgroundColor: '#97bbcd',
+            backgroundGradientFrom: '#ffffff',
+            backgroundGradientTo: '#ffffff',
             decimalPlaces: 0, // optional, defaults to 2dp
-            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-            labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
             style: {
               borderRadius: 16,
             },
             propsForDots: {
               r: '6',
               strokeWidth: '2',
-              stroke: '#ffa726',
+              stroke: '#97bbcd',
             },
           }}
           bezier
           style={{
-            marginVertical: 8,
             borderRadius: 16,
+            marginBottom: 25,
+            marginTop: 25,
           }}
         />
       </ScrollView>

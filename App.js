@@ -131,10 +131,7 @@ export default function App() {
   if (loginState.isLoading) {
     return (
       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Image
-          source={require('./assets/cube-anim-2x.gif')}
-          style={{width: '80%'}}
-        />
+        <Image source={require('./assets/cube-anim-3x.gif')} />
       </View>
     );
   }

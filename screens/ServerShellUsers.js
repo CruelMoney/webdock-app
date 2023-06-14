@@ -402,7 +402,7 @@ export default function ServerShellUsers({route, navigation}) {
           keyExtractor={item => item.id}
         />
         <TouchableOpacity
-          onPress={() => toggleModal2()}
+          onPress={() => navigation.navigate('CreateServerShellUsers')}
           style={{position: 'absolute', right: 30, bottom: 30}}>
           <PlusIcon height={50} width={50} />
         </TouchableOpacity>

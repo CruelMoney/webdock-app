@@ -164,6 +164,13 @@ export function DrawerContent(props) {
       <Drawer.Section style={styles.bottomDrawerSection}>
         <DrawerItem
           icon={({color, size}) => (
+            <Icon name="help" color={color} size={size} />
+          )}
+          label="Live Chat"
+          onPress={() => {}}
+        />
+        <DrawerItem
+          icon={({color, size}) => (
             <Icon name="exit-to-app" color={color} size={size} />
           )}
           label="Sign Out"

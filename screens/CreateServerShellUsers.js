@@ -18,7 +18,10 @@ import {
 } from 'react-native-paper';
 import {TextInput} from 'react-native-paper';
 import * as Yup from 'yup';
-import {postAccountPublicKeys} from '../service/accountPublicKeys';
+import {
+  getAccountPublicKeys,
+  postAccountPublicKeys,
+} from '../service/accountPublicKeys';
 import {getAccountScripts, postAccountScripts} from '../service/accountScripts';
 import Toast from 'react-native-toast-message';
 import {
@@ -30,13 +33,21 @@ import {TouchableOpacity} from 'react-native-gesture-handler';
 import GradientButton from '../components/GradientButton';
 import BackIcon from '../assets/back-icon.svg';
 import {Picker} from '@react-native-picker/picker';
+import SelectBox from 'react-native-multi-selectbox';
+import {xorBy} from 'lodash';
+import {createShellUser} from '../service/serverShellUsers';
 
-export default function CreateServerScript({route, navigation}) {
+export default function CreateServerShellUsers({route, navigation}) {
   const [inputs, setInputs] = React.useState({
-    selectedScript: '',
-    filename: '',
+    username: '',
+    password: '',
+    group: 'sudo',
+    shell: '/bin/bash',
+    publicKeys: [],
   });
-  const [modifiedScripts, setModifiedScripts] = useState([]);
+  const [K_OPTIONS, setkoptions] = useState();
+  const [publicKeys, setPublicKeys] = useState();
+  const [selectedKeys, setSelectedKeys] = useState([]);
   const [errors, setErrors] = React.useState({});
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -47,15 +58,16 @@ export default function CreateServerScript({route, navigation}) {
       let userToken = null;
       try {
         userToken = await AsyncStorage.getItem('userToken');
-        getServerScripts(userToken, route.params.slug).then(data => {
-          //setScripts(data);
-        });
-        getAccountScripts(userToken).then(data => {
-          var array = [];
-          data.map(item => {
-            array.push({label: item.name, value: item.id, key: item.id});
-          });
-          setModifiedScripts(array);
+        getAccountPublicKeys(userToken).then(data => {
+          setPublicKeys(data);
+          setkoptions(
+            data.map(item => {
+              return {
+                id: item.id,
+                item: item.name,
+              };
+            }),
+          );
         });
       } catch (e) {
         alert(e);
@@ -63,17 +75,20 @@ export default function CreateServerScript({route, navigation}) {
     }, 0);
     return unsubscribe;
   }, [route]);
-  const [checkedExecutable, setCheckedExecutable] = React.useState(false);
-  const [checkedRunThisNow, setCheckedRunThisNow] = React.useState(false);
-
   const sendRequest = async () => {
+    let keys = selectedKeys.map(s => s.id);
+    handleOnchange(keys, 'publicKeys');
+    console.log(inputs);
     let userToken = null;
     userToken = await AsyncStorage.getItem('userToken');
-    let result = await createServerScript(
+    let result = await createShellUser(
       userToken,
       route.params.slug,
-      inputs.selectedScript,
-      inputs.path,
+      inputs.username,
+      inputs.password,
+      inputs.group,
+      inputs.shell,
+      inputs.publicKeys,
     );
     if (result.status == 202) {
       try {
@@ -81,7 +96,7 @@ export default function CreateServerScript({route, navigation}) {
         Toast.show({
           type: 'success',
           position: 'bottom',
-          text1: 'Snapshot creation initiated',
+          text1: 'Shell user creation initiated',
           visibilityTime: 4000,
           autoHide: true,
         });
@@ -123,12 +138,20 @@ export default function CreateServerScript({route, navigation}) {
     setSubmitting(true);
     let isValid = true;
 
-    if (!inputs.path) {
-      handleError('Script path is required', 'path');
+    if (!inputs.username) {
+      handleError('Username is required', 'username');
       isValid = false;
     }
-    if (!inputs.selectedScript) {
-      handleError('You need to select one script!', 'selectedScript');
+    if (!inputs.password) {
+      handleError('Password is required', 'password');
+      isValid = false;
+    }
+    if (!inputs.group) {
+      handleError('Group is required', 'group');
+      isValid = false;
+    }
+    if (!inputs.shell) {
+      handleError('Shell is required', 'shell');
       isValid = false;
     }
 
@@ -144,6 +167,13 @@ export default function CreateServerScript({route, navigation}) {
   const handleError = (error, input) => {
     setErrors(prevState => ({...prevState, [input]: error}));
   };
+  function onMultiChange() {
+    return item => setSelectedTeams(xorBy(selectedTeams, [item], 'id'));
+  }
+
+  function onMultiChange2() {
+    return item => setSelectedKeys(xorBy(selectedKeys, [item], 'id'));
+  }
   const [submitting, setSubmitting] = useState(false);
   return (
     <View
@@ -166,7 +196,7 @@ export default function CreateServerScript({route, navigation}) {
             fontFamily: 'Raleway-Medium',
             fontSize: 20,
           }}>
-          Add new script
+          Create shell user
         </Text>
         <View style={{width: 50}}></View>
       </View>
@@ -178,45 +208,11 @@ export default function CreateServerScript({route, navigation}) {
         }}>
         <View style={{flex: 1, justifyContent: 'flex-start'}}>
           <View style={{marginTop: 25}}>
-            <View
-              style={{
-                height: 40,
-                borderColor: '#00A1A1',
-                color: '#00A1A1',
-                flex: 1,
-                justifyContent: 'center',
-                alignItems: 'center',
-                alignSelf: 'stretch',
-                borderWidth: 1,
-                borderRadius: 5,
-              }}>
-              <Picker
-                selectedValue={inputs['selectedScript']}
-                style={{
-                  width: '100%',
-                  color: '#00A1A1',
-                  includeFontPadding: false,
-                }}
-                onValueChange={(itemValue, itemIndex) =>
-                  handleOnchange(itemValue, 'selectedScript')
-                }>
-                {modifiedScripts.map(item => (
-                  <Picker.Item
-                    label={item.label}
-                    value={item.value}
-                    key={item.key}
-                  />
-                ))}
-              </Picker>
-            </View>
-            <HelperText type="error" visible={errors.selectedScript}>
-              {errors.selectedScript}
-            </HelperText>
             <TextInput
               mode="outlined"
-              label="Absolute path and filename on server"
-              value={inputs['path']}
-              onChangeText={text => handleOnchange(text, 'path')}
+              label="Username"
+              value={inputs['username']}
+              onChangeText={text => handleOnchange(text, 'username')}
               selectionColor="#00A1A1"
               dense={true}
               outlineColor="#00A1A1"
@@ -231,44 +227,110 @@ export default function CreateServerScript({route, navigation}) {
                   placeholder: '#00A1A1',
                 },
               }}
-              onFocus={() => handleError(null, 'path')}
-              error={errors.filename}
+              onFocus={() => handleError(null, 'username')}
+              error={errors.username}
             />
-            <HelperText type="error" visible={errors.path}>
-              {errors.path}
+            <HelperText type="error" visible={errors.username}>
+              {errors.username}
             </HelperText>
-            <View
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}>
-              <Checkbox
-                status={checkedExecutable ? 'checked' : 'unchecked'}
-                onPress={() => {
-                  setCheckedExecutable(!checkedExecutable);
+            <TextInput
+              mode="outlined"
+              label="Password"
+              value={inputs['password']}
+              onChangeText={text => handleOnchange(text, 'password')}
+              selectionColor="#00A1A1"
+              dense={true}
+              outlineColor="#00A1A1"
+              activeOutlineColor="#00A1A1"
+              underlineColorAndroid="transparent"
+              underlineColor="transparent"
+              activeUnderlineColor="transparent"
+              theme={{
+                colors: {
+                  primary: '#00a1a1',
+                  accent: '#00a1a1',
+                  placeholder: '#00A1A1',
+                },
+              }}
+              onFocus={() => handleError(null, 'password')}
+              error={errors.password}
+            />
+            <HelperText type="error" visible={errors.password}>
+              {errors.password}
+            </HelperText>
+            <TextInput
+              mode="outlined"
+              label="Group"
+              value={inputs['group']}
+              onChangeText={text => handleOnchange(text, 'group')}
+              selectionColor="#00A1A1"
+              dense={true}
+              outlineColor="#00A1A1"
+              activeOutlineColor="#00A1A1"
+              underlineColorAndroid="transparent"
+              underlineColor="transparent"
+              activeUnderlineColor="transparent"
+              theme={{
+                colors: {
+                  primary: '#00a1a1',
+                  accent: '#00a1a1',
+                  placeholder: '#00A1A1',
+                },
+              }}
+              onFocus={() => handleError(null, 'group')}
+              error={errors.group}
+            />
+            <HelperText type="error" visible={errors.group}>
+              {errors.group}
+            </HelperText>
+            <TextInput
+              mode="outlined"
+              label="Shell"
+              value={inputs['shell']}
+              onChangeText={text => handleOnchange(text, 'shell')}
+              selectionColor="#00A1A1"
+              dense={true}
+              outlineColor="#00A1A1"
+              activeOutlineColor="#00A1A1"
+              underlineColorAndroid="transparent"
+              underlineColor="transparent"
+              activeUnderlineColor="transparent"
+              theme={{
+                colors: {
+                  primary: '#00a1a1',
+                  accent: '#00a1a1',
+                  placeholder: '#00A1A1',
+                },
+              }}
+              onFocus={() => handleError(null, 'shell')}
+              error={errors.shell}
+            />
+            <HelperText type="error" visible={errors.shell}>
+              {errors.shell}
+            </HelperText>
+            <View style={{flexGrow: 1}}>
+              <SelectBox
+                list
+                label="Select public keys you want to assign to this user"
+                options={K_OPTIONS}
+                multiOptionContainerStyle={{
+                  backgroundColor: '#008570',
                 }}
-                color="#00A1A1"
-              />
-              <Text>Make file executable</Text>
-            </View>
-            <View
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}>
-              <Checkbox
-                status={checkedRunThisNow ? 'checked' : 'unchecked'}
-                onPress={() => {
-                  setCheckedRunThisNow(!checkedRunThisNow);
+                listOptionProps={{
+                  style: {maxHeight: '100%'},
                 }}
-                color="#00A1A1"
+                arrowIconColor="#008570"
+                searchIconColor="#008570"
+                toggleIconColor="#008570"
+                selectedValues={selectedKeys}
+                onMultiSelect={onMultiChange2()}
+                onTapClose={onMultiChange2()}
+                isMulti
               />
-              <Text>Run this now</Text>
             </View>
           </View>
-          <View style={{display: 'flex', flexDirection: 'row', marginTop: 20}}>
+          <View
+            style={{display: 'flex', flexDirection: 'row', marginVertical: 20}}>
             <View style={{backgroundColor: '#03A84E', width: 1}}></View>
             <Text
               style={{
@@ -281,19 +343,6 @@ export default function CreateServerScript({route, navigation}) {
               output from the script once run in your event log
             </Text>
           </View>
-          <View style={{display: 'flex', flexDirection: 'row', marginTop: 20}}>
-            <View style={{backgroundColor: '#03A84E', width: 1}}></View>
-            <Text
-              style={{
-                fontFamily: 'Raleway-Regular',
-                fontSize: 12,
-                color: '#5F5F5F',
-                marginStart: 10,
-              }}>
-              If you want to add or edit scripts, do so in your main Account
-              area
-            </Text>
-          </View>
         </View>
         <View
           style={{
@@ -301,7 +350,7 @@ export default function CreateServerScript({route, navigation}) {
             justifyContent: 'flex-end',
           }}>
           <TouchableOpacity onPress={validate}>
-            <GradientButton text="Deploy this script" submitting={submitting} />
+            <GradientButton text="Add User" submitting={submitting} />
           </TouchableOpacity>
         </View>
       </ScrollView>
