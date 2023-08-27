@@ -70,6 +70,7 @@ import UtilizationIcon from '../assets/utilization-icon.svg';
 import {getEventsByCallbackId} from '../service/events';
 import LinearGradient from 'react-native-linear-gradient';
 import EditIcon from '../assets/edit-icon.svg';
+import GradientButton from '../components/GradientButton';
 
 export default function ServerOverview({route, navigation}) {
   const [visible, setVisible] = React.useState(false);
@@ -828,21 +829,33 @@ export default function ServerOverview({route, navigation}) {
               title="EDIT METADATA"
             /> */}
             <Menu.Item
-              icon="pause"
+              icon={({color, size}) => (
+                <Icon
+                  name="pause"
+                  color={'#ffb242'} // replace with your desired color
+                  size={size}
+                />
+              )}
               onPress={() => {
                 setSuspendModal(true);
               }}
-              title="SUSPEND SERVER"
+              title="ARCHIVE SERVER"
             />
             <Menu.Item
-              icon="autorenew"
+              icon={({color, size}) => (
+                <Icon
+                  name="autorenew"
+                  color={'#449ADF'} // replace with your desired color
+                  size={size}
+                />
+              )}
               onPress={() => {
                 reinstallThisServer(server.slug);
               }}
               title="REINSTALL SERVER"
             />
-            <Divider />
-            <Menu.Item
+            {/* <Divider /> */}
+            {/* <Menu.Item
               icon={({color, size}) => (
                 <Icon
                   name="delete"
@@ -854,7 +867,7 @@ export default function ServerOverview({route, navigation}) {
                 deleteThisServer(server.slug);
               }}
               title="DELETE SERVER"
-            />
+            /> */}
           </Menu>
         </View>
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -868,7 +881,7 @@ export default function ServerOverview({route, navigation}) {
             <View
               style={{
                 marginTop: 15,
-                width: '32%',
+                width: '40%',
                 flexDirection: 'row',
                 alignItems: 'center',
                 borderRadius: 4,
@@ -879,7 +892,7 @@ export default function ServerOverview({route, navigation}) {
             <TouchableOpacity
               onPress={() => setStartModal(true)}
               style={{
-                width: '32%',
+                width: '29%',
                 alignItems: 'center',
                 flexDirection: 'row',
                 backgroundColor: 'white',
@@ -926,7 +939,7 @@ export default function ServerOverview({route, navigation}) {
             <TouchableOpacity
               onPress={() => setStopModal(true)}
               style={{
-                width: '32%',
+                width: '29%',
                 alignItems: 'center',
                 flexDirection: 'row',
                 display: server.status == 'running' ? 'flex' : 'none',
@@ -971,7 +984,7 @@ export default function ServerOverview({route, navigation}) {
             <TouchableOpacity
               onPress={() => setRestartModal(true)}
               style={{
-                width: '32%',
+                width: '29%',
                 alignItems: 'center',
                 flexDirection: 'row',
                 display: server.status == 'running' ? 'flex' : 'none',
@@ -1197,7 +1210,7 @@ export default function ServerOverview({route, navigation}) {
                 }}>
                 <View>
                   <Text style={{fontFamily: 'Raleway-Medium', fontSize: 12}}>
-                    Profiles
+                    Profile
                   </Text>
                   <Text style={{fontFamily: 'Raleway-Light', fontSize: 12}}>
                     {'[' +
@@ -1599,6 +1612,7 @@ export default function ServerOverview({route, navigation}) {
                   fontSize: 16,
                   color: '#FFFFFF',
                   textAlign: 'center',
+                  includeFontPadding: false,
                 }}>
                 Cancel
               </Text>
@@ -1618,6 +1632,7 @@ export default function ServerOverview({route, navigation}) {
                   fontSize: 16,
                   color: '#FFFFFF',
                   textAlign: 'center',
+                  includeFontPadding: false,
                 }}>
                 Start
               </Text>
@@ -1681,6 +1696,7 @@ export default function ServerOverview({route, navigation}) {
                   fontSize: 16,
                   color: '#FFFFFF',
                   textAlign: 'center',
+                  includeFontPadding: false,
                 }}>
                 Cancel
               </Text>
@@ -1700,6 +1716,7 @@ export default function ServerOverview({route, navigation}) {
                   fontSize: 16,
                   color: '#FFFFFF',
                   textAlign: 'center',
+                  includeFontPadding: false,
                 }}>
                 Stop
               </Text>
@@ -1763,6 +1780,7 @@ export default function ServerOverview({route, navigation}) {
                   fontSize: 16,
                   color: '#FFFFFF',
                   textAlign: 'center',
+                  includeFontPadding: false,
                 }}>
                 Cancel
               </Text>
@@ -1782,6 +1800,7 @@ export default function ServerOverview({route, navigation}) {
                   fontSize: 16,
                   color: '#FFFFFF',
                   textAlign: 'center',
+                  includeFontPadding: false,
                 }}>
                 Reboot
               </Text>
@@ -1893,6 +1912,7 @@ export default function ServerOverview({route, navigation}) {
                   fontSize: 16,
                   color: '#FFFFFF',
                   textAlign: 'center',
+                  includeFontPadding: false,
                 }}>
                 Cancel
               </Text>
@@ -1912,6 +1932,7 @@ export default function ServerOverview({route, navigation}) {
                   fontSize: 16,
                   color: '#FFFFFF',
                   textAlign: 'center',
+                  includeFontPadding: false,
                 }}>
                 Suspend
               </Text>
@@ -2009,7 +2030,8 @@ export default function ServerOverview({route, navigation}) {
             <TouchableOpacity
               style={{width: '100%'}}
               onPress={() => setAliasModal(false)}>
-              <LinearGradient
+              <GradientButton text={'Okay, thanks'} />
+              {/* <LinearGradient
                 locations={[0.29, 0.8]}
                 start={{x: 0, y: 0}}
                 end={{x: 1, y: 0}}
@@ -2025,7 +2047,7 @@ export default function ServerOverview({route, navigation}) {
                   }}>
                   Okay, thanks
                 </Text>
-              </LinearGradient>
+              </LinearGradient> */}
             </TouchableOpacity>
           </View>
         </View>

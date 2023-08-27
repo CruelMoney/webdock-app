@@ -44,7 +44,8 @@ import NetInfo from '@react-native-community/netinfo';
 import {useState} from 'react';
 import {Dashboard} from './screens/Dashboard';
 import {ServerManagement} from './screens/ServerManagement';
-
+import LinearGradient from 'react-native-linear-gradient';
+import SvgLogoWhite from './assets/logowhite.svg';
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 export default function App() {
@@ -130,9 +131,14 @@ export default function App() {
 
   if (loginState.isLoading) {
     return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Image source={require('./assets/cube-anim-3x.gif')} />
-      </View>
+      <LinearGradient
+        locations={[0.29, 0.8]}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 0}}
+        colors={['#00A1A1', '#03A84E']}
+        style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <SvgLogoWhite />
+      </LinearGradient>
     );
   }
 

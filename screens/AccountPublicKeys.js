@@ -259,6 +259,7 @@ export default function AccountPublicKeys({navigation}) {
                   fontFamily: 'Raleway-Bold',
                   fontSize: 16,
                   color: '#FFFFFF',
+                  includeFontPadding: false,
                 }}>
                 Cancel
               </Text>
@@ -278,6 +279,7 @@ export default function AccountPublicKeys({navigation}) {
                   fontFamily: 'Raleway-Bold',
                   fontSize: 16,
                   color: '#FFFFFF',
+                  includeFontPadding: false,
                 }}>
                 Delete
               </Text>

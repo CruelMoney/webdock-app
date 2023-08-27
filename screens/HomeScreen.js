@@ -634,8 +634,18 @@ export function HomeScreen({navigation}) {
           <LoadingList />
         )}
         <TouchableOpacity
-          onPress={toggleModal}
-          style={{position: 'absolute', right: 20, bottom: 20}}>
+          onPress={() => navigation.navigate('CreateServer')} //toggleModal
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            justifyContent: 'center',
+            alignItems: 'center',
+            right: 20,
+            bottom: 20,
+            width: 50,
+            height: 50,
+            borderRadius: 50 / 2,
+          }}>
           <PlusIcon height={50} width={50} />
         </TouchableOpacity>
       </View>

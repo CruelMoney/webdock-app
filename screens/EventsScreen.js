@@ -29,6 +29,7 @@ import {getEvents} from '../service/events';
 import AsyncStorage from '@react-native-community/async-storage';
 import MenuIcon from '../assets/menu-icon.svg';
 import {PureComponent} from 'react';
+import GradientButton from '../components/GradientButton';
 
 let stopFetchMore = true;
 
@@ -213,7 +214,15 @@ export function EventsScreen({navigation}) {
             showsVerticalScrollIndicator={false}
             renderItem={({item}) => (
               <>
-                <TouchableOpacity item={item}>
+                <TouchableOpacity
+                  disabled={
+                    !(
+                      item.status != 'waiting' &&
+                      item.status != 'finished' &&
+                      item.status != 'working'
+                    )
+                  }
+                  item={item}>
                   <View>
                     <Item item={item} />
                   </View>
@@ -291,7 +300,8 @@ export function EventsScreen({navigation}) {
             <TouchableOpacity
               style={{width: '100%'}}
               onPress={() => setEventDetailsModal(false)}>
-              <LinearGradient
+              <GradientButton text={'Okay, thanks'} />
+              {/* <LinearGradient
                 locations={[0.29, 0.8]}
                 start={{x: 0, y: 0}}
                 end={{x: 1, y: 0}}
@@ -307,7 +317,7 @@ export function EventsScreen({navigation}) {
                   }}>
                   Okay, thanks
                 </Text>
-              </LinearGradient>
+              </LinearGradient> */}
             </TouchableOpacity>
           </View>
         </View>

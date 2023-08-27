@@ -218,13 +218,22 @@ export default function ServerShellUsers({route, navigation}) {
               </Text>
             </View>
           </View>
-          <TouchableOpacity
-            onPress={() => {
-              setIsDeleteModalVisible(true);
-              setSelectedShellUser(item);
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
             }}>
-            <DeleteIcon />
-          </TouchableOpacity>
+            <EditIcon width={25} height={25} style={{marginHorizontal: 2}} />
+            {/* <TouchableOpacity
+              style={{marginHorizontal: 2}}
+              onPress={() => {
+                setIsDeleteModalVisible(true);
+                setSelectedShellUser(item);
+              }}>
+              <DeleteIcon fill="#D94B4B" width={25} height={25} />
+            </TouchableOpacity> */}
+          </View>
         </View>
       </View>
     </>
@@ -472,29 +481,55 @@ export default function ServerShellUsers({route, navigation}) {
               width: '100%',
             }}>
             <View
-              style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-              <Button
-                mode="contained"
-                icon="delete"
-                theme={{
-                  colors: {
-                    primary: '#F44336',
-                  },
-                }}
-                onPress={() => deleteShellUserAlert(modalData.id)}>
-                Delete
-              </Button>
-              <Button
-                mode="contained"
-                icon="update"
-                theme={{
-                  colors: {
-                    primary: '#008570',
-                  },
-                }}
-                onPress={() => updateShellUserPKs(modalData.id, selectedTeams)}>
-                Assign Keys
-              </Button>
+              style={{
+                width: '100%',
+                marginVertical: 15,
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <TouchableOpacity
+                onPress={() => deleteShellUserAlert(modalData.id)}
+                style={{
+                  width: '45%',
+                  height: 40,
+                  backgroundColor: '#D94B4B',
+                  borderRadius: 4,
+                  justifyContent: 'center',
+                }}>
+                <Text
+                  style={{
+                    fontFamily: 'Raleway-Bold',
+                    fontSize: 16,
+                    color: '#FFFFFF',
+                    textAlign: 'center',
+                    includeFontPadding: false,
+                  }}>
+                  Delete
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => updateShellUserPKs(modalData.id, selectedTeams)}
+                style={{
+                  width: '45%',
+                  height: 40,
+                  backgroundColor: '#00a1a1',
+                  borderRadius: 4,
+                  justifyContent: 'center',
+                }}>
+                <Text
+                  style={{
+                    fontFamily: 'Raleway-Bold',
+                    fontSize: 16,
+                    color: '#FFFFFF',
+                    textAlign: 'center',
+                    includeFontPadding: false,
+                  }}>
+                  Assign
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>

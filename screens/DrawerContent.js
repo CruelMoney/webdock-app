@@ -23,7 +23,15 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import {AuthContext} from '../components/context';
 import {getAccountInformations} from '../service/accountInformations';
 import AsyncStorage from '@react-native-community/async-storage';
-
+import ServersIcon from '../assets/servers.svg';
+import DashboardIcon from '../assets/dashboard.svg';
+import NewsIcon from '../assets/news.svg';
+import EventsIcon from '../assets/events.svg';
+import TeamIcon from '../assets/team.svg';
+import HelpIcon from '../assets/help.svg';
+import ProfileIcon from '../assets/profile.svg';
+import LogoutIcon from '../assets/logout.svg';
+import FeedbackIcon from '../assets/feedback.svg';
 export function DrawerContent(props) {
   const {signOut} = React.useContext(AuthContext);
 
@@ -85,7 +93,7 @@ export function DrawerContent(props) {
           <Drawer.Section style={styles.drawerSection}>
             <DrawerItem
               icon={({color, size}) => (
-                <Icon name="dashboard" color={color} size={size} />
+                <DashboardIcon width={size} height={size} />
               )}
               label="Overview"
               onPress={() => {
@@ -94,7 +102,7 @@ export function DrawerContent(props) {
             />
             <DrawerItem
               icon={({color, size}) => (
-                <Icon name="dns" color={color} size={size} />
+                <ServersIcon width={size} height={size} />
               )}
               label="Servers"
               onPress={() => {
@@ -103,7 +111,7 @@ export function DrawerContent(props) {
             />
             <DrawerItem
               icon={({color, size}) => (
-                <Icon name="assessment" color={color} size={size} />
+                <EventsIcon width={size} height={size} />
               )}
               label="Events"
               onPress={() => {
@@ -112,7 +120,7 @@ export function DrawerContent(props) {
             />
             <DrawerItem
               icon={({color, size}) => (
-                <Icon name="person" color={color} size={size} />
+                <ProfileIcon width={size} height={size} />
               )}
               label="Account"
               onPress={() => {
@@ -120,9 +128,7 @@ export function DrawerContent(props) {
               }}
             />
             <DrawerItem
-              icon={({color, size}) => (
-                <Icon name="live-help" color={color} size={size} />
-              )}
+              icon={({color, size}) => <HelpIcon width={size} height={size} />}
               label="Help"
               onPress={() => {
                 Linking.openURL(
@@ -131,9 +137,7 @@ export function DrawerContent(props) {
               }}
             />
             <DrawerItem
-              icon={({color, size}) => (
-                <Icon name="article" color={color} size={size} />
-              )}
+              icon={({color, size}) => <NewsIcon width={size} height={size} />}
               label="News"
               onPress={() => {
                 Linking.openURL('https://news.webdock.io');
@@ -141,7 +145,7 @@ export function DrawerContent(props) {
             />
             <DrawerItem
               icon={({color, size}) => (
-                <Icon name="feedback" color={color} size={size} />
+                <FeedbackIcon width={size} height={size} />
               )}
               label="Feedback"
               onPress={() => {
@@ -162,17 +166,15 @@ export function DrawerContent(props) {
         </View>
       </DrawerContentScrollView>
       <Drawer.Section style={styles.bottomDrawerSection}>
-        <DrawerItem
+        {/* <DrawerItem
           icon={({color, size}) => (
             <Icon name="help" color={color} size={size} />
           )}
           label="Live Chat"
           onPress={() => {}}
-        />
+        /> */}
         <DrawerItem
-          icon={({color, size}) => (
-            <Icon name="exit-to-app" color={color} size={size} />
-          )}
+          icon={({color, size}) => <LogoutIcon width={size} height={size} />}
           label="Sign Out"
           onPress={() => {
             signOut();

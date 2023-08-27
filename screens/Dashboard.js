@@ -63,36 +63,7 @@ export function Dashboard({navigation}) {
       onBackgroundRefresh();
     });
     setTimeout(async () => {
-      let userToken = null;
-      try {
-        userToken = await AsyncStorage.getItem('userToken');
-        getLocations(userToken).then(data => {
-          setLocations(data);
-        });
-        locations?.map(item => {
-          getProfiles(userToken, item.id).then(datas => {
-            setProfiles(prevState => [...prevState, ...datas]);
-            console.log(prevState => [...prevState, ...datas]);
-          });
-        });
-        getServers(userToken).then(data => {
-          const sorter = (a, b) => {
-            var dA = a.date.split(' ');
-            var dB = b.date.split(' ');
-            var dateA = Date.parse(dA[0] + 'T' + dA[1]),
-              dateB = Date.parse(dB[0] + 'T' + dB[1]);
-
-            return dateB - dateA;
-          };
-          setServers(data.sort(sorter).slice(0, 4));
-        });
-        userToken = await AsyncStorage.getItem('userToken');
-        getEventsPerPage(userToken, 5).then(data => {
-          setEvents(data.slice(0, 3));
-        });
-      } catch (e) {
-        alert(e);
-      }
+      onBackgroundRefresh();
     }, 0);
   }, [navigation]);
 

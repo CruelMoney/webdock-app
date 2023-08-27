@@ -142,6 +142,23 @@ export default function ServerSnapshots({route, navigation}) {
               flexDirection: 'row',
               justifyContent: 'space-between',
             }}>
+            {item.completed ? (
+              <TouchableOpacity
+                style={{marginHorizontal: 2}}
+                onPress={() => modalOpen(item)}>
+                <View
+                  style={{
+                    width: 25,
+                    height: 25,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(3,155,229,0.26)',
+                    borderRadius: 25 / 2,
+                  }}>
+                  <Icon name="history" size={15} color="#449ADF" />
+                </View>
+              </TouchableOpacity>
+            ) : null}
             {/* {item.completed?<TouchableOpacity onPress={()=>{
             setSelectedSnapshot(item);
             setIsDeleteModalVisible(true)}}>
@@ -158,7 +175,8 @@ export default function ServerSnapshots({route, navigation}) {
             {item.deletable ? (
               <TouchableOpacity
                 style={{
-                  width: 30,
+                  width: 25,
+                  marginHorizontal: 2,
                   justifyContent: 'center',
                   alignItems: 'center',
                 }}
@@ -166,7 +184,7 @@ export default function ServerSnapshots({route, navigation}) {
                   setSelectedSnapshot(item);
                   setIsDeleteModalVisible(true);
                 }}>
-                <DeleteIcon />
+                <DeleteIcon fill="#D94B4B" width={25} height={25} />
               </TouchableOpacity>
             ) : null}
           </View>
@@ -423,6 +441,7 @@ export default function ServerSnapshots({route, navigation}) {
                   fontSize: 16,
                   color: '#FFFFFF',
                   textAlign: 'center',
+                  includeFontPadding: false,
                 }}>
                 Cancel
               </Text>
@@ -442,6 +461,7 @@ export default function ServerSnapshots({route, navigation}) {
                   fontSize: 16,
                   color: '#FFFFFF',
                   textAlign: 'center',
+                  includeFontPadding: false,
                 }}>
                 Delete
               </Text>
@@ -563,6 +583,7 @@ export default function ServerSnapshots({route, navigation}) {
                   fontSize: 16,
                   color: '#FFFFFF',
                   textAlign: 'center',
+                  includeFontPadding: false,
                 }}>
                 Cancel
               </Text>
@@ -582,6 +603,7 @@ export default function ServerSnapshots({route, navigation}) {
                   fontSize: 16,
                   color: '#FFFFFF',
                   textAlign: 'center',
+                  includeFontPadding: false,
                 }}>
                 Restore
               </Text>

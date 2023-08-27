@@ -9,11 +9,11 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import Header from '../shared/header';
 import {IconButton, Colors, Searchbar} from 'react-native-paper';
 import SearchServers from './SearchServers';
+import CreateServer from './CreateServer';
 
 const Stack = createStackNavigator();
 
 const MainStackNavigator = ({navigation}) => {
-
   return (
     <Stack.Navigator
       initialRouteName="Servers"
@@ -26,7 +26,18 @@ const MainStackNavigator = ({navigation}) => {
           headerStyle: {
             backgroundColor: '#008570',
           },
-          headerShown: false
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="CreateServer"
+        component={CreateServer}
+        options={{
+          headerTintColor: 'white',
+          headerStyle: {
+            backgroundColor: '#008570',
+          },
+          headerShown: false,
         }}
       />
       <Stack.Screen
