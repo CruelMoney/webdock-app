@@ -99,6 +99,35 @@ export async function suspendServer(api_key, slug) {
     alert(error.message);
   }
 }
+export async function reinstallServer(api_key, slug, imageSlug) {
+  try {
+    let request = await fetch(
+      api_url + 'servers/' + slug + '/actions/reinstall',
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + api_key,
+        },
+        body: JSON.stringify({
+          imageSlug: imageSlug,
+        }),
+      },
+    );
+    let result = {status: request.status};
+    if (result.status != 202) {
+      result = {status: request.status, response: await request.json()};
+    } else {
+      result = {status: request.status, headers: request.headers};
+    }
+    request = null;
+    return result;
+  } catch (error) {
+    console.log('Api call error');
+    alert(error.message);
+  }
+}
 export async function restoreFromSnapshot(api_key, slug, snapshot_Id) {
   try {
     let request = await fetch(

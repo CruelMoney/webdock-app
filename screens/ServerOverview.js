@@ -40,6 +40,7 @@ import {
   stopServer,
   suspendServer,
   changeServerProfile,
+  reinstallServer,
 } from '../service/serverActions';
 import {
   getImages,
@@ -71,6 +72,7 @@ import {getEventsByCallbackId} from '../service/events';
 import LinearGradient from 'react-native-linear-gradient';
 import EditIcon from '../assets/edit-icon.svg';
 import GradientButton from '../components/GradientButton';
+import {Picker} from '@react-native-picker/picker';
 
 export default function ServerOverview({route, navigation}) {
   const [visible, setVisible] = React.useState(false);
@@ -317,7 +319,60 @@ export default function ServerOverview({route, navigation}) {
       }
     }
   };
+  const reinstallThisServer = async slug => {
+    let userToken = null;
 
+    userToken = await AsyncStorage.getItem('userToken');
+
+    var result = await reinstallServer(
+      userToken,
+      slug,
+      selectedImageForReinstall,
+    );
+    if (result.status == 202) {
+      onBackgroundRefresh();
+      try {
+        setReinstallModal(false);
+        // Toast.show({
+        //   type: 'success',
+        //   position: 'bottom',
+        //   text1: 'Server suspend initiated!',
+        //   visibilityTime: 4000,
+        //   autoHide: true,
+        // });
+        setCallbackId(result.headers.get('X-Callback-ID'));
+        setVisibleSnack(true);
+      } catch (e) {
+        alert(e);
+      }
+    } else if (result.status == 400) {
+      try {
+        setReinstallModal(false);
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: result.response.message,
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      } catch (e) {
+        alert(e);
+      }
+    } else if (result.status == 404) {
+      try {
+        setReinstallModal(false);
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: 'Server not found',
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      } catch (e) {
+        alert(e);
+      }
+    }
+  };
   const [locations, setLocations] = React.useState();
   const getAllLocations = async () => {
     let userToken = null;
@@ -337,6 +392,7 @@ export default function ServerOverview({route, navigation}) {
     try {
       userToken = await AsyncStorage.getItem('userToken');
       getImages(userToken).then(data => {
+        console.log(data);
         setImages(data);
       });
     } catch (e) {
@@ -770,14 +826,19 @@ export default function ServerOverview({route, navigation}) {
   const [restartModal, setRestartModal] = useState(false);
   const [stopModal, setStopModal] = useState(false);
   const [suspendModal, setSuspendModal] = useState(false);
+  const [reinstallModal, setReinstallModal] = useState(false);
   const [aliasModal, setAliasModal] = useState(false);
   const [callbackId, setCallbackId] = useState();
+  const [selectedImageForReinstall, setSelectedImageForReinstall] = useState();
 
   const [visibleSnack, setVisibleSnack] = React.useState(false);
 
   const onToggleSnackBar = () => setVisibleSnack(!visibleSnack);
 
   const onDismissSnackBar = () => setVisibleSnack(false);
+  const handleOnchange = (itemValue, item) => {
+    setSelectedImageForReinstall(itemValue);
+  };
 
   return server ? (
     <>
@@ -850,7 +911,7 @@ export default function ServerOverview({route, navigation}) {
                 />
               )}
               onPress={() => {
-                reinstallThisServer(server.slug);
+                setReinstallModal(true);
               }}
               title="REINSTALL SERVER"
             />
@@ -1229,7 +1290,14 @@ export default function ServerOverview({route, navigation}) {
               <View
                 style={{display: 'flex', flexDirection: 'row', width: '10%'}}>
                 <TouchableOpacity
-                  onPress={() => navigation.navigate('ChangeProfile')}>
+                  onPress={() =>
+                    navigation.navigate('ChangeProfile', {
+                      location: server.location,
+                      profile: profiles.filter(
+                        item => server.profile === item.slug,
+                      )[0].slug,
+                    })
+                  }>
                   <EditIcon width={25} height={25} />
                 </TouchableOpacity>
               </View>
@@ -1935,6 +2003,150 @@ export default function ServerOverview({route, navigation}) {
                   includeFontPadding: false,
                 }}>
                 Suspend
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      {/* Reinstall Server Modal */}
+      <Modal
+        testID={'modal'}
+        isVisible={reinstallModal}
+        swipeDirection={['up', 'left', 'right', 'down']}
+        onSwipeComplete={() => reinstallModal(false)}
+        style={{justifyContent: 'flex-end', margin: 0}}>
+        <View
+          style={{
+            backgroundColor: 'white',
+            padding: 30,
+            borderTopStartRadius: 10,
+            borderTopEndRadius: 10,
+          }}>
+          <Text
+            style={{
+              fontFamily: 'Raleway-Medium',
+              fontSize: 18,
+              color: '#00a1a1',
+              marginVertical: 10,
+            }}>
+            Reinstall {route.params.slug}
+          </Text>
+          <View
+            style={{display: 'flex', flexDirection: 'row', marginVertical: 10}}>
+            <View style={{backgroundColor: '#03A84E', width: 1}}></View>
+            <Text
+              style={{
+                fontFamily: 'Raleway-Regular',
+                fontSize: 12,
+                color: '#000000',
+                marginStart: 10,
+              }}>
+              Here you can re-install your server. This essentially means you
+              will be deleting your server and replacing it with a fresh image
+              of your choice. You will keep your server name and metadata,
+              server shortname (slug), monitoring rules and IP addresses.
+              Otherwise it will behave as a freshly provisioned server.
+            </Text>
+          </View>
+          <View
+            style={{display: 'flex', flexDirection: 'row', marginVertical: 10}}>
+            <View style={{backgroundColor: '#ffeb3b', width: 1}}></View>
+            <Text
+              style={{
+                fontFamily: 'Raleway-Regular',
+                fontSize: 12,
+                color: '#000000',
+                marginStart: 10,
+              }}>
+              If you install a LAMP/LEMP stack Webdock will generate new
+              credentials for your server (Database, FTP and admin Shell/SSH
+              user).
+            </Text>
+          </View>
+          <Text
+            style={{
+              fontFamily: 'Raleway-Regular',
+              fontSize: 12,
+              color: '#000000',
+              marginVertical: 10,
+            }}>
+            Please select an image to install
+          </Text>
+          <View>
+            <Picker
+              selectedValue={'sadsad0'}
+              style={{
+                width: '100%',
+                color: '#000000',
+                borderBottomColor: '#00A1A1',
+                borderBottomWidth: 1,
+              }}
+              onValueChange={(itemValue, itemIndex) =>
+                handleOnchange(itemValue, 'image')
+              }>
+              {images
+                ? images.map(item => (
+                    <Picker.Item
+                      style={{
+                        textAlign: 'left',
+                        fontFamily: 'Raleway-Regular',
+                        includeFontPadding: false,
+                      }}
+                      label={item.name}
+                      value={item.slug}
+                      key={item.slug}
+                    />
+                  ))
+                : null}
+            </Picker>
+          </View>
+          <View
+            style={{
+              width: '100%',
+              marginVertical: 15,
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+            <TouchableOpacity
+              onPress={() => setReinstallModal(false)}
+              style={{
+                width: '45%',
+                height: 40,
+                backgroundColor: '#00A1A1',
+                borderRadius: 4,
+                justifyContent: 'center',
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Raleway-Bold',
+                  fontSize: 16,
+                  color: '#FFFFFF',
+                  textAlign: 'center',
+                  includeFontPadding: false,
+                }}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => reinstallThisServer(route.params.slug)}
+              style={{
+                width: '45%',
+                height: 40,
+                backgroundColor: '#00A1A1',
+                borderRadius: 4,
+                justifyContent: 'center',
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Raleway-Bold',
+                  fontSize: 16,
+                  color: '#FFFFFF',
+                  textAlign: 'center',
+                  includeFontPadding: false,
+                }}>
+                Reinstall
               </Text>
             </TouchableOpacity>
           </View>

@@ -34,10 +34,12 @@ import LogoutIcon from '../assets/logout.svg';
 import FeedbackIcon from '../assets/feedback.svg';
 export function DrawerContent(props) {
   const {signOut} = React.useContext(AuthContext);
-
   const [account, setAccountInfo] = useState();
+  const {state, navigation} = props;
+  const activeRouteName = state.routeNames[state.index];
   useEffect(() => {
     setTimeout(async () => {
+      console.table(props);
       let userToken = null;
       try {
         userToken = await AsyncStorage.getItem('userToken');
@@ -89,13 +91,16 @@ export function DrawerContent(props) {
               </View>
             </View>
           </View>
-
+          {/* Display the active tab */}
           <Drawer.Section style={styles.drawerSection}>
             <DrawerItem
               icon={({color, size}) => (
                 <DashboardIcon width={size} height={size} />
               )}
+              activeBackgroundColor="#e0efef"
+              activeTintColor="#00A1A1"
               label="Overview"
+              focused={activeRouteName == 'Dashboard'}
               onPress={() => {
                 props.navigation.navigate('Dashboard');
               }}
@@ -104,6 +109,9 @@ export function DrawerContent(props) {
               icon={({color, size}) => (
                 <ServersIcon width={size} height={size} />
               )}
+              activeBackgroundColor="#e0efef"
+              activeTintColor="#00A1A1"
+              focused={activeRouteName == 'Servers'}
               label="Servers"
               onPress={() => {
                 props.navigation.navigate('Servers');
@@ -113,7 +121,10 @@ export function DrawerContent(props) {
               icon={({color, size}) => (
                 <EventsIcon width={size} height={size} />
               )}
+              activeBackgroundColor="#e0efef"
+              activeTintColor="#00A1A1"
               label="Events"
+              focused={activeRouteName == 'Events'}
               onPress={() => {
                 props.navigation.navigate('Events');
               }}
@@ -122,7 +133,10 @@ export function DrawerContent(props) {
               icon={({color, size}) => (
                 <ProfileIcon width={size} height={size} />
               )}
+              activeBackgroundColor="#e0efef"
+              activeTintColor="#00A1A1"
               label="Account"
+              focused={activeRouteName == 'Account'}
               onPress={() => {
                 props.navigation.navigate('Account');
               }}

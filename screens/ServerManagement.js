@@ -29,7 +29,6 @@ const Stack = createStackNavigator();
 export function ServerManagement({route, navigation}) {
   useEffect(() => {
     setTimeout(() => {
-      console.log(route.params);
       navigation.setOptions({
         headerTitle: route.params.slug,
       });

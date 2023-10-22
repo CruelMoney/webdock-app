@@ -52,12 +52,12 @@ import PowerIcon from '../assets/power-icon.svg';
 import DropdownIcon from '../assets/dropdown-icon.svg';
 import ArrowIcon from '../assets/arrow-icon.svg';
 import {getEventsPerPage} from '../service/events';
+import EmptyList from '../components/EmptyList';
 
 export function Dashboard({navigation}) {
   const [servers, setServers] = useState();
   const [events, setEvents] = useState();
-  const [profiles, setProfiles] = useState([]);
-  const [locations, setLocations] = useState();
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       onBackgroundRefresh();
@@ -82,12 +82,15 @@ export function Dashboard({navigation}) {
         };
 
         setServers(data.sort(sorter).slice(0, 4));
+        setLoading(false);
       });
       getEventsPerPage(userToken, 5).then(data => {
         setEvents(data.slice(0, 3));
+        setLoading(false);
       });
     } catch (e) {
       alert(e);
+      setLoading(false);
     }
   };
   const renderEventStatusIcon = icon => {
@@ -275,116 +278,180 @@ export function Dashboard({navigation}) {
             </Text>
             <View style={{width: 28}}></View>
           </View>
-          <View
-            style={{
-              marginTop: 20,
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-            <Text style={{fontFamily: 'Raleway-Medium', fontSize: 18}}>
-              Servers
-            </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Servers')}>
-              <Text
-                style={{
-                  fontFamily: 'Raleway-Regular',
-                  fontSize: 10,
-                  color: '#747474',
-                }}>
-                All Servers →
+          <View style={{height: '50%'}}>
+            <View
+              style={{
+                marginTop: 20,
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+              <Text style={{fontFamily: 'Raleway-Medium', fontSize: 18}}>
+                Servers
               </Text>
-            </TouchableOpacity>
-          </View>
-          <FlatList
-            style={{marginTop: 10}}
-            data={servers}
-            scrollEnabled={false}
-            // onRefresh={() => onRefresh()}
-            // refreshing={isFetching}
-            renderItem={({item}) => (
-              <>
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate('ServerManagement', {
-                      slug: item.slug,
-                      name: item.name,
-                      description: item.description,
-                      notes: item.notes,
-                      nextActionDate: item.nextActionDate,
-                      location: item.location,
-                      profile: item.profile,
-                    })
-                  }>
-                  <View>
-                    <Item
-                      title={item.name}
-                      alias={item.aliases[0]}
-                      dc={item.location}
-                      profile={item.profile}
-                      // profile={profiles.filter(obj => {
-                      //   return obj.slug === item.profile}).name}
-                      ipv4={item.ipv4}
-                      status={item.status}
+              <TouchableOpacity onPress={() => navigation.navigate('Servers')}>
+                <Text
+                  style={{
+                    fontFamily: 'Raleway-Regular',
+                    fontSize: 10,
+                    color: '#747474',
+                  }}>
+                  All Servers →
+                </Text>
+              </TouchableOpacity>
+            </View>
+            {loading ? (
+              <View
+                style={{
+                  height: '80%',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <ActivityIndicator size="small" color="#00A1A1" />
+              </View>
+            ) : (
+              <FlatList
+                style={{marginTop: 10}}
+                data={servers}
+                scrollEnabled={false}
+                // onRefresh={() => onRefresh()}
+                // refreshing={isFetching}
+                renderItem={({item}) => (
+                  <>
+                    <TouchableOpacity
+                      key={item.slug}
+                      onPress={() => {
+                        navigation.setParams({
+                          slug: item.slug,
+                          name: item.name,
+                          description: item.description,
+                          notes: item.notes,
+                          nextActionDate: item.nextActionDate,
+                          location: item.location,
+                          profile: item.profile,
+                        });
+                        navigation.navigate('ServerManagement', {
+                          slug: item.slug,
+                          name: item.name,
+                          description: item.description,
+                          notes: item.notes,
+                          nextActionDate: item.nextActionDate,
+                          location: item.location,
+                          profile: item.profile,
+                        });
+                      }}>
+                      <View>
+                        <Item
+                          title={item.name}
+                          alias={item.aliases[0]}
+                          dc={item.location}
+                          profile={item.profile}
+                          // profile={profiles.filter(obj => {
+                          //   return obj.slug === item.profile}).name}
+                          ipv4={item.ipv4}
+                          status={item.status}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                    <View
+                      style={{
+                        height: 10,
+                        width: '100%',
+                      }}
                     />
-                  </View>
-                </TouchableOpacity>
-                <View
-                  style={{
-                    height: 10,
-                    width: '100%',
-                  }}
-                />
-              </>
+                  </>
+                )}
+                contentContainerStyle={
+                  servers
+                    ? servers.length === 0 && {
+                        flexGrow: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }
+                    : {}
+                }
+                ListEmptyComponent={
+                  <EmptyList
+                    text={'You don’t have any server on this account yet.'}
+                  />
+                }
+                keyExtractor={item => item.slug}
+              />
             )}
-            keyExtractor={item => item.slug}
-          />
-          <View
-            style={{
-              marginTop: 20,
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-            <Text style={{fontFamily: 'Raleway-Medium', fontSize: 18}}>
-              Events
-            </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Events')}>
-              <Text
-                style={{
-                  fontFamily: 'Raleway-Regular',
-                  fontSize: 10,
-                  color: '#747474',
-                }}>
-                All Events →
-              </Text>
-            </TouchableOpacity>
           </View>
-          <FlatList
-            style={{marginTop: 10}}
-            data={events}
-            scrollEnabled={false}
-            // onRefresh={() => onRefresh()}
-            // refreshing={isFetching}
-            keyExtractor={(item, index) => item.id}
-            renderItem={({item}) => (
-              <>
-                <TouchableOpacity item={item}>
-                  <View>
-                    <EventItem item={item} />
-                  </View>
-                </TouchableOpacity>
-                <View
+          <View style={{height: '50%'}}>
+            <View
+              style={{
+                marginTop: 20,
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+              <Text style={{fontFamily: 'Raleway-Medium', fontSize: 18}}>
+                Events
+              </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Events')}>
+                <Text
                   style={{
-                    height: 10,
-                    width: '100%',
-                  }}
-                />
-              </>
+                    fontFamily: 'Raleway-Regular',
+                    fontSize: 10,
+                    color: '#747474',
+                  }}>
+                  All Events →
+                </Text>
+              </TouchableOpacity>
+            </View>
+            {loading ? (
+              <View
+                style={{
+                  height: '80%',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <ActivityIndicator size="small" color="#00A1A1" />
+              </View>
+            ) : (
+              <FlatList
+                style={{marginTop: 10}}
+                data={events}
+                scrollEnabled={false}
+                contentContainerStyle={
+                  events
+                    ? events.length === 0 && {
+                        flexGrow: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }
+                    : {}
+                }
+                // onRefresh={() => onRefresh()}
+                // refreshing={isFetching}
+                keyExtractor={(item, index) => item.id}
+                ListEmptyComponent={
+                  <EmptyList
+                    text={'You don’t have any event on this account yet.'}
+                  />
+                }
+                renderItem={({item}) => (
+                  <>
+                    <TouchableOpacity item={item}>
+                      <View>
+                        <EventItem item={item} />
+                      </View>
+                    </TouchableOpacity>
+                    <View
+                      style={{
+                        height: 10,
+                        width: '100%',
+                      }}
+                    />
+                  </>
+                )}
+              />
             )}
-          />
+          </View>
         </View>
       </SafeAreaView>
     </>

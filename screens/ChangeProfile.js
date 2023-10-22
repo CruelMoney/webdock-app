@@ -29,8 +29,15 @@ import {getProfiles} from '../service/serverConfiguration';
 import SVGCpu from '../assets/icon-cpu.svg';
 import SVGRam from '../assets/icon-ram2.svg';
 import SVGStorage from '../assets/icon-storage.svg';
+import SVGWifi from '../assets/icon-wifi.svg';
+import DoneIcon from '../assets/done-icon.svg';
+import SVGSelected from '../assets/done-icon.svg';
+import SVGLocation from '../assets/icon-location.svg';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {dryRunForServerProfileChange} from '../service/serverActions';
+import {
+  changeServerProfile,
+  dryRunForServerProfileChange,
+} from '../service/serverActions';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import GradientButton from '../components/GradientButton';
 import BackIcon from '../assets/back-icon.svg';
@@ -103,16 +110,36 @@ export default function ChangeProfile({navigation, route}) {
             borderColor: item.isExpanded ? '#00a1a1' : '#eee',
             borderWidth: item.isExpanded ? 2 : 1,
             marginVertical: 10,
+            borderRadius: 8,
+            overflow: 'hidden',
           }}
           onPress={onClickFunction}>
           <Card.Title
-            titleStyle={{color: item.isExpanded ? '#00a1a1' : 'black'}}
+            titleStyle={{
+              color: item.isExpanded ? '#00a1a1' : 'black',
+              fontFamily: 'Raleway-Bold',
+              fontSize: 16,
+              includeFontPadding: false,
+            }}
             title={item.name}
             right={() => (
-              <Title style={{color: '#00a1a1', marginRight: 10}}>
-                {currency_symbols[item.price.currency] +
-                  item.price.amount / 100 +
-                  '/mo'}
+              <Title
+                style={{
+                  color: item.isExpanded ? '#00a1a1' : 'black',
+                  marginRight: 20,
+                  fontFamily: 'Raleway-Bold',
+                  fontSize: 18,
+                  includeFontPadding: false,
+                }}>
+                {item.price.amount / 100 + ' ' + item.price.currency + ' '}
+                <Text
+                  style={{
+                    includeFontPadding: false,
+                    fontFamily: 'Raleway-Regular',
+                    fontSize: 9,
+                  }}>
+                  /mo
+                </Text>
               </Title>
             )}
           />
@@ -124,28 +151,46 @@ export default function ChangeProfile({navigation, route}) {
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
-                  paddingTop: 10,
+                  justifyContent: 'space-between',
+                  paddingTop: 14,
                   paddingHorizontal: 10,
+                  justifyContent: 'space-between',
                 }}>
                 <SVGCpu height={30} width={30} color="#787878" />
-                <Paragraph style={{width: '90%', textAlign: 'center'}}>
+                <Text
+                  style={{
+                    width: '85%',
+                    textAlign: 'left',
+                    fontFamily: 'Raleway-SemiBold',
+                    fontSize: 12,
+                    includeFontPadding: false,
+                  }}>
                   {item.cpu.cores + ' Cores,' + item.cpu.threads + ' Threads'}
-                </Paragraph>
+                </Text>
               </View>
               <View
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
-                  paddingTop: 10,
+                  paddingTop: 14,
                   paddingHorizontal: 10,
+                  justifyContent: 'space-between',
                 }}>
                 <View>
                   <SVGRam height={30} width={30} color="#787878" />
                 </View>
-                <Paragraph style={{width: '90%', textAlign: 'center'}}>
+                <Text
+                  style={{
+                    width: '85%',
+                    textAlign: 'left',
+                    includeFontPadding: false,
+
+                    fontFamily: 'Raleway-SemiBold',
+                    fontSize: 12,
+                  }}>
                   {Math.round(item.ram * 0.001048576 * 100) / 100 + ' GB RAM'}
-                </Paragraph>
+                </Text>
               </View>
 
               <View
@@ -153,40 +198,69 @@ export default function ChangeProfile({navigation, route}) {
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
-                  paddingTop: 10,
+                  paddingTop: 14,
                   paddingHorizontal: 10,
+                  justifyContent: 'space-between',
                 }}>
                 <SVGStorage height={30} width={30} color="#787878" />
-                <Paragraph style={{width: '90%', textAlign: 'center'}}>
+                <Text
+                  style={{
+                    width: '85%',
+                    textAlign: 'left',
+                    includeFontPadding: false,
+
+                    fontFamily: 'Raleway-SemiBold',
+                    fontSize: 12,
+                    justifyContent: 'space-between',
+                  }}>
                   {Math.round(item.disk * 0.001048576 * 100) / 100 +
                     ' GB On-Board SSD Drive'}
-                </Paragraph>
+                </Text>
               </View>
               <View
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
-                  paddingTop: 10,
+                  paddingTop: 14,
+                  justifyContent: 'space-between',
+
                   paddingHorizontal: 10,
                 }}>
-                <Icon name="wifi" size={30} color="#787878" />
-                <Paragraph style={{width: '90%', textAlign: 'center'}}>
+                <SVGWifi height={30} width={30} color="#787878" />
+                <Text
+                  style={{
+                    width: '85%',
+                    includeFontPadding: false,
+
+                    textAlign: 'left',
+                    fontFamily: 'Raleway-SemiBold',
+                    fontSize: 12,
+                  }}>
                   1 Gbit/s-Port
-                </Paragraph>
+                </Text>
               </View>
               <View
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
-                  paddingTop: 10,
+                  justifyContent: 'space-between',
+                  paddingTop: 14,
                   paddingHorizontal: 10,
                 }}>
-                <Icon name="location-on" size={30} color="#787878" />
-                <Paragraph style={{width: '90%', textAlign: 'center'}}>
+                <SVGLocation height={30} width={30} />
+                <Text
+                  style={{
+                    width: '85%',
+                    textAlign: 'left',
+                    includeFontPadding: false,
+
+                    fontFamily: 'Raleway-SemiBold',
+                    fontSize: 12,
+                  }}>
                   1 dedicated IPv4 address
-                </Paragraph>
+                </Text>
               </View>
             </Card.Content>
           ) : null}
@@ -262,7 +336,7 @@ export default function ChangeProfile({navigation, route}) {
       } catch (e) {
         alert(e);
       }
-      toggleModal();
+      navigation.goBack();
     } else if (result.status == 400) {
       try {
         Toast.show({
@@ -315,6 +389,7 @@ export default function ChangeProfile({navigation, route}) {
         <View style={{width: 50}}></View>
       </View>
       <ScrollView
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           flexGrow: 1,
           justifyContent: 'space-between',
@@ -340,17 +415,23 @@ export default function ChangeProfile({navigation, route}) {
               Select a New Hardware Profile
             </Text>
             {profiles
-              ? profiles.map((gr, key) =>
-                  route.params.profile != gr.slug ? (
-                    <ExpandableComponent
-                      key={gr.slug}
-                      item={gr}
-                      onClickFunction={() => {
-                        updateLayout(key);
-                      }}
-                    />
-                  ) : null,
-                )
+              ? profiles
+                  .filter(item =>
+                    route.params.profile.includes('ryzen')
+                      ? item.slug.includes('ryzen')
+                      : !item.slug.includes('ryzen'),
+                  )
+                  .map((gr, key) =>
+                    route.params.profile != gr.slug ? (
+                      <ExpandableComponent
+                        key={gr.slug}
+                        item={gr}
+                        onClickFunction={() => {
+                          updateLayout(key);
+                        }}
+                      />
+                    ) : null,
+                  )
               : null}
             {itemsCharge && selectedPlan ? (
               selectedPlan.slug != route.params.profile ? (
@@ -420,6 +501,7 @@ export default function ChangeProfile({navigation, route}) {
                       flexDirection: 'row',
                       paddingTop: 20,
                       paddingRight: 20,
+                      marginVertical: 10,
                     }}>
                     <Checkbox
                       status={checkedBox ? 'checked' : 'unchecked'}

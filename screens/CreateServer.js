@@ -4,7 +4,9 @@ import CreateServerScript from './CreateServerScript';
 import {View} from 'react-native-animatable';
 import {
   Image,
+  Keyboard,
   LayoutAnimation,
+  Linking,
   StatusBar,
   StyleSheet,
   Text,
@@ -50,6 +52,8 @@ import GradientButton from '../components/GradientButton';
 import {Picker} from '@react-native-picker/picker';
 import {Svg, Circle} from 'react-native-svg';
 import {useFocusEffect} from '@react-navigation/native';
+import {getServerSlugStatus, provisionAServer} from '../service/servers';
+import Toast from 'react-native-toast-message';
 const Tab = createMaterialTopTabNavigator();
 export default function CreateServer({route, navigation}) {
   return (
@@ -75,22 +79,13 @@ export default function CreateServer({route, navigation}) {
         </Text>
         <View style={{width: 50}}></View>
       </View>
-      <Tab.Navigator tabBar={props => <MyTabBar {...props} />}>
-        <Tab.Screen
-          name="1. Server info"
-          component={Step1}
-          initialParams={{data: 'Initial data for Tab1'}}
-        />
-        <Tab.Screen
-          name="2. Image"
-          component={Step2}
-          initialParams={{data: 'Initial data for Tab2'}}
-        />
-        <Tab.Screen
-          name="3. Summary"
-          component={Step3}
-          initialParams={{data: 'Initial data for Tab3'}}
-        />
+      <Tab.Navigator
+        swipeEnabled={false}
+        tabBar={props => <MyTabBar {...props} />}
+        tab>
+        <Tab.Screen name="1. Server info" component={Step1} />
+        <Tab.Screen name="2. Image" component={Step2} />
+        <Tab.Screen name="3. Summary" component={Step3} />
       </Tab.Navigator>
     </View>
   );
@@ -171,21 +166,27 @@ export function Step1({navigation, route}) {
       try {
         userToken = await AsyncStorage.getItem('userToken');
         getProfiles(userToken, locations[locationSelected].id).then(datas => {
-          datas.map(item => {
-            item.isExpanded = false;
-          });
-          datas = datas.filter(item =>
-            platformSelected == 0
-              ? !item.name.includes('Ryzen')
-              : item.name.includes('Ryzen'),
-          );
-          setProfiles(datas);
+          if (Array.isArray(datas)) {
+            var count = 0;
+            datas.map(item => {
+              setNewServerHardware(count == 2 ? item : null);
+              item.isExpanded = count == 2 ? true : false;
+              count++;
+            });
+
+            datas = datas.filter(item =>
+              platformSelected == 0
+                ? !item.name.includes('Ryzen')
+                : item.name.includes('Ryzen'),
+            );
+            setProfiles(datas);
+          }
         });
       } catch (e) {
         alert(e);
       }
     }, 0);
-  }, []);
+  }, [navigation, locationSelected, virtualizationSelected, platformSelected]);
   const ExpandableComponent = ({item, onClickFunction}) => {
     const [layoutHeight, setLayoutHeight] = useState(0);
 
@@ -211,14 +212,32 @@ export function Step1({navigation, route}) {
             }}
             onPress={onClickFunction}>
             <Card.Title
-              titleStyle={{color: item.isExpanded ? 'white' : 'white'}}
+              titleStyle={{
+                color: item.isExpanded ? 'white' : 'white',
+                fontFamily: 'Raleway-Medium',
+                fontSize: 16,
+                includeFontPadding: false,
+              }}
               title={item.name}
               style={{backgroundColor: '#00A1A1'}}
               right={() => (
-                <Title style={{color: 'white', marginRight: 10}}>
-                  {currency_symbols[item.price.currency] +
-                    item.price.amount / 100 +
-                    '/mo'}
+                <Title
+                  style={{
+                    color: 'white',
+                    marginRight: 20,
+                    fontFamily: 'Raleway-Bold',
+                    fontSize: 18,
+                    includeFontPadding: false,
+                  }}>
+                  {item.price.amount / 100 + ' ' + item.price.currency + ' '}
+                  <Text
+                    style={{
+                      includeFontPadding: false,
+                      fontFamily: 'Raleway-Regular',
+                      fontSize: 9,
+                    }}>
+                    /mo
+                  </Text>
                 </Title>
               )}
             />
@@ -230,13 +249,22 @@ export function Step1({navigation, route}) {
                     display: 'flex',
                     flexDirection: 'row',
                     alignItems: 'center',
+                    justifyContent: 'space-between',
                     paddingTop: 14,
                     paddingHorizontal: 10,
+                    justifyContent: 'space-between',
                   }}>
                   <SVGCpu height={30} width={30} color="#787878" />
-                  <Paragraph style={{width: '90%', textAlign: 'center'}}>
+                  <Text
+                    style={{
+                      width: '85%',
+                      textAlign: 'left',
+                      fontFamily: 'Raleway-SemiBold',
+                      fontSize: 12,
+                      includeFontPadding: false,
+                    }}>
                     {item.cpu.cores + ' Cores,' + item.cpu.threads + ' Threads'}
-                  </Paragraph>
+                  </Text>
                 </View>
                 <View
                   style={{
@@ -245,13 +273,22 @@ export function Step1({navigation, route}) {
                     alignItems: 'center',
                     paddingTop: 14,
                     paddingHorizontal: 10,
+                    justifyContent: 'space-between',
                   }}>
                   <View>
                     <SVGRam height={30} width={30} color="#787878" />
                   </View>
-                  <Paragraph style={{width: '90%', textAlign: 'center'}}>
+                  <Text
+                    style={{
+                      width: '85%',
+                      textAlign: 'left',
+                      includeFontPadding: false,
+
+                      fontFamily: 'Raleway-SemiBold',
+                      fontSize: 12,
+                    }}>
                     {Math.round(item.ram * 0.001048576 * 100) / 100 + ' GB RAM'}
-                  </Paragraph>
+                  </Text>
                 </View>
 
                 <View
@@ -261,12 +298,22 @@ export function Step1({navigation, route}) {
                     alignItems: 'center',
                     paddingTop: 14,
                     paddingHorizontal: 10,
+                    justifyContent: 'space-between',
                   }}>
                   <SVGStorage height={30} width={30} color="#787878" />
-                  <Paragraph style={{width: '90%', textAlign: 'center'}}>
+                  <Text
+                    style={{
+                      width: '85%',
+                      textAlign: 'left',
+                      includeFontPadding: false,
+
+                      fontFamily: 'Raleway-SemiBold',
+                      fontSize: 12,
+                      justifyContent: 'space-between',
+                    }}>
                     {Math.round(item.disk * 0.001048576 * 100) / 100 +
                       ' GB On-Board SSD Drive'}
-                  </Paragraph>
+                  </Text>
                 </View>
                 <View
                   style={{
@@ -274,12 +321,22 @@ export function Step1({navigation, route}) {
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingTop: 14,
+                    justifyContent: 'space-between',
+
                     paddingHorizontal: 10,
                   }}>
                   <SVGWifi height={30} width={30} color="#787878" />
-                  <Paragraph style={{width: '90%', textAlign: 'center'}}>
+                  <Text
+                    style={{
+                      width: '85%',
+                      includeFontPadding: false,
+
+                      textAlign: 'left',
+                      fontFamily: 'Raleway-SemiBold',
+                      fontSize: 12,
+                    }}>
                     1 Gbit/s-Port
-                  </Paragraph>
+                  </Text>
                 </View>
                 <View
                   style={{
@@ -291,14 +348,17 @@ export function Step1({navigation, route}) {
                     paddingHorizontal: 10,
                   }}>
                   <SVGLocation height={30} width={30} />
-                  <Paragraph
+                  <Text
                     style={{
+                      width: '85%',
+                      textAlign: 'left',
+                      includeFontPadding: false,
+
+                      fontFamily: 'Raleway-SemiBold',
                       fontSize: 12,
-                      width: '80%',
-                      textAlign: 'center',
                     }}>
                     1 dedicated IPv4 address
-                  </Paragraph>
+                  </Text>
                 </View>
               </Card.Content>
             ) : null}
@@ -336,12 +396,6 @@ export function Step1({navigation, route}) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
 
-  useFocusEffect(() => {
-    // This function will run when the screen comes into focus (tab is pressed)
-    // You can update the data here
-    console.log('asdasd');
-    //navigation.setParams({data: 'Updated data for Tab1'});
-  });
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -355,7 +409,7 @@ export function Step1({navigation, route}) {
         <SectionTitle
           title="Platform"
           question="Which should i choose?"
-          questionUrl="Which should i choose?"
+          questionUrl="https://webdock.io/tools/provision_info/platform?lang=en_US&fromApp=true"
         />
         <View
           style={{
@@ -381,7 +435,7 @@ export function Step1({navigation, route}) {
         <SectionTitle
           title="Virtualization"
           question="Which should i choose?"
-          questionUrl="Which should i choose?"
+          questionUrl="https://webdock.io/tools/provision_info/virtualization?lang=en_US&fromApp=true"
         />
         <View
           style={{
@@ -407,7 +461,7 @@ export function Step1({navigation, route}) {
         <SectionTitle
           title="Location"
           question="Which should i choose?"
-          questionUrl="Which should i choose?"
+          questionUrl="https://webdock.io/tools/provision_info/location?lang=en_US&fromApp=true"
         />
         <View
           style={{
@@ -434,7 +488,7 @@ export function Step1({navigation, route}) {
           <SectionTitle
             title="Profile"
             question="Which should i choose?"
-            questionUrl="Which should i choose?"
+            questionUrl="https://webdock.io/tools/provision_info/profile?lang=en_US&fromApp=true"
           />
         </View>
         {profiles
@@ -451,13 +505,21 @@ export function Step1({navigation, route}) {
       </View>
       <TouchableOpacity
         style={{marginVertical: 20, paddingHorizontal: '8%'}}
-        onPress={() => navigation.navigate('2. Image')}>
+        onPress={() =>
+          navigation.navigate('2. Image', {
+            virtualization: virtualization[virtualizationSelected],
+            platform: platforms[platformSelected],
+            location: locations[locationSelected],
+            profile: newServerHardware,
+          })
+        }>
         <GradientButton text="Continue" />
       </TouchableOpacity>
     </ScrollView>
   );
 }
-export function Step2({navigation}) {
+export function Step2({route, navigation}) {
+  const [images, setImages] = useState([]);
   const [webServerImages, setWebServerImages] = useState([]);
   const [desktopImages, setDesktopImages] = useState([]);
   const [cleanImages, setCleanImages] = useState([]);
@@ -468,6 +530,7 @@ export function Step2({navigation}) {
       try {
         userToken = await AsyncStorage.getItem('userToken');
         getImages(userToken).then(data => {
+          setImages(data);
           let webImages = {};
           let desktop = [];
           let cleanLinux = [];
@@ -503,21 +566,38 @@ export function Step2({navigation}) {
   const [errors, setErrors] = React.useState({});
   const validate = () => {
     Keyboard.dismiss();
-    setSubmitting(true);
+    // setSubmitting(true);
     let isValid = true;
 
     if (!inputs.name) {
-      handleError('Server name is required', 'username');
+      handleError('Server name is required', 'name');
       isValid = false;
     }
-
+    if (!inputs.slug) {
+      handleError('Server slug is required', 'slug');
+      isValid = false;
+    }
     if (isValid) {
-      sendRequest();
+      navigation.navigate('3. Summary', {
+        ...route.params,
+        name: inputs['name'],
+        slug: inputs['slug'],
+        image: images.filter(item => item.slug == inputs['image']),
+      });
     } else {
-      setSubmitting(false);
+      // setSubmitting(false);
     }
   };
-  const handleOnchange = (text, input) => {
+  const generateSlug = async text => {
+    let response = await getServerSlugStatus(text);
+    if (response.isOK == true) {
+      setInputs(prevState => ({...prevState, ['slug']: response.slug}));
+    }
+  };
+  const handleOnchange = async (text, input) => {
+    if (input == 'name') {
+      generateSlug(text);
+    }
     setInputs(prevState => ({...prevState, [input]: text}));
   };
   const handleError = (error, input) => {
@@ -537,7 +617,7 @@ export function Step2({navigation}) {
         <SectionTitle
           title="Image"
           question="Which should i choose?"
-          questionUrl="Which should i choose?"
+          questionUrl="https://webdock.io/tools/provision_info/image?lang=en_US&fromApp=true"
         />
         <Card
           style={{
@@ -551,9 +631,19 @@ export function Step2({navigation}) {
           onPress={() => setImageTypeSelected(0)}>
           <Card.Title
             title={'Web server'}
-            titleStyle={{color: 'white'}}
+            titleStyle={{
+              color: 'white',
+              fontFamily: 'Raleway-Medium',
+              fontSize: 16,
+              includeFontPadding: false,
+            }}
             subtitle={'Ubuntu Jammy 22.04'}
-            subtitleStyle={{color: 'white'}}
+            subtitleStyle={{
+              color: 'white',
+              fontFamily: 'Raleway-Light',
+              fontSize: 12,
+              includeFontPadding: false,
+            }}
             style={{backgroundColor: '#00A1A1', color: 'white'}}
             right={() => (
               <Title style={{color: 'white', marginRight: 10}}>
@@ -581,9 +671,10 @@ export function Step2({navigation}) {
                 }}>
                 <Text
                   style={{
-                    fontWeight: '600',
                     fontSize: 12,
                     textAlign: 'left',
+                    fontFamily: 'Raleway-SemiBold',
+                    includeFontPadding: false,
                   }}>
                   Select a Webserver
                 </Text>
@@ -597,14 +688,22 @@ export function Step2({navigation}) {
                     selectedValue={selectedWebServer}
                     style={{
                       width: '100%',
-                      color: '#00A1A1',
                       includeFontPadding: false,
                     }}
                     onValueChange={(itemValue, itemIndex) =>
                       setSelectedWebServer(itemValue)
                     }>
                     {Object.keys(webServerImages).map(item => (
-                      <Picker.Item label={item} value={item} key={item} />
+                      <Picker.Item
+                        style={{
+                          textAlign: 'left',
+                          fontFamily: 'Raleway-Regular',
+                          includeFontPadding: false,
+                        }}
+                        label={item}
+                        value={item}
+                        key={item}
+                      />
                     ))}
                   </Picker>
                 </View>
@@ -618,9 +717,10 @@ export function Step2({navigation}) {
                 }}>
                 <Text
                   style={{
-                    fontWeight: '600',
                     fontSize: 12,
                     textAlign: 'left',
+                    fontFamily: 'Raleway-SemiBold',
+                    includeFontPadding: false,
                   }}>
                   Select PHP version
                 </Text>
@@ -634,7 +734,6 @@ export function Step2({navigation}) {
                     selectedValue={inputs['image']}
                     style={{
                       width: '100%',
-                      color: '#00A1A1',
                       includeFontPadding: false,
                       padding: 0,
                     }}
@@ -645,6 +744,11 @@ export function Step2({navigation}) {
                       ? webServerImages[selectedWebServer]
                         ? webServerImages[selectedWebServer].map(item => (
                             <Picker.Item
+                              style={{
+                                textAlign: 'left',
+                                fontFamily: 'Raleway-Regular',
+                                includeFontPadding: false,
+                              }}
                               label={'PHP ' + item.phpVersion}
                               value={item.slug}
                               key={item.slug}
@@ -670,7 +774,12 @@ export function Step2({navigation}) {
           onPress={() => setImageTypeSelected(1)}>
           <Card.Title
             title={'Ubuntu Desktop'}
-            titleStyle={{color: 'white'}}
+            titleStyle={{
+              color: 'white',
+              fontFamily: 'Raleway-Medium',
+              fontSize: 16,
+              includeFontPadding: false,
+            }}
             subtitleStyle={{color: 'white'}}
             style={{backgroundColor: '#00A1A1', color: 'white'}}
             right={() => (
@@ -699,9 +808,10 @@ export function Step2({navigation}) {
                 }}>
                 <Text
                   style={{
-                    fontWeight: '600',
                     fontSize: 12,
                     textAlign: 'left',
+                    fontFamily: 'Raleway-SemiBold',
+                    includeFontPadding: false,
                   }}>
                   Select a Virtual Desktop
                 </Text>
@@ -715,7 +825,6 @@ export function Step2({navigation}) {
                     selectedValue={inputs['image']}
                     style={{
                       width: '100%',
-                      color: '#00A1A1',
                       includeFontPadding: false,
                     }}
                     onValueChange={(itemValue, itemIndex) =>
@@ -723,6 +832,11 @@ export function Step2({navigation}) {
                     }>
                     {desktopImages.map(item => (
                       <Picker.Item
+                        style={{
+                          textAlign: 'left',
+                          fontFamily: 'Raleway-Regular',
+                          includeFontPadding: false,
+                        }}
                         label={item.label}
                         value={item.value}
                         key={item.value}
@@ -741,9 +855,12 @@ export function Step2({navigation}) {
                 justifyContent: 'space-between',
                 paddingTop: 14,
                 paddingHorizontal: 10,
+                color: '#555555',
+                fontSize: 12,
+                fontFamily: 'Raleway-Regular',
+                includeFontPadding: false,
               }}>
               Your Desktop in the Cloud. Quick to set up and easy to connect
-              {'\n\n'}
               Desktops look and work the best on our LXD instances.
             </Text>
           </Card.Content>
@@ -760,7 +877,12 @@ export function Step2({navigation}) {
           onPress={() => setImageTypeSelected(2)}>
           <Card.Title
             title={'Clean Linux OS'}
-            titleStyle={{color: 'white'}}
+            titleStyle={{
+              color: 'white',
+              fontFamily: 'Raleway-Medium',
+              fontSize: 16,
+              includeFontPadding: false,
+            }}
             subtitleStyle={{color: 'white'}}
             style={{backgroundColor: '#00A1A1', color: 'white'}}
             right={() => (
@@ -789,9 +911,10 @@ export function Step2({navigation}) {
                 }}>
                 <Text
                   style={{
-                    fontWeight: '600',
                     fontSize: 12,
                     textAlign: 'left',
+                    fontFamily: 'Raleway-SemiBold',
+                    includeFontPadding: false,
                   }}>
                   Select an Operating System
                 </Text>
@@ -805,14 +928,20 @@ export function Step2({navigation}) {
                     selectedValue={inputs['image']}
                     style={{
                       width: '100%',
-                      color: '#00A1A1',
-                      includeFontPadding: false,
+                      color: '#000000',
+                      borderBottomColor: '#00A1A1',
+                      borderBottomWidth: 1,
                     }}
                     onValueChange={(itemValue, itemIndex) =>
                       handleOnchange(itemValue, 'image')
                     }>
                     {cleanImages.map(item => (
                       <Picker.Item
+                        style={{
+                          textAlign: 'left',
+                          fontFamily: 'Raleway-Regular',
+                          includeFontPadding: false,
+                        }}
                         label={item.label}
                         value={item.value}
                         key={item.value}
@@ -831,6 +960,10 @@ export function Step2({navigation}) {
                 justifyContent: 'space-between',
                 paddingTop: 14,
                 paddingHorizontal: 10,
+                color: '#555555',
+                fontSize: 12,
+                fontFamily: 'Raleway-Regular',
+                includeFontPadding: false,
               }}>
               Clean Linux Operating system. Do not use this if you want to host
               a website or web app, in which case choose our Web Server image
@@ -862,11 +995,11 @@ export function Step2({navigation}) {
               placeholder: '#00A1A1',
             },
           }}
-          onFocus={() => handleError(null, 'username')}
-          error={errors.username}
+          onFocus={() => handleError(null, 'name')}
+          error={errors.name}
         />
-        <HelperText type="error" visible={errors.username}>
-          {errors.username}
+        <HelperText type="error" visible={errors.name}>
+          {errors.name}
         </HelperText>
         <TextInput
           mode="outlined"
@@ -889,11 +1022,11 @@ export function Step2({navigation}) {
               placeholder: '#00A1A1',
             },
           }}
-          onFocus={() => handleError(null, 'password')}
-          error={errors.password}
+          onFocus={() => handleError(null, 'slug')}
+          error={errors.slug}
         />
-        <HelperText type="error" visible={errors.password}>
-          {errors.password}
+        <HelperText type="error" visible={errors.slug}>
+          {errors.slug}
         </HelperText>
       </View>
       <View
@@ -906,18 +1039,379 @@ export function Step2({navigation}) {
         <TouchableOpacity onPress={() => navigation.navigate('1. Server info')}>
           <GradientButton text="Go Back" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('3. Summary')}>
+        <TouchableOpacity onPress={validate}>
           <GradientButton text="Continue" />
         </TouchableOpacity>
       </View>
     </ScrollView>
   );
 }
-export function Step3() {
+export function Step3({navigation, route}) {
+  const validate = async () => {
+    Keyboard.dismiss();
+  };
+  const sendRequest = async () => {
+    let userToken = null;
+    userToken = await AsyncStorage.getItem('userToken');
+    let result = await provisionAServer(
+      userToken,
+      route.params.name,
+      route.params.slug,
+      route.params.location.id,
+      route.params.profile.slug,
+      route.params.virtualization.title == 'Webdock LXD VPS'
+        ? 'container'
+        : 'kvm',
+      route.params.image[0].slug,
+      0,
+    );
+    if (result.status == 202) {
+      try {
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Server provisioning initiated',
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      } catch (e) {
+        alert(e);
+      }
+      navigation.pop();
+    } else if (result.status == 400) {
+      try {
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: result.response.message,
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      } catch (e) {
+        alert(e);
+      }
+    } else {
+      try {
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: result.response.message,
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      } catch (e) {
+        alert(e);
+      }
+    }
+  };
+
   return (
-    <View style={{paddingHorizontal: '8%'}}>
+    <View
+      style={{
+        paddingHorizontal: '8%',
+        display: 'flex',
+        height: '100%',
+        justifyContent: 'space-between',
+      }}>
       <View>
-        <Text style={{fontWeight: '600', fontSize: 18}}>Details</Text>
+        <View>
+          <View
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'row',
+              marginTop: 15,
+              backgroundColor: 'white',
+              borderRadius: 10,
+              borderBottomRightRadius: 0,
+              borderBottomLeftRadius: 0,
+            }}>
+            <View
+              style={{
+                display: 'flex',
+                width: '90%',
+                padding: 15,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <View>
+                <Text style={{fontFamily: 'Raleway-Medium', fontSize: 12}}>
+                  Name
+                </Text>
+                <Text style={{fontFamily: 'Raleway-Light', fontSize: 12}}>
+                  dsfsdfdf
+                </Text>
+              </View>
+            </View>
+            <View style={{display: 'flex', flexDirection: 'row', width: '10%'}}>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate('UpdateServerMetadata')
+                }></TouchableOpacity>
+            </View>
+          </View>
+        </View>
+        <View>
+          <View
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'row',
+              marginTop: 1,
+              backgroundColor: 'white',
+              borderBottomRightRadius: 0,
+              borderBottomLeftRadius: 0,
+            }}>
+            <View
+              style={{
+                display: 'flex',
+                width: '80%',
+                padding: 15,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <View>
+                <Text style={{fontFamily: 'Raleway-Medium', fontSize: 12}}>
+                  Location
+                </Text>
+                <Text style={{fontFamily: 'Raleway-Light', fontSize: 12}}>
+                  {route.params ? route.params.location.title : ''}
+                </Text>
+              </View>
+            </View>
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                width: '20%',
+                justifyContent: 'center',
+              }}>
+              {route.params ? route.params.location.image : ''}
+            </View>
+          </View>
+        </View>
+        <View>
+          <View
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'row',
+              marginTop: 1,
+              backgroundColor: 'white',
+              borderBottomRightRadius: 0,
+              borderBottomLeftRadius: 0,
+            }}>
+            <View
+              style={{
+                display: 'flex',
+                width: '80%',
+                padding: 15,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <View>
+                <Text style={{fontFamily: 'Raleway-Medium', fontSize: 12}}>
+                  Virtualization
+                </Text>
+                <Text style={{fontFamily: 'Raleway-Light', fontSize: 12}}>
+                  {route.params ? route.params.virtualization.title : ''}
+                </Text>
+              </View>
+            </View>
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                width: '20%',
+                justifyContent: 'center',
+              }}>
+              {route.params ? route.params.virtualization.image : ''}
+            </View>
+          </View>
+        </View>
+        <View>
+          <View
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'row',
+              marginTop: 1,
+              backgroundColor: 'white',
+              borderBottomRightRadius: 0,
+              borderBottomLeftRadius: 0,
+            }}>
+            <View
+              style={{
+                display: 'flex',
+                width: '80%',
+                padding: 15,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <View>
+                <Text style={{fontFamily: 'Raleway-Medium', fontSize: 12}}>
+                  Platform
+                </Text>
+                <Text style={{fontFamily: 'Raleway-Light', fontSize: 12}}>
+                  {route.params ? route.params.platform.title : ''}
+                </Text>
+              </View>
+            </View>
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                width: '20%',
+                justifyContent: 'center',
+              }}>
+              {route.params ? route.params.platform.image : ''}
+            </View>
+          </View>
+        </View>
+        <View>
+          <View
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'row',
+              marginTop: 1,
+              backgroundColor: 'white',
+              borderBottomRightRadius: 0,
+              borderBottomLeftRadius: 0,
+            }}>
+            <View
+              style={{
+                display: 'flex',
+                width: '80%',
+                padding: 15,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <View>
+                <Text style={{fontFamily: 'Raleway-Medium', fontSize: 12}}>
+                  Image
+                </Text>
+                <Text style={{fontFamily: 'Raleway-Light', fontSize: 12}}>
+                  {route.params ? route.params.image[0].name : ''}
+                </Text>
+              </View>
+            </View>
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                width: '20%',
+                justifyContent: 'center',
+              }}></View>
+          </View>
+        </View>
+        <View>
+          <View
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'row',
+              marginTop: 1,
+              backgroundColor: 'white',
+              borderBottomRightRadius: 0,
+              borderBottomLeftRadius: 0,
+            }}>
+            <View
+              style={{
+                display: 'flex',
+                width: '80%',
+                padding: 15,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <View>
+                <Text style={{fontFamily: 'Raleway-Medium', fontSize: 12}}>
+                  Profile
+                </Text>
+                <Text style={{fontFamily: 'Raleway-Light', fontSize: 12}}>
+                  {route.params
+                    ? route.params.profile
+                      ? route.params.profile.name
+                      : ''
+                    : ''}
+                </Text>
+              </View>
+            </View>
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                width: '20%',
+                justifyContent: 'center',
+              }}></View>
+          </View>
+        </View>
+        <View>
+          <View
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'row',
+              marginTop: 1,
+              backgroundColor: 'white',
+              borderBottomRightRadius: 10,
+              borderBottomLeftRadius: 10,
+            }}>
+            <View
+              style={{
+                display: 'flex',
+                width: '70%',
+                padding: 15,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <View>
+                <Text style={{fontFamily: 'Raleway-Medium', fontSize: 12}}>
+                  Monthly
+                </Text>
+              </View>
+            </View>
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                width: '30%',
+                justifyContent: 'center',
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Raleway-Bold',
+                  fontSize: 18,
+                  includeFontPadding: false,
+                }}>
+                {(route.params
+                  ? route.params.profile
+                    ? route.params.profile.price.amount / 100
+                    : 0
+                  : 0) + ' '}
+                {route.params
+                  ? route.params.profile
+                    ? route.params.profile.price.currency
+                    : ''
+                  : '' + ' '}
+              </Text>
+            </View>
+          </View>
+        </View>
       </View>
       <View
         style={{
@@ -926,17 +1420,29 @@ export function Step3() {
           justifyContent: 'space-between',
           marginVertical: 20,
         }}>
-        <TouchableOpacity onPress={() => navigation.navigate('1. Server info')}>
+        <TouchableOpacity onPress={() => navigation.navigate('2. Image')}>
           <GradientButton text="Go Back" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('3. Summary')}>
-          <GradientButton text="Continue" />
+        <TouchableOpacity onPress={sendRequest}>
+          <GradientButton text="Create" />
         </TouchableOpacity>
       </View>
     </View>
   );
 }
 function SectionTitle({title, question, questionUrl}) {
+  const handleClick = url => {
+    if (!url.includes('https://') && !url.includes('http://')) {
+      url = 'https://' + url;
+    }
+    Linking.canOpenURL(url).then(supported => {
+      if (supported) {
+        Linking.openURL(url);
+      } else {
+        console.log("Don't know how to open URI: " + url);
+      }
+    });
+  };
   return (
     <View
       style={{
@@ -947,7 +1453,7 @@ function SectionTitle({title, question, questionUrl}) {
         marginBottom: 5,
       }}>
       <Text style={styles.titleText}>{title}</Text>
-      <TouchableOpacity onPress={() => console.log(questionUrl)}>
+      <TouchableOpacity onPress={() => handleClick(questionUrl)}>
         <Text style={styles.infoUrl}>{question}</Text>
       </TouchableOpacity>
     </View>
@@ -962,6 +1468,8 @@ function SingleCard({image, title, content, selected, onChange}) {
         width: '48%',
         marginBottom: 10,
         backgroundColor: selected ? 'rgba(0, 161, 161, 0.06)' : 'white',
+        borderColor: selected ? 'rgba(0, 161, 161, 1)' : 'white',
+        borderWidth: 1,
         borderRadius: 10,
       }}>
       <TouchableOpacity onPress={onChange}>
@@ -1041,23 +1549,22 @@ export function MyTabBar({state, descriptors, navigation}) {
         const isFocused = state.index === index;
 
         const onPress = () => {
-          const event = navigation.emit({
-            type: 'tabPress',
-            target: route.key,
-            canPreventDefault: true,
-          });
-
-          if (!isFocused && !event.defaultPrevented) {
-            // The `merge: true` option makes sure that the params inside the tab screen are preserved
-            navigation.navigate({name: route.name, merge: true});
-          }
+          // const event = navigation.emit({
+          //   type: 'tabPress',
+          //   target: route.key,
+          //   canPreventDefault: true,
+          // });
+          // if (!isFocused && !event.defaultPrevented) {
+          //   // The `merge: true` option makes sure that the params inside the tab screen are preserved
+          //   navigation.navigate({name: route.name, merge: true});
+          // }
         };
 
         const onLongPress = () => {
-          navigation.emit({
-            type: 'tabLongPress',
-            target: route.key,
-          });
+          // navigation.emit({
+          //   type: 'tabLongPress',
+          //   target: route.key,
+          // });
         };
 
         return (
@@ -1072,16 +1579,17 @@ export function MyTabBar({state, descriptors, navigation}) {
               <Text
                 style={{
                   color: isFocused ? '#00A1A1' : '#BFBFBF',
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Raleway-Regular',
+                  fontSize: 12,
                 }}>
                 {label}
               </Text>
               <View
                 style={{
-                  marginTop: 1,
+                  marginTop: 3,
                   width: '100%',
                   backgroundColor: isFocused ? '#00A1A1' : '#BFBFBF',
-                  height: 3,
+                  height: 1.5,
                 }}></View>
             </TouchableOpacity>
           </View>
@@ -1200,12 +1708,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   titleText: {
-    fontSize: 20,
+    fontSize: 18,
+    fontFamily: 'Raleway-Medium',
+    includeFontPadding: false,
     textAlign: 'left',
   },
   infoUrl: {
     color: '#00A1A1',
-    fontFamily: 'Poppins',
+    fontFamily: 'Raleway-Regular',
     fontSize: 10,
+    includeFontPadding: false,
   },
 });

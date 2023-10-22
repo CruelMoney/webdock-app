@@ -149,7 +149,9 @@ export default function App() {
           {loginState.userToken !== null ? (
             <>
               <Drawer.Navigator
-                screenOptions={{headerShown: false}}
+                screenOptions={{
+                  headerShown: false,
+                }}
                 drawerContent={props => <DrawerContent {...props} />}>
                 <Drawer.Screen
                   name="Dashboard"
@@ -183,6 +185,7 @@ export default function App() {
                   name="ServerManagement"
                   component={ServerManagement}
                   options={{
+                    unmountOnBlur: true,
                     headerShown: false,
                   }}
                 />
