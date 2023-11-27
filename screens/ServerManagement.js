@@ -24,6 +24,7 @@ import {createServerScript} from '../service/serverScripts';
 import CreateServerScript from './CreateServerScript';
 import CreateServerShellUsers from './CreateServerShellUsers';
 import ChangeProfile from './ChangeProfile';
+import {ServerConsole} from './ServerConsole';
 
 const Stack = createStackNavigator();
 export function ServerManagement({route, navigation}) {
@@ -132,6 +133,14 @@ export function ServerManagement({route, navigation}) {
             headerShown: false,
           }}
           initialParams={{slug: route.params.slug, name: route.params.name}}
+        />
+        <Stack.Screen
+          name="ServerConsole"
+          component={ServerConsole}
+          options={{
+            headerShown: false,
+          }}
+          initialParams={{slug: route.params.slug}}
         />
         <Stack.Screen
           name="Activity"

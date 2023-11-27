@@ -293,7 +293,19 @@ export default function ServerEvents({route, navigation}) {
           refreshing={isFetching}
           renderItem={({item}) => (
             <>
-              <TouchableOpacity>
+              <TouchableOpacity
+                disabled={
+                  !(
+                    item.status != 'waiting' &&
+                    item.status != 'finished' &&
+                    item.status != 'working'
+                  )
+                }
+                item={item}
+                onPress={() => {
+                  setEventDetailsModal(true);
+                  setEventDetails(item);
+                }}>
                 <View>
                   <Item item={item} />
                 </View>

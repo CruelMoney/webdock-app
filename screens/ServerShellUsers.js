@@ -28,6 +28,7 @@ import {
 import {Avatar, Divider} from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 import {
+  createAShortLivedTokenForWebSSH,
   createShellUser,
   deleteServerShellUsers,
   getServerShellUsers,
@@ -357,7 +358,58 @@ export default function ServerShellUsers({route, navigation}) {
       }
     }
   };
-
+  const openConsole = async () => {
+    let userToken = null;
+    userToken = await AsyncStorage.getItem('userToken');
+    var result = await createAShortLivedTokenForWebSSH(
+      userToken,
+      route.params.slug,
+      modalData.username,
+    );
+    console.log(result);
+    if (result.status == 200) {
+      try {
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'WebSSH initiated!',
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+        navigation.navigate('ServerConsole', {
+          slug: route.params.slug,
+          username: modalData.username,
+          token: result.response.token,
+        });
+      } catch (e) {
+        alert(e);
+      }
+    } else if (result.status == 400) {
+      try {
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: result.response.message,
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      } catch (e) {
+        alert(e);
+      }
+    } else if (result.status == 404) {
+      try {
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: 'Server not found',
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      } catch (e) {
+        alert(e);
+      }
+    }
+  };
   const [isDeleteModalVisible, setIsDeleteModalVisible] = React.useState(false);
   const [selectedShellUser, setSelectedShellUser] = React.useState('');
   return (
@@ -474,6 +526,10 @@ export default function ServerShellUsers({route, navigation}) {
               onTapClose={onMultiChange()}
               isMulti
             />
+
+            <TouchableOpacity onPress={openConsole}>
+              <Text>Click to connect with our Web SSH Terminal</Text>
+            </TouchableOpacity>
           </View>
           <View
             style={{

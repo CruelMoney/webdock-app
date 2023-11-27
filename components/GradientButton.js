@@ -8,7 +8,7 @@ export default function GradientButton({submitting, text}) {
       locations={[0.29, 0.8]}
       start={{x: 0, y: 0}}
       end={{x: 1, y: 0}}
-      colors={['#00A1A1', '#03A84E']}
+      colors={['#00956c', '#00956c']}
       style={{borderRadius: 5}}>
       {!submitting ? (
         <Text

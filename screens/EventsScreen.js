@@ -32,20 +32,34 @@ import {PureComponent} from 'react';
 import GradientButton from '../components/GradientButton';
 
 let stopFetchMore = true;
-
+const fetchData = async (page = 1) => {
+  let userToken = null;
+  try {
+    userToken = await AsyncStorage.getItem('userToken');
+    const response = await getEvents(userToken, 1);
+    const data = await response.json();
+    return data;
+  } catch (e) {
+    alert(e);
+  }
+};
 export function EventsScreen({navigation}) {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [pageCurrent, setPageCurrent] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
   const [eventDetailsModal, setEventDetailsModal] = useState(false);
   const [eventDetails, setEventDetails] = useState(false);
+
   useEffect(() => {
     setTimeout(async () => {
       let userToken = null;
       try {
         userToken = await AsyncStorage.getItem('userToken');
-        getEvents(userToken, 1).then(data => {
-          setPage(page + 1);
+        getEvents(userToken, pageCurrent).then(data => {
+          if (data.length < 20) {
+            setHasMoreToLoad(false);
+          }
           setEvents(events.concat(data));
           setIsLoading(false);
         });
@@ -53,7 +67,7 @@ export function EventsScreen({navigation}) {
         alert(e);
       }
     }, 0);
-  }, []);
+  }, [pageCurrent]);
   const renderStatusIcon = icon => {
     if (icon == 'error') {
       return <Icon name="info-outline" size={14} color="red" />;
@@ -135,24 +149,10 @@ export function EventsScreen({navigation}) {
       );
     }
   }
-  const [page, setPage] = useState(1);
-  const loadMoreItems = async () => {
+  const [hasMoreToLoad, setHasMoreToLoad] = useState(true);
+  const loadMoreItems = () => {
+    setPageCurrent(pageCurrent + 1);
     setLoadingMore(true);
-    if (!stopFetchMore) {
-      let userToken = null;
-      try {
-        userToken = await AsyncStorage.getItem('userToken');
-        getEvents(userToken, page + 1).then(data => {
-          setPage(page + 1);
-          setEvents(events.concat(data));
-          setIsLoading(false);
-          stopFetchMore = true;
-        });
-      } catch (e) {
-        alert(e);
-      }
-      setLoadingMore(false);
-    }
   };
 
   const renderLoader = () => {
@@ -208,8 +208,9 @@ export function EventsScreen({navigation}) {
           </View>
           <FlatList
             data={events}
+            keyExtractor={item => item.id}
+            onEndReached={hasMoreToLoad ? loadMoreItems : null}
             style={{marginTop: 30}}
-            initialNumToRender={10}
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
             renderItem={({item}) => (
@@ -222,7 +223,11 @@ export function EventsScreen({navigation}) {
                       item.status != 'working'
                     )
                   }
-                  item={item}>
+                  item={item}
+                  onPress={() => {
+                    setEventDetailsModal(true);
+                    setEventDetails(item);
+                  }}>
                   <View>
                     <Item item={item} />
                   </View>
@@ -235,13 +240,11 @@ export function EventsScreen({navigation}) {
                 />
               </>
             )}
-            keyExtractor={item => item.id}
             ListFooterComponent={renderLoader}
-            onEndReached={loadMoreItems}
-            onEndReachedThreshold={0.5}
-            onScrollBeginDrag={() => {
-              stopFetchMore = false;
-            }}
+            onEndReachedThreshold={0}
+            // onScrollBeginDrag={() => {
+            //   stopFetchMore = false;
+            // }}
             // ListFooterComponent={() => loadingMore && <ListFooterComponent />}
           />
           {/* Alias domains Modal */}

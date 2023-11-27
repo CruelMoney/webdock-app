@@ -73,6 +73,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import EditIcon from '../assets/edit-icon.svg';
 import GradientButton from '../components/GradientButton';
 import {Picker} from '@react-native-picker/picker';
+import {LoginWebView} from './LoginWebView';
 
 export default function ServerOverview({route, navigation}) {
   const [visible, setVisible] = React.useState(false);
@@ -1897,7 +1898,7 @@ export default function ServerOverview({route, navigation}) {
               color: '#00a1a1',
               marginVertical: 10,
             }}>
-            Suspend {route.params.slug}
+            Archive {route.params.slug}
           </Text>
           <Text
             style={{
@@ -1935,10 +1936,10 @@ export default function ServerOverview({route, navigation}) {
                 color: '#000000',
                 marginStart: 10,
               }}>
-              You can only have up to 3 suspended servers at any one time. If
-              you want more, click here to view current pricing. You can
-              permanently delete suspended servers in your servers overview. You
-              do not pay for the first 3 suspended servers in your account.
+              You can only have up to 3 archived servers at any one time. If you
+              want more, click here to view current pricing. You can permanently
+              delete archived servers in your servers overview. You do not pay
+              for the first 3 archived servers in your account.
             </Text>
           </View>
           <View
@@ -1951,7 +1952,7 @@ export default function ServerOverview({route, navigation}) {
                 color: '#000000',
                 marginStart: 10,
               }}>
-              Warning: Suspending a server means that you are in effect removing
+              Warning: Archiving a server means that you are in effect removing
               it from the Webdock infrastructure and freeing up your IPv4
               address for others to use.
             </Text>
@@ -1970,7 +1971,9 @@ export default function ServerOverview({route, navigation}) {
               style={{
                 width: '45%',
                 height: 40,
-                backgroundColor: '#00A1A1',
+                borderColor: '#00956c',
+                borderWidth: 1,
+                backgroundColor: '#FFFFFF',
                 borderRadius: 4,
                 justifyContent: 'center',
               }}>
@@ -1978,7 +1981,7 @@ export default function ServerOverview({route, navigation}) {
                 style={{
                   fontFamily: 'Raleway-Bold',
                   fontSize: 16,
-                  color: '#FFFFFF',
+                  color: '#00956c',
                   textAlign: 'center',
                   includeFontPadding: false,
                 }}>
@@ -2002,7 +2005,7 @@ export default function ServerOverview({route, navigation}) {
                   textAlign: 'center',
                   includeFontPadding: false,
                 }}>
-                Suspend
+                Archive
               </Text>
             </TouchableOpacity>
           </View>

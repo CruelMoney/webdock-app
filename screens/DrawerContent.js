@@ -32,6 +32,7 @@ import HelpIcon from '../assets/help.svg';
 import ProfileIcon from '../assets/profile.svg';
 import LogoutIcon from '../assets/logout.svg';
 import FeedbackIcon from '../assets/feedback.svg';
+import CreateServerIcon from '../assets/create-server.svg';
 export function DrawerContent(props) {
   const {signOut} = React.useContext(AuthContext);
   const [account, setAccountInfo] = useState();
@@ -93,6 +94,18 @@ export function DrawerContent(props) {
           </View>
           {/* Display the active tab */}
           <Drawer.Section style={styles.drawerSection}>
+            <DrawerItem
+              icon={({color, size}) => (
+                <CreateServerIcon width={size} height={size} />
+              )}
+              activeBackgroundColor="#e0efef"
+              activeTintColor="#00A1A1"
+              focused={activeRouteName == 'CreateServer'}
+              label="Create Server"
+              onPress={() => {
+                props.navigation.navigate('CreateServer');
+              }}
+            />
             <DrawerItem
               icon={({color, size}) => (
                 <DashboardIcon width={size} height={size} />

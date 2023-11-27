@@ -6,7 +6,7 @@ import {AuthContext} from '../components/context';
 import {getPing} from '../service/ping';
 
 // ...
-export function LoginWebView() {
+export function ServerConsole({navigation, route}) {
   const [deviceName, setDeviceName] = useState();
   const {signIn} = React.useContext(AuthContext);
   const [token, setToken] = useState('');
@@ -29,6 +29,7 @@ export function LoginWebView() {
     DeviceInfo.getDeviceName().then(deviceName => {
       setDeviceName(deviceName);
     });
+    console.log(route.params);
   }, []);
 
   const [loading, setLoading] = useState(true);
@@ -41,7 +42,12 @@ export function LoginWebView() {
         userAgent={'Webdock Mobile App WebView v1.0'}
         source={{
           uri:
-            'https://webdock.io/en/login?fromApp=true&deviceName=' + deviceName,
+            ' https://webdock.io/en/webssh/' +
+            route.params.slug +
+            '/' +
+            route.params.username +
+            '?token=' +
+            route.params.token,
           headers: {
             'X-Device-Name': deviceName,
           },
@@ -52,9 +58,8 @@ export function LoginWebView() {
         onLoadEnd={hideSpinner}
         injectedJavaScriptBeforeContentLoaded={runFirst}
         onMessage={event => {
-          const {data} = event.nativeEvent;
-          console.log(data);
-          loginHandle(data);
+          // const {data} = event.nativeEvent;
+          // loginHandle(data);
         }}
       />
       {loading && (

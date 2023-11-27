@@ -8,6 +8,8 @@ export async function getEvents(api_key, page) {
         Authorization: 'Bearer ' + api_key,
       },
     });
+    console.log(api_url + 'events?per_page=20&page=' + page);
+    console.log(api_key);
     let result = await request.json();
     request = null;
     return result;

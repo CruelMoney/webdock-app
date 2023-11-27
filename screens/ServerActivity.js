@@ -191,7 +191,6 @@ export default function ServerActivity({route, navigation}) {
                       return hours + ':' + minutes;
                     })
                   : [null],
-                legend: ['Disk use (MiB)'],
               }}
               segments={5}
               // height={400}

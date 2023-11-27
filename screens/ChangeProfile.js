@@ -461,23 +461,29 @@ export default function ChangeProfile({navigation, route}) {
                     <DataTable.Row>
                       <DataTable.Cell>Subtotal</DataTable.Cell>
                       <DataTable.Cell numeric>
-                        {dryRun.response.chargeSummary.total.subTotal.amount /
-                          100 +
-                          ' ' +
-                          currency_symbols[
-                            dryRun.response.chargeSummary.total.subTotal
-                              .currency
-                          ]}
+                        {dryRun
+                          ? dryRun.response.chargeSummary.total.subTotal
+                              .amount /
+                              100 +
+                            ' ' +
+                            currency_symbols[
+                              dryRun.response.chargeSummary.total.subTotal
+                                .currency
+                            ]
+                          : null}
                       </DataTable.Cell>
                     </DataTable.Row>
                     <DataTable.Row>
                       <DataTable.Cell>VAT</DataTable.Cell>
                       <DataTable.Cell numeric>
-                        {dryRun.response.chargeSummary.total.vat.amount / 100 +
-                          ' ' +
-                          currency_symbols[
-                            dryRun.response.chargeSummary.total.vat.currency
-                          ]}
+                        {dryRun
+                          ? dryRun.response.chargeSummary.total.vat.amount /
+                              100 +
+                            ' ' +
+                            currency_symbols[
+                              dryRun.response.chargeSummary.total.vat.currency
+                            ]
+                          : null}
                       </DataTable.Cell>
                     </DataTable.Row>
                     <DataTable.Row style={{borderColor: 'red'}}>
@@ -486,12 +492,15 @@ export default function ChangeProfile({navigation, route}) {
                       </DataTable.Cell>
                       <DataTable.Cell numeric>
                         <Text style={{fontWeight: 'bold'}}>
-                          {dryRun.response.chargeSummary.total.total.amount /
-                            100 +
-                            ' ' +
-                            currency_symbols[
-                              dryRun.response.chargeSummary.total.total.currency
-                            ]}
+                          {dryRun
+                            ? dryRun.response.chargeSummary.total.total.amount /
+                                100 +
+                              ' ' +
+                              currency_symbols[
+                                dryRun.response.chargeSummary.total.total
+                                  .currency
+                              ]
+                            : null}
                         </Text>
                       </DataTable.Cell>
                     </DataTable.Row>

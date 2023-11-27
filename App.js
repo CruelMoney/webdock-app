@@ -46,6 +46,7 @@ import {Dashboard} from './screens/Dashboard';
 import {ServerManagement} from './screens/ServerManagement';
 import LinearGradient from 'react-native-linear-gradient';
 import SvgLogoWhite from './assets/logowhite.svg';
+import CreateServer from './screens/CreateServer';
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 export default function App() {
@@ -184,6 +185,14 @@ export default function App() {
                 <Drawer.Screen
                   name="ServerManagement"
                   component={ServerManagement}
+                  options={{
+                    unmountOnBlur: true,
+                    headerShown: false,
+                  }}
+                />
+                <Drawer.Screen
+                  name="CreateServer"
+                  component={CreateServer}
                   options={{
                     unmountOnBlur: true,
                     headerShown: false,
