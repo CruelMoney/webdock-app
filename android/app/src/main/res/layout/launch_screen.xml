@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:id="@+id/layoutsplash"
+    android:background="@drawable/gradientbackground"
+    android:gravity="center">
+    <ImageView
+        android:id="@+id/the_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="50dp"
+        android:adjustViewBounds="true"
+        android:src="@drawable/launch_logo" />
+</RelativeLayout>

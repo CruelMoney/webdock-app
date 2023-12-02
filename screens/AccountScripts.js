@@ -38,6 +38,7 @@ import DeleteIcon from '../assets/delete-icon.svg';
 import EditIcon from '../assets/edit-icon.svg';
 import BackIcon from '../assets/back-icon.svg';
 import PlusIcon from '../assets/plus-icon.svg';
+import EmptyList from '../components/EmptyList';
 export default function AccountScripts({navigation}) {
   const [scripts, setScripts] = useState();
   useEffect(() => {
@@ -169,7 +170,11 @@ export default function AccountScripts({navigation}) {
       <View
         width="100%"
         height="100%"
-        style={{backgroundColor: '#F4F8F8', padding: '8%'}}>
+        style={{
+          backgroundColor: '#F4F8F8',
+          paddingHorizontal: '8%',
+          paddingTop: '8%',
+        }}>
         <View
           style={{
             display: 'flex',
@@ -207,10 +212,21 @@ export default function AccountScripts({navigation}) {
             </TouchableOpacity>
           )}
           keyExtractor={item => item.id}
+          ListEmptyComponent={<EmptyList />}
         />
         <TouchableOpacity
           onPress={() => navigation.navigate('CreateAccountScript')}
-          style={{position: 'absolute', right: 30, bottom: 30}}>
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            justifyContent: 'center',
+            alignItems: 'center',
+            right: 20,
+            bottom: 20,
+            width: 50,
+            height: 50,
+            borderRadius: 50 / 2,
+          }}>
           <PlusIcon height={50} width={50} />
         </TouchableOpacity>
       </View>
@@ -274,19 +290,18 @@ export default function AccountScripts({navigation}) {
               style={{
                 width: '45%',
                 height: 40,
-                backgroundColor: '#00a1a1',
+                borderColor: '#00956c',
+                borderWidth: 1,
+                backgroundColor: '#FFFFFF',
                 borderRadius: 4,
-                flexDirection: 'row',
-                alignItems: 'center',
                 justifyContent: 'center',
               }}>
               <Text
                 style={{
                   fontFamily: 'Raleway-Bold',
                   fontSize: 16,
-                  color: '#FFFFFF',
+                  color: '#00956c',
                   textAlign: 'center',
-                  textAlignVertical: 'center',
                   includeFontPadding: false,
                 }}>
                 Cancel

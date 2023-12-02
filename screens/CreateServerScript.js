@@ -250,7 +250,9 @@ export default function CreateServerScript({route, navigation}) {
                 }}
                 color="#00A1A1"
               />
-              <Text>Make file executable</Text>
+              <Text style={{fontFamily: 'Raleway-Normal'}}>
+                Make file executable
+              </Text>
             </View>
             <View
               style={{
@@ -265,7 +267,7 @@ export default function CreateServerScript({route, navigation}) {
                 }}
                 color="#00A1A1"
               />
-              <Text>Run this now</Text>
+              <Text style={{fontFamily: 'Raleway-Normal'}}>Run this now</Text>
             </View>
           </View>
           <View style={{display: 'flex', flexDirection: 'row', marginTop: 20}}>

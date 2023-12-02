@@ -30,6 +30,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import MenuIcon from '../assets/menu-icon.svg';
 import {PureComponent} from 'react';
 import GradientButton from '../components/GradientButton';
+import EmptyList from '../components/EmptyList';
 
 let stopFetchMore = true;
 const fetchData = async (page = 1) => {
@@ -242,9 +243,10 @@ export function EventsScreen({navigation}) {
             )}
             ListFooterComponent={renderLoader}
             onEndReachedThreshold={0}
-            // onScrollBeginDrag={() => {
-            //   stopFetchMore = false;
-            // }}
+            onScrollBeginDrag={() => {
+              stopFetchMore = false;
+            }}
+            ListEmptyComponent={<EmptyList />}
             // ListFooterComponent={() => loadingMore && <ListFooterComponent />}
           />
           {/* Alias domains Modal */}

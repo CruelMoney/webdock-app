@@ -39,6 +39,7 @@ import {
 import BackIcon from '../assets/back-icon.svg';
 import PlusIcon from '../assets/plus-icon.svg';
 import DeleteIcon from '../assets/delete-icon.svg';
+import EmptyList from '../components/EmptyList';
 export default function ServerSnapshots({route, navigation}) {
   const [serverSnapshots, setSnapshots] = useState();
   useEffect(() => {
@@ -364,10 +365,21 @@ export default function ServerSnapshots({route, navigation}) {
             </>
           )}
           keyExtractor={item => item.id}
+          ListEmptyComponent={<EmptyList />}
         />
         <TouchableOpacity
           onPress={() => navigation.navigate('CreateServerSnapshot')}
-          style={{position: 'absolute', right: 30, bottom: 30}}>
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            justifyContent: 'center',
+            alignItems: 'center',
+            right: 20,
+            bottom: 20,
+            width: 50,
+            height: 50,
+            borderRadius: 50 / 2,
+          }}>
           <PlusIcon height={50} width={50} />
         </TouchableOpacity>
       </View>
@@ -431,7 +443,9 @@ export default function ServerSnapshots({route, navigation}) {
               style={{
                 width: '45%',
                 height: 40,
-                backgroundColor: '#00a1a1',
+                borderColor: '#00956c',
+                borderWidth: 1,
+                backgroundColor: '#FFFFFF',
                 borderRadius: 4,
                 justifyContent: 'center',
               }}>
@@ -439,7 +453,7 @@ export default function ServerSnapshots({route, navigation}) {
                 style={{
                   fontFamily: 'Raleway-Bold',
                   fontSize: 16,
-                  color: '#FFFFFF',
+                  color: '#00956c',
                   textAlign: 'center',
                   includeFontPadding: false,
                 }}>
@@ -573,7 +587,9 @@ export default function ServerSnapshots({route, navigation}) {
               style={{
                 width: '45%',
                 height: 40,
-                backgroundColor: '#00a1a1',
+                borderColor: '#00956c',
+                borderWidth: 1,
+                backgroundColor: '#FFFFFF',
                 borderRadius: 4,
                 justifyContent: 'center',
               }}>
@@ -581,7 +597,7 @@ export default function ServerSnapshots({route, navigation}) {
                 style={{
                   fontFamily: 'Raleway-Bold',
                   fontSize: 16,
-                  color: '#FFFFFF',
+                  color: '#00956c',
                   textAlign: 'center',
                   includeFontPadding: false,
                 }}>

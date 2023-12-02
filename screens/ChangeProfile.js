@@ -294,7 +294,7 @@ export default function ChangeProfile({navigation, route}) {
   }, [selectedPlan]);
   const updateLayout = index => {
     LayoutAnimation.configureNext({
-      duration: 300,
+      duration: 200,
       create: {
         type: LayoutAnimation.Types.easeInEaseOut,
         property: LayoutAnimation.Properties.opacity,
@@ -396,8 +396,8 @@ export default function ChangeProfile({navigation, route}) {
           flexDirection: 'column',
         }}>
         <View>
-          <View>
-            <Text style={styles.contentTitle}>Your Current Server Profile</Text>
+          <View style={{paddingTop: 10}}>
+            <SectionTitle title={'Your Current Server Profile'} />
             {profiles
               ? profiles.map((gr, key) =>
                   route.params.profile == gr.slug ? (
@@ -411,9 +411,7 @@ export default function ChangeProfile({navigation, route}) {
                   ) : null,
                 )
               : null}
-            <Text style={styles.contentTitle}>
-              Select a New Hardware Profile
-            </Text>
+            <SectionTitle title={'Select a New Hardware Profile'} />
             {profiles
               ? profiles
                   .filter(item =>
@@ -447,7 +445,10 @@ export default function ChangeProfile({navigation, route}) {
                     {itemsCharge
                       ? itemsCharge.map(item => (
                           <DataTable.Row key={item.text}>
-                            <DataTable.Cell>{item.text}</DataTable.Cell>
+                            <DataTable.Cell
+                              style={{fontFamily: 'Raleway-Regular'}}>
+                              {item.text}
+                            </DataTable.Cell>
                             <DataTable.Cell numeric>
                               {item.price.amount / 100 +
                                 ' ' +
@@ -462,14 +463,16 @@ export default function ChangeProfile({navigation, route}) {
                       <DataTable.Cell>Subtotal</DataTable.Cell>
                       <DataTable.Cell numeric>
                         {dryRun
-                          ? dryRun.response.chargeSummary.total.subTotal
-                              .amount /
-                              100 +
-                            ' ' +
-                            currency_symbols[
-                              dryRun.response.chargeSummary.total.subTotal
-                                .currency
-                            ]
+                          ? dryRun.response
+                            ? dryRun.response.chargeSummary.total.subTotal
+                                .amount /
+                                100 +
+                              ' ' +
+                              currency_symbols[
+                                dryRun.response.chargeSummary.total.subTotal
+                                  .currency
+                              ]
+                            : null
                           : null}
                       </DataTable.Cell>
                     </DataTable.Row>
@@ -477,12 +480,14 @@ export default function ChangeProfile({navigation, route}) {
                       <DataTable.Cell>VAT</DataTable.Cell>
                       <DataTable.Cell numeric>
                         {dryRun
-                          ? dryRun.response.chargeSummary.total.vat.amount /
-                              100 +
-                            ' ' +
-                            currency_symbols[
-                              dryRun.response.chargeSummary.total.vat.currency
-                            ]
+                          ? dryRun.response
+                            ? dryRun.response.chargeSummary.total.vat.amount /
+                                100 +
+                              ' ' +
+                              currency_symbols[
+                                dryRun.response.chargeSummary.total.vat.currency
+                              ]
+                            : null
                           : null}
                       </DataTable.Cell>
                     </DataTable.Row>
@@ -493,13 +498,16 @@ export default function ChangeProfile({navigation, route}) {
                       <DataTable.Cell numeric>
                         <Text style={{fontWeight: 'bold'}}>
                           {dryRun
-                            ? dryRun.response.chargeSummary.total.total.amount /
-                                100 +
-                              ' ' +
-                              currency_symbols[
-                                dryRun.response.chargeSummary.total.total
-                                  .currency
-                              ]
+                            ? dryRun.response
+                              ? dryRun.response.chargeSummary.total.total
+                                  .amount /
+                                  100 +
+                                ' ' +
+                                currency_symbols[
+                                  dryRun.response.chargeSummary.total.total
+                                    .currency
+                                ]
+                              : null
                             : null}
                         </Text>
                       </DataTable.Cell>
@@ -518,14 +526,20 @@ export default function ChangeProfile({navigation, route}) {
                         setCheckedBox(!checkedBox);
                       }}
                     />
-                    <Text>
+                    <Text
+                      style={{fontFamily: 'Raleway-Regular', color: '#000000'}}>
                       I accept the above changes to my server and order in
                       obligation.
                     </Text>
                   </View>
                 </View>
               ) : (
-                <Text>
+                <Text
+                  style={{
+                    fontFamily: 'Raleway-Regular',
+                    color: '#000000',
+                    paddingBottom: 10,
+                  }}>
                   Please select a new hardware profile above in order to see a
                   summary of changes.
                 </Text>
@@ -543,6 +557,35 @@ export default function ChangeProfile({navigation, route}) {
           </View>
         </View>
       </ScrollView>
+    </View>
+  );
+}
+function SectionTitle({title, question, questionUrl}) {
+  const handleClick = url => {
+    if (!url.includes('https://') && !url.includes('http://')) {
+      url = 'https://' + url;
+    }
+    Linking.canOpenURL(url).then(supported => {
+      if (supported) {
+        Linking.openURL(url);
+      } else {
+        console.log("Don't know how to open URI: " + url);
+      }
+    });
+  };
+  return (
+    <View
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'baseline',
+        marginBottom: 5,
+      }}>
+      <Text style={styles.titleText}>{title}</Text>
+      <TouchableOpacity onPress={() => handleClick(questionUrl)}>
+        <Text style={styles.infoUrl}>{question}</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -576,7 +619,16 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textAlign: 'center',
   },
-  closebutton: {
-    alignItems: 'flex-end',
+  titleText: {
+    fontSize: 18,
+    fontFamily: 'Raleway-Medium',
+    includeFontPadding: false,
+    textAlign: 'left',
+  },
+  infoUrl: {
+    color: '#00A1A1',
+    fontFamily: 'Raleway-Regular',
+    fontSize: 10,
+    includeFontPadding: false,
   },
 });

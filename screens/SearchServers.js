@@ -19,6 +19,7 @@ import {Avatar, Divider} from 'react-native-paper';
 import {getServers} from '../service/servers';
 import {AuthContext} from '../components/context';
 import AsyncStorage from '@react-native-community/async-storage';
+import EmptyList from '../components/EmptyList';
 export default function SearchServers({navigation}) {
   const [searchQuery, setSearchQuery] = React.useState('');
   const onChangeSearch = query => setSearchQuery(query);
@@ -133,6 +134,7 @@ export default function SearchServers({navigation}) {
           </TouchableOpacity>
         )}
         keyExtractor={item => item.slug}
+        ListEmptyComponent={<EmptyList />}
       />
       <FAB
         style={styles.fab}

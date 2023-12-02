@@ -6,47 +6,26 @@
  * @flow strict-local
  */
 
-import React, {useEffect} from 'react';
-import {
-  ActivityIndicator,
-  HeaderBarItem,
-  Image,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
-import {Provider, Snackbar} from 'react-native-paper';
-import Modal from 'react-native-modal';
-import {NavigationContainer, StackActions} from '@react-navigation/native';
+import AsyncStorage from '@react-native-community/async-storage';
+import NetInfo from '@react-native-community/netinfo';
 import {createDrawerNavigator} from '@react-navigation/drawer';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import React, {useEffect, useState} from 'react';
+import {StyleSheet} from 'react-native';
+import {Provider} from 'react-native-paper';
+import SplashScreen from 'react-native-splash-screen';
+import Toast from 'react-native-toast-message';
+import {AuthContext} from './components/context';
+import OfflineNotice from './components/OfflineNotice';
+import {AccountRootStack} from './screens/AccountRootStack';
+import CreateServer from './screens/CreateServer';
+import {Dashboard} from './screens/Dashboard';
 import {DrawerContent} from './screens/DrawerContent';
-import Header from './shared/header';
-import {LogInScreen} from './screens/LogInScreen';
-import EventsScreen from './screens/EventsScreen';
+import {EventsStackNavigator} from './screens/EventsStack';
 import {MainStackNavigator} from './screens/HomeStack';
 import {RootStack} from './screens/RootStack';
-import {AuthContext} from './components/context';
-import AsyncStorage from '@react-native-community/async-storage';
-import {EventsStackNavigator} from './screens/EventsStack';
-import {createStackNavigator, HeaderBackButton} from '@react-navigation/stack';
-import {AccountStack} from './screens/AccountStack';
-import {IconButton} from 'react-native-paper';
-import CreateAccountScript from './screens/CreateAccountScript';
-import {AccountRootStack} from './screens/AccountRootStack';
-import Toast from 'react-native-toast-message';
-import UpdateServerMetadata from './screens/UpdateServerMetadata';
-import CreateServerScript from './screens/CreateServerScript';
-import NetInfo from '@react-native-community/netinfo';
-import {useState} from 'react';
-import {Dashboard} from './screens/Dashboard';
 import {ServerManagement} from './screens/ServerManagement';
-import LinearGradient from 'react-native-linear-gradient';
-import SvgLogoWhite from './assets/logowhite.svg';
-import CreateServer from './screens/CreateServer';
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 export default function App() {
@@ -89,7 +68,6 @@ export default function App() {
 
   const authContext = React.useMemo(() => ({
     signIn: async utoken => {
-      // setUserToken('fgkj');
       try {
         await AsyncStorage.setItem('userToken', utoken);
       } catch (e) {
@@ -130,18 +108,24 @@ export default function App() {
     }, 0);
   }, []);
 
-  if (loginState.isLoading) {
-    return (
-      <LinearGradient
-        locations={[0.29, 0.8]}
-        start={{x: 0, y: 0}}
-        end={{x: 1, y: 0}}
-        colors={['#00A1A1', '#03A84E']}
-        style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <SvgLogoWhite />
-      </LinearGradient>
-    );
-  }
+  useEffect(() => {
+    if (loginState.isLoading == false) {
+      SplashScreen.hide();
+    }
+  }, [loginState]);
+
+  // if (loginState.isLoading) {
+  //   return (
+  //     <LinearGradient
+  //       locations={[0.29, 0.8]}
+  //       start={{x: 0, y: 0}}
+  //       end={{x: 1, y: 0}}
+  //       colors={['#00A1A1', '#03A84E']}
+  //       style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+  //       <SvgLogoWhite />
+  //     </LinearGradient>
+  //   );
+  // }
 
   return (
     <Provider>
@@ -203,15 +187,12 @@ export default function App() {
           ) : (
             <RootStack />
           )}
+          <OfflineNotice style={{zIndex: 200000}} />
           <Toast ref={ref => Toast.setRef(ref)} style={{zIndex: 200000}} />
         </NavigationContainer>
+        <OfflineNotice style={{zIndex: 200000}} />
         <Toast ref={ref => Toast.setRef(ref)} style={{zIndex: 200000}} />
       </AuthContext.Provider>
-      <Modal isVisible={netModalIsVisible}>
-        <View>
-          <Text>No internet</Text>
-        </View>
-      </Modal>
     </Provider>
   );
 }

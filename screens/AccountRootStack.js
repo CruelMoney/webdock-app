@@ -1,20 +1,13 @@
-import React from 'react';
-import {Text, Button, View, TextInput} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
+import React from 'react';
 
-import {HomeScreen} from '../screens/HomeScreen';
-import {DrawerContent} from '../screens/DrawerContent';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import Header from '../shared/header';
-import {IconButton, Colors, Searchbar} from 'react-native-paper';
-import SearchServers from './SearchServers';
-import AccountPublicKeys from './AccountPublicKeys'
-import AccountScripts from './AccountScripts'
 import Account from './Account';
-import CreatePublicKey from './CreatePublicKey';
-import CreateAccountScript from './CreateAccountScript'
-import EditAccountScript from './EditAccountScript';
 import AccountInfo from './AccountInfo';
+import AccountPublicKeys from './AccountPublicKeys';
+import AccountScripts from './AccountScripts';
+import CreateAccountScript from './CreateAccountScript';
+import CreatePublicKey from './CreatePublicKey';
+import EditAccountScript from './EditAccountScript';
 const Stack = createStackNavigator();
 
 const screenOptionStyle = {
@@ -33,56 +26,56 @@ const AccountRootStack = ({navigation}) => {
         name="Account"
         component={Account}
         options={{
-          headerShown: false
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="AccountInfo"
         component={AccountInfo}
         options={{
-          headerShown: false
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="General"
         component={Account}
         options={{
-          headerShown: false
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="PublicKeys"
         component={AccountPublicKeys}
         options={{
-          headerShown: false
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="CreatePublicKeys"
         component={CreatePublicKey}
         options={{
-          headerShown: false
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="Scripts"
         component={AccountScripts}
         options={{
-          headerShown: false
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="CreateAccountScript"
         component={CreateAccountScript}
         options={{
-          headerShown: false
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="EditAccountScript"
         component={EditAccountScript}
         options={{
-          headerShown: false
+          headerShown: false,
         }}
       />
     </Stack.Navigator>

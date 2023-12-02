@@ -52,6 +52,7 @@ import PowerIcon from '../assets/power-icon.svg';
 import DropdownIcon from '../assets/dropdown-icon.svg';
 import ArrowIcon from '../assets/arrow-icon.svg';
 import LoadingList from '../components/LoadingList';
+import EmptyList from '../components/EmptyList';
 export function HomeScreen({navigation}) {
   const [servers, setServers] = useState();
   const [locations, setLocations] = useState();
@@ -594,6 +595,7 @@ export function HomeScreen({navigation}) {
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
             onRefresh={() => onRefresh()}
+            ListEmptyComponent={<EmptyList />}
             refreshing={isFetching}
             ListFooterComponent={<View style={{height: 60}}></View>}
             renderItem={({item}) => (

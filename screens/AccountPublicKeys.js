@@ -38,6 +38,7 @@ import MenuIcon from '../assets/menu-icon.svg';
 import PlusIcon from '../assets/plus-icon.svg';
 import DeleteIcon from '../assets/delete-icon.svg';
 import BackIcon from '../assets/back-icon.svg';
+import EmptyList from '../components/EmptyList';
 
 export default function AccountPublicKeys({navigation}) {
   const [publicKeys, setPublicKeys] = useState();
@@ -133,10 +134,7 @@ export default function AccountPublicKeys({navigation}) {
   };
 
   const EmptyListMessage = ({item}) => {
-    return (
-      // Flat List Item
-      <Text style={styles.emptyListStyle}>No Data Found</Text>
-    );
+    return <Text style={styles.emptyListStyle}>No Data Found</Text>;
   };
 
   const [isDeleteModalVisible, setIsDeleteModalVisible] = React.useState(false);
@@ -181,11 +179,21 @@ export default function AccountPublicKeys({navigation}) {
             </View>
           )}
           keyExtractor={item => item.id}
-          ListEmptyComponent={EmptyListMessage}
+          ListEmptyComponent={<EmptyList />}
         />
         <TouchableOpacity
           onPress={() => navigation.navigate('CreatePublicKeys')}
-          style={{position: 'absolute', right: 30, bottom: 30}}>
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            justifyContent: 'center',
+            alignItems: 'center',
+            right: 20,
+            bottom: 20,
+            width: 50,
+            height: 50,
+            borderRadius: 50 / 2,
+          }}>
           <PlusIcon height={50} width={50} />
         </TouchableOpacity>
       </View>
@@ -249,16 +257,18 @@ export default function AccountPublicKeys({navigation}) {
               style={{
                 width: '45%',
                 height: 40,
-                backgroundColor: '#00a1a1',
+                borderColor: '#00956c',
+                borderWidth: 1,
+                backgroundColor: '#FFFFFF',
                 borderRadius: 4,
                 justifyContent: 'center',
-                alignItems: 'center',
               }}>
               <Text
                 style={{
                   fontFamily: 'Raleway-Bold',
                   fontSize: 16,
-                  color: '#FFFFFF',
+                  color: '#00956c',
+                  textAlign: 'center',
                   includeFontPadding: false,
                 }}>
                 Cancel

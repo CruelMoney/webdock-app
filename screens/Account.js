@@ -1,20 +1,11 @@
 import AsyncStorage from '@react-native-community/async-storage';
-import React, {useState, useEffect} from 'react';
-import {
-  ActivityIndicator,
-  Linking,
-  Pressable,
-  View,
-  Text,
-  Image,
-} from 'react-native';
-import {getAccountInformations} from '../service/accountInformations';
+import React, {useEffect, useState} from 'react';
+import {ActivityIndicator, Image, Text, View} from 'react-native';
+import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
 import MenuIcon from '../assets/menu-icon.svg';
-import UserIcon from '../assets/user-icon.svg';
 import PubicKeyIcon from '../assets/public-key-icon.svg';
 import ScriptsIcon from '../assets/scripts-icon.svg';
-import TeamIcon from '../assets/team-icon.svg';
-import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
+import {getAccountInformations} from '../service/accountInformations';
 
 export default function Account({navigation}) {
   const [account, setAccount] = useState();

@@ -32,7 +32,8 @@ export default function ServerActivity({route, navigation}) {
     <View width="100%" height="100%" style={{backgroundColor: '#F4F8F8'}}>
       <View
         style={{
-          padding: '8%',
+          paddingHorizontal: '8%',
+          paddingTop: '8%',
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
@@ -52,7 +53,9 @@ export default function ServerActivity({route, navigation}) {
         </Text>
         <View style={{width: 50}}></View>
       </View>
-      <ScrollView style={{marginHorizontal: '3%'}}>
+      <ScrollView
+        style={{marginHorizontal: '3%', marginTop: '2%'}}
+        showsVerticalScrollIndicator={false}>
         <Card
           mode="elevated"
           style={{
@@ -71,7 +74,16 @@ export default function ServerActivity({route, navigation}) {
                   color: '#bdbdbd',
                   includeFontPadding: false,
                 }}>
-                09-05-2023
+                {metrics
+                  ? metrics.cpu.usageSamplings.slice(-1).map(item => {
+                      const dateString = item.timestamp.replace(/ /g, 'T');
+                      var date = new Date(dateString);
+                      const day = String(date.getDay()).padStart(2, '0');
+                      const month = String(date.getMonth()).padStart(2, '0');
+                      const year = String(date.getFullYear()).padStart(4, '0');
+                      return month + '-' + day + '-' + year;
+                    })
+                  : ''}
               </Title>
             )}
           />
@@ -154,8 +166,23 @@ export default function ServerActivity({route, navigation}) {
             titleStyle={{fontFamily: 'Raleway-Regular', marginStart: 10}}
             title={'Disk'}
             right={() => (
-              <Title style={{fontFamily: 'Raleway-Regular', marginRight: 20}}>
-                09-05-2023
+              <Title
+                style={{
+                  fontFamily: 'Raleway-Medium',
+                  marginRight: 20,
+                  color: '#bdbdbd',
+                  includeFontPadding: false,
+                }}>
+                {metrics
+                  ? metrics.disk.samplings.slice(-1).map(item => {
+                      const dateString = item.timestamp.replace(/ /g, 'T');
+                      var date = new Date(dateString);
+                      const day = String(date.getDay()).padStart(2, '0');
+                      const month = String(date.getMonth()).padStart(2, '0');
+                      const year = String(date.getFullYear()).padStart(4, '0');
+                      return month + '-' + day + '-' + year;
+                    })
+                  : ''}
               </Title>
             )}
           />
@@ -231,8 +258,23 @@ export default function ServerActivity({route, navigation}) {
             titleStyle={{fontFamily: 'Raleway-Regular', marginStart: 10}}
             title={'Memory'}
             right={() => (
-              <Title style={{fontFamily: 'Raleway-Regular', marginRight: 20}}>
-                09-05-2023
+              <Title
+                style={{
+                  fontFamily: 'Raleway-Medium',
+                  marginRight: 20,
+                  color: '#bdbdbd',
+                  includeFontPadding: false,
+                }}>
+                {metrics
+                  ? metrics.memory.usageSamplings.slice(-1).map(item => {
+                      const dateString = item.timestamp.replace(/ /g, 'T');
+                      var date = new Date(dateString);
+                      const day = String(date.getDay()).padStart(2, '0');
+                      const month = String(date.getMonth()).padStart(2, '0');
+                      const year = String(date.getFullYear()).padStart(4, '0');
+                      return month + '-' + day + '-' + year;
+                    })
+                  : ''}
               </Title>
             )}
           />
@@ -307,8 +349,23 @@ export default function ServerActivity({route, navigation}) {
             titleStyle={{fontFamily: 'Raleway-Regular', marginStart: 10}}
             title={'CPU'}
             right={() => (
-              <Title style={{fontFamily: 'Raleway-Regular', marginRight: 20}}>
-                09-05-2023
+              <Title
+                style={{
+                  fontFamily: 'Raleway-Medium',
+                  marginRight: 20,
+                  color: '#bdbdbd',
+                  includeFontPadding: false,
+                }}>
+                {metrics
+                  ? metrics.network.egressSamplings.slice(-1).map(item => {
+                      const dateString = item.timestamp.replace(/ /g, 'T');
+                      var date = new Date(dateString);
+                      const day = String(date.getDay()).padStart(2, '0');
+                      const month = String(date.getMonth()).padStart(2, '0');
+                      const year = String(date.getFullYear()).padStart(4, '0');
+                      return month + '-' + day + '-' + year;
+                    })
+                  : ''}
               </Title>
             )}
           />
@@ -381,6 +438,7 @@ export default function ServerActivity({route, navigation}) {
             />
           </Card.Content>
         </Card>
+        <View style={{height: 10}}></View>
       </ScrollView>
     </View>
   );

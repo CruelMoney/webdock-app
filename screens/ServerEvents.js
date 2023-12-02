@@ -41,6 +41,7 @@ import ArrowIcon from '../assets/arrow-icon.svg';
 import Modal from 'react-native-modal';
 import LinearGradient from 'react-native-linear-gradient';
 import GradientButton from '../components/GradientButton';
+import EmptyList from '../components/EmptyList';
 
 let stopFetchMore = true;
 const ListFooterComponent = () => (
@@ -319,6 +320,7 @@ export default function ServerEvents({route, navigation}) {
             </>
           )}
           keyExtractor={item => item.id}
+          ListEmptyComponent={<EmptyList />}
           // onEndReached={loadMoreItems}
           // onEndReachedThreshold={0.5}
           // onScrollBeginDrag={() => {

@@ -58,7 +58,16 @@ export function LoginWebView() {
         }}
       />
       {loading && (
-        <ActivityIndicator style={{position: 'absolute'}} size="large" />
+        <View
+          style={{
+            display: 'flex',
+            width: '100%',
+            height: '100%',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <ActivityIndicator style={{position: 'absolute'}} size="large" />
+        </View>
       )}
     </>
   );

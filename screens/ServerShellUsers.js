@@ -464,7 +464,17 @@ export default function ServerShellUsers({route, navigation}) {
         />
         <TouchableOpacity
           onPress={() => navigation.navigate('CreateServerShellUsers')}
-          style={{position: 'absolute', right: 30, bottom: 30}}>
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            justifyContent: 'center',
+            alignItems: 'center',
+            right: 20,
+            bottom: 20,
+            width: 50,
+            height: 50,
+            borderRadius: 50 / 2,
+          }}>
           <PlusIcon height={50} width={50} />
         </TouchableOpacity>
       </View>
@@ -528,7 +538,30 @@ export default function ServerShellUsers({route, navigation}) {
             />
 
             <TouchableOpacity onPress={openConsole}>
-              <Text>Click to connect with our Web SSH Terminal</Text>
+              <View
+                style={{display: 'flex', flexDirection: 'row', marginTop: 20}}>
+                <View style={{backgroundColor: '#03A84E', width: 1}}></View>
+                <View>
+                  <Text
+                    style={{
+                      fontFamily: 'Raleway-Bold',
+                      fontSize: 14,
+                      color: '#5F5F5F',
+                      marginStart: 10,
+                    }}>
+                    Connect now in your browser (easiest way):
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: 'Raleway-Regular',
+                      fontSize: 12,
+                      color: '#039be5',
+                      marginStart: 10,
+                    }}>
+                    Click to connect with our Web SSH Terminal
+                  </Text>
+                </View>
+              </View>
             </TouchableOpacity>
           </View>
           <View

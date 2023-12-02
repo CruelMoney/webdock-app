@@ -1,21 +1,10 @@
 import AsyncStorage from '@react-native-community/async-storage';
-import React, {useState, useEffect} from 'react';
-import {ActivityIndicator, Linking, View, Text} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {ActivityIndicator, Linking, Text, View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
-import {
-  Card,
-  Avatar,
-  Title,
-  Paragraph,
-  Button,
-  Divider,
-  TextInput,
-} from 'react-native-paper';
-import {getAccountInformations} from '../service/accountInformations';
-import MenuIcon from '../assets/menu-icon.svg';
-import PlusIcon from '../assets/plus-icon.svg';
-import DeleteIcon from '../assets/delete-icon.svg';
+import {TextInput} from 'react-native-paper';
 import BackIcon from '../assets/back-icon.svg';
+import {getAccountInformations} from '../service/accountInformations';
 
 export default function AccountInfo({navigation}) {
   const [account, setAccount] = useState();

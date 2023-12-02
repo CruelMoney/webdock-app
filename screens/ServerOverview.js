@@ -73,7 +73,6 @@ import LinearGradient from 'react-native-linear-gradient';
 import EditIcon from '../assets/edit-icon.svg';
 import GradientButton from '../components/GradientButton';
 import {Picker} from '@react-native-picker/picker';
-import {LoginWebView} from './LoginWebView';
 
 export default function ServerOverview({route, navigation}) {
   const [visible, setVisible] = React.useState(false);
@@ -1671,7 +1670,9 @@ export default function ServerOverview({route, navigation}) {
               style={{
                 width: '45%',
                 height: 40,
-                backgroundColor: '#D94B4B',
+                borderColor: '#00956c',
+                borderWidth: 1,
+                backgroundColor: '#FFFFFF',
                 borderRadius: 4,
                 justifyContent: 'center',
               }}>
@@ -1679,7 +1680,7 @@ export default function ServerOverview({route, navigation}) {
                 style={{
                   fontFamily: 'Raleway-Bold',
                   fontSize: 16,
-                  color: '#FFFFFF',
+                  color: '#00956c',
                   textAlign: 'center',
                   includeFontPadding: false,
                 }}>
@@ -1755,7 +1756,9 @@ export default function ServerOverview({route, navigation}) {
               style={{
                 width: '45%',
                 height: 40,
-                backgroundColor: '#00a1a1',
+                borderColor: '#00956c',
+                borderWidth: 1,
+                backgroundColor: '#FFFFFF',
                 borderRadius: 4,
                 justifyContent: 'center',
               }}>
@@ -1763,7 +1766,7 @@ export default function ServerOverview({route, navigation}) {
                 style={{
                   fontFamily: 'Raleway-Bold',
                   fontSize: 16,
-                  color: '#FFFFFF',
+                  color: '#00956c',
                   textAlign: 'center',
                   includeFontPadding: false,
                 }}>
@@ -1839,7 +1842,9 @@ export default function ServerOverview({route, navigation}) {
               style={{
                 width: '45%',
                 height: 40,
-                backgroundColor: '#00A1A1',
+                borderColor: '#00956c',
+                borderWidth: 1,
+                backgroundColor: '#FFFFFF',
                 borderRadius: 4,
                 justifyContent: 'center',
               }}>
@@ -1847,7 +1852,7 @@ export default function ServerOverview({route, navigation}) {
                 style={{
                   fontFamily: 'Raleway-Bold',
                   fontSize: 16,
-                  color: '#FFFFFF',
+                  color: '#00956c',
                   textAlign: 'center',
                   includeFontPadding: false,
                 }}>
@@ -1907,7 +1912,7 @@ export default function ServerOverview({route, navigation}) {
               color: '#000000',
               marginVertical: 10,
             }}>
-            Do you really want to suspend this server?
+            Do you really want to archive this server?
           </Text>
           <View
             style={{display: 'flex', flexDirection: 'row', marginVertical: 10}}>
@@ -2117,7 +2122,9 @@ export default function ServerOverview({route, navigation}) {
               style={{
                 width: '45%',
                 height: 40,
-                backgroundColor: '#00A1A1',
+                borderColor: '#00956c',
+                borderWidth: 1,
+                backgroundColor: '#FFFFFF',
                 borderRadius: 4,
                 justifyContent: 'center',
               }}>
@@ -2125,7 +2132,7 @@ export default function ServerOverview({route, navigation}) {
                 style={{
                   fontFamily: 'Raleway-Bold',
                   fontSize: 16,
-                  color: '#FFFFFF',
+                  color: '#00956c',
                   textAlign: 'center',
                   includeFontPadding: false,
                 }}>

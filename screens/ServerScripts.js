@@ -43,6 +43,7 @@ import EditIcon from '../assets/edit-icon.svg';
 import BackIcon from '../assets/back-icon.svg';
 import PlusIcon from '../assets/plus-icon.svg';
 import PlayIcon from '../assets/play-icon.svg';
+import EmptyList from '../components/EmptyList';
 export default function ServerScripts({route, navigation}) {
   const [serverScripts, setScripts] = useState();
   useEffect(() => {
@@ -277,11 +278,22 @@ export default function ServerScripts({route, navigation}) {
             </TouchableOpacity>
           )}
           keyExtractor={item => item.id}
+          ListEmptyComponent={<EmptyList />}
         />
 
         <TouchableOpacity
           onPress={() => navigation.navigate('CreateServerScript')}
-          style={{position: 'absolute', right: 20, bottom: 20}}>
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            justifyContent: 'center',
+            alignItems: 'center',
+            right: 20,
+            bottom: 20,
+            width: 50,
+            height: 50,
+            borderRadius: 50 / 2,
+          }}>
           <PlusIcon height={50} width={50} />
         </TouchableOpacity>
       </View>
@@ -350,7 +362,9 @@ export default function ServerScripts({route, navigation}) {
               style={{
                 width: '45%',
                 height: 40,
-                backgroundColor: '#00a1a1',
+                borderColor: '#00956c',
+                borderWidth: 1,
+                backgroundColor: '#FFFFFF',
                 borderRadius: 4,
                 justifyContent: 'center',
               }}>
@@ -358,9 +372,9 @@ export default function ServerScripts({route, navigation}) {
                 style={{
                   fontFamily: 'Raleway-Bold',
                   fontSize: 16,
-                  includeFontPadding: false,
-                  color: '#FFFFFF',
+                  color: '#00956c',
                   textAlign: 'center',
+                  includeFontPadding: false,
                 }}>
                 Cancel
               </Text>
@@ -435,7 +449,9 @@ export default function ServerScripts({route, navigation}) {
               style={{
                 width: '45%',
                 height: 40,
-                backgroundColor: '#00a1a1',
+                borderColor: '#00956c',
+                borderWidth: 1,
+                backgroundColor: '#FFFFFF',
                 borderRadius: 4,
                 justifyContent: 'center',
               }}>
@@ -443,7 +459,7 @@ export default function ServerScripts({route, navigation}) {
                 style={{
                   fontFamily: 'Raleway-Bold',
                   fontSize: 16,
-                  color: '#FFFFFF',
+                  color: '#00956c',
                   textAlign: 'center',
                   includeFontPadding: false,
                 }}>

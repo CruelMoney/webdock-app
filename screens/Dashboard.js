@@ -371,11 +371,7 @@ export function Dashboard({navigation}) {
                       }
                     : {}
                 }
-                ListEmptyComponent={
-                  <EmptyList
-                    text={'You don’t have any server on this account yet.'}
-                  />
-                }
+                ListEmptyComponent={<EmptyList />}
                 keyExtractor={item => item.slug}
               />
             )}
@@ -429,11 +425,7 @@ export function Dashboard({navigation}) {
                 // onRefresh={() => onRefresh()}
                 // refreshing={isFetching}
                 keyExtractor={(item, index) => item.id}
-                ListEmptyComponent={
-                  <EmptyList
-                    text={'You don’t have any event on this account yet.'}
-                  />
-                }
+                ListEmptyComponent={<EmptyList />}
                 renderItem={({item}) => (
                   <>
                     <TouchableOpacity item={item}>
