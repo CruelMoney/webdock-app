@@ -604,6 +604,8 @@ export function Step2({route, navigation}) {
     setErrors(prevState => ({...prevState, [input]: error}));
   };
   const [imageTypeSelected, setImageTypeSelected] = useState(0);
+  const [phpVersion, setPhpVersion] = useState('');
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -690,9 +692,9 @@ export function Step2({route, navigation}) {
                       width: '100%',
                       includeFontPadding: false,
                     }}
-                    onValueChange={(itemValue, itemIndex) =>
-                      setSelectedWebServer(itemValue)
-                    }>
+                    onValueChange={(itemValue, itemIndex) => {
+                      setSelectedWebServer(itemValue);
+                    }}>
                     {Object.keys(webServerImages).map(item => (
                       <Picker.Item
                         style={{
@@ -722,15 +724,17 @@ export function Step2({route, navigation}) {
                     fontFamily: 'Raleway-SemiBold',
                     includeFontPadding: false,
                   }}>
-                  Select PHP version
+                  {'PHP '}
+                  {'8.2'}
+                  {' installed'}
                 </Text>
                 <View
                   style={{
                     width: '100%',
-                    borderBottomColor: '#00A1A1',
-                    borderBottomWidth: 1,
+                    // borderBottomColor: '#00A1A1',
+                    // borderBottomWidth: 1,
                   }}>
-                  <Picker
+                  {/* <Picker
                     selectedValue={inputs['image']}
                     style={{
                       width: '100%',
@@ -756,7 +760,21 @@ export function Step2({route, navigation}) {
                           ))
                         : null
                       : null}
-                  </Picker>
+                  </Picker> */}
+                  <Text
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      paddingTop: 14,
+                      color: '#555555',
+                      fontSize: 14,
+                      fontFamily: 'Raleway-Regular',
+                      includeFontPadding: false,
+                    }}>
+                    You can change PHP version at any time on the Manage PHP
+                    page
+                  </Text>
                 </View>
               </View>
             </Card.Content>
@@ -1074,10 +1092,10 @@ export function Step3({navigation, route}) {
           visibilityTime: 4000,
           autoHide: true,
         });
+        navigation.pop();
       } catch (e) {
         alert(e);
       }
-      navigation.pop();
     } else if (result.status == 400) {
       try {
         Toast.show({
@@ -1141,7 +1159,7 @@ export function Step3({navigation, route}) {
                   Name
                 </Text>
                 <Text style={{fontFamily: 'Raleway-Light', fontSize: 12}}>
-                  dsfsdfdf
+                  {route.params ? route.params.name : ''}
                 </Text>
               </View>
             </View>

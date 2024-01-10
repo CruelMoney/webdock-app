@@ -83,8 +83,13 @@ export default function ServerScripts({route, navigation}) {
       onBackgroundRefresh();
       try {
         setIsDeleteModalVisible(false);
-        setCallbackId(result.headers.get('x-callback-id'));
-        setVisibleSnack(true);
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Script deleted',
+          visibilityTime: 4000,
+          autoHide: true,
+        });
       } catch (e) {
         alert(e);
       }

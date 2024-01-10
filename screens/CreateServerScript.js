@@ -34,7 +34,7 @@ import {Picker} from '@react-native-picker/picker';
 export default function CreateServerScript({route, navigation}) {
   const [inputs, setInputs] = React.useState({
     selectedScript: '',
-    filename: '',
+    path: '',
   });
   const [modifiedScripts, setModifiedScripts] = useState([]);
   const [errors, setErrors] = React.useState({});
@@ -53,7 +53,12 @@ export default function CreateServerScript({route, navigation}) {
         getAccountScripts(userToken).then(data => {
           var array = [];
           data.map(item => {
-            array.push({label: item.name, value: item.id, key: item.id});
+            array.push({
+              label: item.name,
+              value: item.id,
+              key: item.id,
+              filename: item.filename,
+            });
           });
           setModifiedScripts(array);
         });
@@ -81,7 +86,7 @@ export default function CreateServerScript({route, navigation}) {
         Toast.show({
           type: 'success',
           position: 'bottom',
-          text1: 'Snapshot creation initiated',
+          text1: 'Script deployed',
           visibilityTime: 4000,
           autoHide: true,
         });
@@ -138,7 +143,8 @@ export default function CreateServerScript({route, navigation}) {
       setSubmitting(false);
     }
   };
-  const handleOnchange = (text, input) => {
+  const handleOnchange = (text, input, filename) => {
+    setInputs(prevState => ({...prevState, ['path']: '/root/' + filename}));
     setInputs(prevState => ({...prevState, [input]: text}));
   };
   const handleError = (error, input) => {
@@ -197,9 +203,13 @@ export default function CreateServerScript({route, navigation}) {
                   color: '#00A1A1',
                   includeFontPadding: false,
                 }}
-                onValueChange={(itemValue, itemIndex) =>
-                  handleOnchange(itemValue, 'selectedScript')
-                }>
+                onValueChange={(itemValue, itemIndex) => {
+                  handleOnchange(
+                    itemValue,
+                    'selectedScript',
+                    modifiedScripts[itemIndex].filename,
+                  );
+                }}>
                 {modifiedScripts.map(item => (
                   <Picker.Item
                     label={item.label}

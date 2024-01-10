@@ -1,5 +1,12 @@
 import React, {Component, useEffect, useState} from 'react';
-import {ActivityIndicator, Alert, StyleSheet, Text, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import {WebView} from 'react-native-webview';
 import DeviceInfo from 'react-native-device-info';
 import {AuthContext} from '../components/context';
@@ -11,6 +18,7 @@ import BackIcon from '../assets/back-icon.svg';
 export function ServerConsole({navigation, route}) {
   const [deviceName, setDeviceName] = useState();
   const {signIn} = React.useContext(AuthContext);
+  const deviceWidthPx = Dimensions.get('window').width;
   const [token, setToken] = useState('');
   const loginHandle = usertoken => {
     getPing(usertoken).then(data => {
@@ -24,6 +32,10 @@ export function ServerConsole({navigation, route}) {
     });
   };
   const runFirst = `
+  const meta = document.createElement('meta'); 
+  meta.setAttribute('content', 'width=width, initial-scale=0.5, maximum-scale=0.5, user-scalable=2.0'); 
+  meta.setAttribute('name', 'viewport'); 
+  document.getElementsByTagName('head')[0].appendChild(meta); 
       window.isNativeApp = true;
       true; // note: this is required, or you'll sometimes get silent failures
     `;
@@ -78,6 +90,8 @@ export function ServerConsole({navigation, route}) {
               'X-Device-Name': deviceName,
             },
           }}
+          style={{resizeMode: 'cover'}}
+          scalesPageToFit={false}
           javaScriptEnabled={true}
           incognito={true}
           cacheEnabled={false}

@@ -99,10 +99,11 @@ export default function ServerShellUsers({route, navigation}) {
     if (result.status == 202) {
       onBackgroundRefresh();
       try {
+        toggleModal();
         Toast.show({
           type: 'success',
           position: 'bottom',
-          text1: 'Shell user deletion initiated!',
+          text1: 'Shell user updated!',
           visibilityTime: 4000,
           autoHide: true,
         });
@@ -111,6 +112,7 @@ export default function ServerShellUsers({route, navigation}) {
       }
     } else if (result.status == 400) {
       try {
+        toggleModal();
         Toast.show({
           type: 'error',
           position: 'bottom',
@@ -123,6 +125,7 @@ export default function ServerShellUsers({route, navigation}) {
       }
     } else if (result.status == 404) {
       try {
+        toggleModal();
         Toast.show({
           type: 'error',
           position: 'bottom',
@@ -369,6 +372,7 @@ export default function ServerShellUsers({route, navigation}) {
     console.log(result);
     if (result.status == 200) {
       try {
+        toggleModal();
         Toast.show({
           type: 'success',
           position: 'bottom',

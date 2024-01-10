@@ -1,4 +1,10 @@
-import React, {useState, useEffect, PureComponent} from 'react';
+import React, {
+  useState,
+  useEffect,
+  PureComponent,
+  useRef,
+  useCallback,
+} from 'react';
 import {
   FlatList,
   Image,
@@ -82,12 +88,11 @@ export function Dashboard({navigation}) {
         };
 
         setServers(data.sort(sorter).slice(0, 4));
-        setLoading(false);
       });
       getEventsPerPage(userToken, 5).then(data => {
         setEvents(data.slice(0, 3));
-        setLoading(false);
       });
+      setLoading(false);
     } catch (e) {
       alert(e);
       setLoading(false);
@@ -134,14 +139,14 @@ export function Dashboard({navigation}) {
                     marginStart: 5,
                     width: 100,
                     fontFamily: 'Raleway-Regular',
-                    fontSize: 12,
+                    fontSize: 14,
                   }}>
                   {this.props.item.serverSlug}
                 </Text>
                 <Text
                   style={{
                     fontFamily: 'Raleway-Light',
-                    fontSize: 10,
+                    fontSize: 12,
                     color: '#8F8F8F',
                   }}>
                   {this.props.item.startTime}
@@ -150,7 +155,7 @@ export function Dashboard({navigation}) {
               <Text
                 style={{
                   fontFamily: 'Raleway-Light',
-                  fontSize: 10,
+                  fontSize: 12,
                   color: '#8F8F8F',
                 }}>
                 {this.props.item.action}
@@ -206,7 +211,7 @@ export function Dashboard({navigation}) {
                 alignItems: 'center',
               }}>
               {renderStatusIcon(status)}
-              <Text style={{fontFamily: 'Raleway-Regular', fontSize: 12}}>
+              <Text style={{fontFamily: 'Raleway-Regular', fontSize: 14}}>
                 {' '}
                 {title}
               </Text>
@@ -214,7 +219,7 @@ export function Dashboard({navigation}) {
             <Text
               style={{
                 fontFamily: 'Raleway-Light',
-                fontSize: 10,
+                fontSize: 12,
                 color: '#8F8F8F',
               }}>
               {profile} · {ipv4}
@@ -248,6 +253,9 @@ export function Dashboard({navigation}) {
       alert(e);
     }
   };
+  const handleViewableItemsChanged = useCallback(info => {
+    console.log(JSON.stringify(info));
+  }, []);
 
   return (
     <>
@@ -294,7 +302,7 @@ export function Dashboard({navigation}) {
                 <Text
                   style={{
                     fontFamily: 'Raleway-Regular',
-                    fontSize: 10,
+                    fontSize: 12,
                     color: '#747474',
                   }}>
                   All Servers →
@@ -312,11 +320,15 @@ export function Dashboard({navigation}) {
               </View>
             ) : (
               <FlatList
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
                 style={{marginTop: 10}}
                 data={servers}
                 scrollEnabled={false}
                 // onRefresh={() => onRefresh()}
                 // refreshing={isFetching}
+                onViewableItemsChanged={handleViewableItemsChanged}
+                viewabilityConfig={{viewAreaCoveragePercentThreshold: 100}}
                 renderItem={({item}) => (
                   <>
                     <TouchableOpacity
@@ -371,7 +383,9 @@ export function Dashboard({navigation}) {
                       }
                     : {}
                 }
-                ListEmptyComponent={<EmptyList />}
+                ListEmptyComponent={
+                  servers ? servers.length > 0 ? <EmptyList /> : null : null
+                }
                 keyExtractor={item => item.slug}
               />
             )}
@@ -392,7 +406,7 @@ export function Dashboard({navigation}) {
                 <Text
                   style={{
                     fontFamily: 'Raleway-Regular',
-                    fontSize: 10,
+                    fontSize: 12,
                     color: '#747474',
                   }}>
                   All Events →
@@ -425,7 +439,9 @@ export function Dashboard({navigation}) {
                 // onRefresh={() => onRefresh()}
                 // refreshing={isFetching}
                 keyExtractor={(item, index) => item.id}
-                ListEmptyComponent={<EmptyList />}
+                ListEmptyComponent={
+                  events ? events.length > 0 ? <EmptyList /> : null : null
+                }
                 renderItem={({item}) => (
                   <>
                     <TouchableOpacity item={item}>

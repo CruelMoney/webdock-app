@@ -39,7 +39,7 @@ import GradientButton from '../components/GradientButton';
 export default function UpdateServerMetadata({route, navigation}) {
   const [inputs, setInputs] = React.useState({
     name: route.params.name,
-    description: route.params.description,
+    description: '',
     actionDate: new Date(route.params.nextActionDate) || new Date(),
     notes: route.params.notes,
   });
@@ -70,7 +70,7 @@ export default function UpdateServerMetadata({route, navigation}) {
         Toast.show({
           type: 'success',
           position: 'bottom',
-          text1: 'Server updated',
+          text1: 'Server metadata updated',
           visibilityTime: 4000,
           autoHide: true,
         });
@@ -94,7 +94,7 @@ export default function UpdateServerMetadata({route, navigation}) {
   };
   //datepicker
   const [date, setDate] = useState(
-    new Date(route.params.nextActionDate) || new Date(),
+    new Date(Date.now()) || new Date(route.params.nextActionDate),
   );
   const [fdate, setFDate] = useState(
     new Date(date.getTime() - date.getTimezoneOffset() * 60000)
@@ -223,7 +223,7 @@ export default function UpdateServerMetadata({route, navigation}) {
               <HelperText type="error" visible={errors.name}>
                 {errors.name}
               </HelperText>
-              <TextInput
+              {/* <TextInput
                 mode="outlined"
                 label="What's installed here?"
                 value={inputs['description']}
@@ -247,7 +247,7 @@ export default function UpdateServerMetadata({route, navigation}) {
               />
               <HelperText type="error" visible={errors.description}>
                 {errors.description}
-              </HelperText>
+              </HelperText> */}
               <View
                 style={{
                   display: 'flex',

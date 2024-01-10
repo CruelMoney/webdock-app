@@ -319,27 +319,16 @@ export default function ServerOverview({route, navigation}) {
       }
     }
   };
-  const reinstallThisServer = async slug => {
+  const reinstallThisServer = async (slug, image) => {
     let userToken = null;
-
+    console.log(slug, image);
     userToken = await AsyncStorage.getItem('userToken');
 
-    var result = await reinstallServer(
-      userToken,
-      slug,
-      selectedImageForReinstall,
-    );
+    var result = await reinstallServer(userToken, slug, image);
     if (result.status == 202) {
       onBackgroundRefresh();
       try {
         setReinstallModal(false);
-        // Toast.show({
-        //   type: 'success',
-        //   position: 'bottom',
-        //   text1: 'Server suspend initiated!',
-        //   visibilityTime: 4000,
-        //   autoHide: true,
-        // });
         setCallbackId(result.headers.get('X-Callback-ID'));
         setVisibleSnack(true);
       } catch (e) {
@@ -829,7 +818,9 @@ export default function ServerOverview({route, navigation}) {
   const [reinstallModal, setReinstallModal] = useState(false);
   const [aliasModal, setAliasModal] = useState(false);
   const [callbackId, setCallbackId] = useState();
-  const [selectedImageForReinstall, setSelectedImageForReinstall] = useState();
+  const [selectedImageForReinstall, setSelectedImageForReinstall] = useState(
+    '',
+  );
 
   const [visibleSnack, setVisibleSnack] = React.useState(false);
 
@@ -2082,7 +2073,7 @@ export default function ServerOverview({route, navigation}) {
           </Text>
           <View>
             <Picker
-              selectedValue={'sadsad0'}
+              selectedValue={selectedImageForReinstall}
               style={{
                 width: '100%',
                 color: '#000000',
@@ -2140,7 +2131,12 @@ export default function ServerOverview({route, navigation}) {
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => reinstallThisServer(route.params.slug)}
+              onPress={() =>
+                reinstallThisServer(
+                  route.params.slug,
+                  selectedImageForReinstall,
+                )
+              }
               style={{
                 width: '45%',
                 height: 40,

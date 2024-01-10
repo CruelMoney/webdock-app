@@ -12,8 +12,8 @@ import {createDrawerNavigator} from '@react-navigation/drawer';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import React, {useEffect, useState} from 'react';
-import {StyleSheet} from 'react-native';
-import {Provider} from 'react-native-paper';
+import {StyleSheet, useColorScheme} from 'react-native';
+import {Colors, Provider, useTheme} from 'react-native-paper';
 import SplashScreen from 'react-native-splash-screen';
 import Toast from 'react-native-toast-message';
 import {AuthContext} from './components/context';
@@ -26,6 +26,8 @@ import {EventsStackNavigator} from './screens/EventsStack';
 import {MainStackNavigator} from './screens/HomeStack';
 import {RootStack} from './screens/RootStack';
 import {ServerManagement} from './screens/ServerManagement';
+import {DefaultTheme, DarkTheme} from 'react-native-paper';
+
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 export default function App() {
@@ -113,7 +115,9 @@ export default function App() {
       SplashScreen.hide();
     }
   }, [loginState]);
-
+  const colorScheme = useColorScheme();
+  const theme = useTheme();
+  theme.dark = colorScheme === 'light';
   // if (loginState.isLoading) {
   //   return (
   //     <LinearGradient
@@ -128,7 +132,7 @@ export default function App() {
   // }
 
   return (
-    <Provider>
+    <Provider theme={theme}>
       <AuthContext.Provider value={authContext}>
         <NavigationContainer>
           {loginState.userToken !== null ? (

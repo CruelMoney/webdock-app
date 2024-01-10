@@ -41,6 +41,7 @@ import {
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import GradientButton from '../components/GradientButton';
 import BackIcon from '../assets/back-icon.svg';
+import {uniqueId} from 'lodash';
 
 export default function ChangeProfile({navigation, route}) {
   const [profiles, setProfiles] = React.useState([]);
@@ -86,7 +87,17 @@ export default function ChangeProfile({navigation, route}) {
         data.map(item => {
           item.isExpanded = false;
         });
+        data = data.filter(item =>
+          route.params.profile.includes('ryzen')
+            ? item.slug.includes('ryzen')
+            : !item.slug.includes('ryzen'),
+        );
+        const specificObject = data.find(
+          obj => obj.slug === route.params.profile,
+        );
+        data = [specificObject, ...data.filter(obj => obj !== specificObject)];
         setProfiles(data);
+        console.log(data);
       });
     } catch (e) {
       alert(e);
@@ -268,6 +279,7 @@ export default function ChangeProfile({navigation, route}) {
       </>
     );
   };
+
   const [selectedPlan, setSelectedPlan] = useState();
   const [itemsCharge, setItemsCharge] = useState();
   useEffect(() => {
@@ -281,7 +293,7 @@ export default function ChangeProfile({navigation, route}) {
             route.params.slug,
             selectedPlan.slug,
           ).then(data => {
-            if (selectedPlan.slug != route.params.slug) {
+            if (selectedPlan.slug !== route.params.profile) {
               setDryRun(data);
               setItemsCharge([...data.response.chargeSummary.items]);
             }
@@ -398,9 +410,10 @@ export default function ChangeProfile({navigation, route}) {
         <View>
           <View style={{paddingTop: 10}}>
             <SectionTitle title={'Your Current Server Profile'} />
+
             {profiles
-              ? profiles.map((gr, key) =>
-                  route.params.profile == gr.slug ? (
+              ? profiles.map((gr, key) => (
+                  <>
                     <ExpandableComponent
                       key={gr.slug}
                       item={gr}
@@ -408,28 +421,11 @@ export default function ChangeProfile({navigation, route}) {
                         updateLayout(key);
                       }}
                     />
-                  ) : null,
-                )
-              : null}
-            <SectionTitle title={'Select a New Hardware Profile'} />
-            {profiles
-              ? profiles
-                  .filter(item =>
-                    route.params.profile.includes('ryzen')
-                      ? item.slug.includes('ryzen')
-                      : !item.slug.includes('ryzen'),
-                  )
-                  .map((gr, key) =>
-                    route.params.profile != gr.slug ? (
-                      <ExpandableComponent
-                        key={gr.slug}
-                        item={gr}
-                        onClickFunction={() => {
-                          updateLayout(key);
-                        }}
-                      />
-                    ) : null,
-                  )
+                    {key === 0 ? (
+                      <SectionTitle title={'Your Current Server Profile'} />
+                    ) : null}
+                  </>
+                ))
               : null}
             {itemsCharge && selectedPlan ? (
               selectedPlan.slug != route.params.profile ? (

@@ -179,7 +179,9 @@ export default function AccountPublicKeys({navigation}) {
             </View>
           )}
           keyExtractor={item => item.id}
-          ListEmptyComponent={<EmptyList />}
+          ListEmptyComponent={
+            isFetching ? publicKeys.length > 0 ? <EmptyList /> : null : null
+          }
         />
         <TouchableOpacity
           onPress={() => navigation.navigate('CreatePublicKeys')}

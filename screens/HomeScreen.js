@@ -510,7 +510,6 @@ export function HomeScreen({navigation}) {
             Servers
           </Text>
           <View style={{width: 28}}></View>
-          {/* <TouchableOpacity onPress={toggleModal}><PlusIcon height={45} width={45}/></TouchableOpacity> */}
         </View>
         <View
           style={{
@@ -522,7 +521,6 @@ export function HomeScreen({navigation}) {
           <TextInput
             mode="outlined"
             label="Search"
-            //value={scriptName}
             onChangeText={searchtext => {
               onChangeSearch(searchtext);
               search();
@@ -595,7 +593,9 @@ export function HomeScreen({navigation}) {
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
             onRefresh={() => onRefresh()}
-            ListEmptyComponent={<EmptyList />}
+            ListEmptyComponent={
+              servers ? servers.length > 0 ? <EmptyList /> : null : null
+            }
             refreshing={isFetching}
             ListFooterComponent={<View style={{height: 60}}></View>}
             renderItem={({item}) => (

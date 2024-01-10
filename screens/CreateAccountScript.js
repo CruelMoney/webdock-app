@@ -46,7 +46,7 @@ export default function CreateAccountScript({navigation}) {
         Toast.show({
           type: 'success',
           position: 'bottom',
-          text1: 'The newly created account script',
+          text1: 'Account script added',
           visibilityTime: 4000,
           autoHide: true,
         });

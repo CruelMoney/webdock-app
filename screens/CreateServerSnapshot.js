@@ -25,6 +25,12 @@ export default function CreateServerSnapshot({route, navigation}) {
   const [inputs, setInputs] = React.useState({
     name: '',
   });
+  const [callbackId, setCallbackId] = useState();
+  const [visibleSnack, setVisibleSnack] = React.useState(false);
+
+  const onToggleSnackBar = () => setVisibleSnack(!visibleSnack);
+
+  const onDismissSnackBar = () => setVisibleSnack(false);
   const [errors, setErrors] = React.useState({});
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {});
@@ -41,13 +47,8 @@ export default function CreateServerSnapshot({route, navigation}) {
     );
     if (result.status == 202) {
       try {
-        Toast.show({
-          type: 'success',
-          position: 'bottom',
-          text1: 'Snapshot creation initiated',
-          visibilityTime: 4000,
-          autoHide: true,
-        });
+        setCallbackId(result.headers.get('X-Callback-ID'));
+        setVisibleSnack(true);
       } catch (e) {
         alert(e);
       }
@@ -183,6 +184,24 @@ export default function CreateServerSnapshot({route, navigation}) {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      {/* Snackbar for event log */}
+      <Snackbar
+        visible={visibleSnack}
+        onDismiss={onDismissSnackBar}
+        action={{
+          label: 'view event log',
+          onPress: () => {
+            navigation.navigate('Events', {callbackId: callbackId});
+          },
+        }}
+        style={{backgroundColor: '#008570', fontFamily: 'Raleway-Regular'}}
+        theme={{
+          colors: {
+            accent: '#ffeb3b',
+          },
+        }}>
+        You have running jobs ...
+      </Snackbar>
     </View>
   );
 }

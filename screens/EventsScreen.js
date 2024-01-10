@@ -110,14 +110,14 @@ export function EventsScreen({navigation}) {
                     marginStart: 5,
                     width: 100,
                     fontFamily: 'Raleway-Regular',
-                    fontSize: 12,
+                    fontSize: 14,
                   }}>
                   {this.props.item.serverSlug}
                 </Text>
                 <Text
                   style={{
                     fontFamily: 'Raleway-Light',
-                    fontSize: 10,
+                    fontSize: 12,
                     color: '#8F8F8F',
                   }}>
                   {this.props.item.startTime}
@@ -126,7 +126,7 @@ export function EventsScreen({navigation}) {
               <Text
                 style={{
                   fontFamily: 'Raleway-Light',
-                  fontSize: 10,
+                  fontSize: 12,
                   color: '#8F8F8F',
                 }}>
                 {this.props.item.action}
