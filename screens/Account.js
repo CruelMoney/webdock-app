@@ -98,7 +98,7 @@ export default function Account({navigation}) {
               <Text
                 style={{
                   fontFamily: 'Raleway-Light',
-                  fontSize: 12,
+                  fontSize: 14,
                   color: '#4C9F5A',
                 }}>
                 {' '}

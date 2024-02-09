@@ -335,9 +335,10 @@ export default function CreateServerShellUsers({route, navigation}) {
             <Text
               style={{
                 fontFamily: 'Raleway-Regular',
-                fontSize: 12,
+                fontSize: 14,
                 color: '#5F5F5F',
                 marginStart: 10,
+                includeFontPadding: false,
               }}>
               Script will be executed with root privileges. You can view the
               output from the script once run in your event log

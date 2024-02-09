@@ -106,14 +106,20 @@ export default function AccountScripts({navigation}) {
           justifyContent: 'space-between',
         }}>
         <View style={{width: '75%'}}>
-          <Text style={{fontFamily: 'Raleway-Regular', fontSize: 12}}>
+          <Text
+            style={{
+              fontFamily: 'Raleway-Regular',
+              fontSize: 14,
+              includeFontPadding: false,
+            }}>
             {item.name}
           </Text>
           <View style={{display: 'flex', flexDirection: 'row'}}>
             <Text
               style={{
                 fontFamily: 'Raleway-Light',
-                fontSize: 10,
+                fontSize: 12,
+                includeFontPadding: false,
                 color: '#8F8F8F',
               }}>
               {item.filename}

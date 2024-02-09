@@ -76,6 +76,7 @@ export function Dashboard({navigation}) {
   const onBackgroundRefresh = async () => {
     let userToken = null;
     try {
+      console.log(loading);
       userToken = await AsyncStorage.getItem('userToken');
       getServers(userToken).then(data => {
         const sorter = (a, b) => {
@@ -86,13 +87,12 @@ export function Dashboard({navigation}) {
 
           return dateB - dateA;
         };
-
-        setServers(data.sort(sorter).slice(0, 4));
+        setServers(data.sort(sorter).slice(0, 3));
       });
       getEventsPerPage(userToken, 5).then(data => {
         setEvents(data.slice(0, 3));
+        setLoading(false);
       });
-      setLoading(false);
     } catch (e) {
       alert(e);
       setLoading(false);
@@ -253,10 +253,6 @@ export function Dashboard({navigation}) {
       alert(e);
     }
   };
-  const handleViewableItemsChanged = useCallback(info => {
-    console.log(JSON.stringify(info));
-  }, []);
-
   return (
     <>
       <SafeAreaView
@@ -295,7 +291,12 @@ export function Dashboard({navigation}) {
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}>
-              <Text style={{fontFamily: 'Raleway-Medium', fontSize: 18}}>
+              <Text
+                style={{
+                  fontFamily: 'Raleway-Medium',
+                  fontSize: 18,
+                  includeFontPadding: false,
+                }}>
                 Servers
               </Text>
               <TouchableOpacity onPress={() => navigation.navigate('Servers')}>
@@ -303,6 +304,7 @@ export function Dashboard({navigation}) {
                   style={{
                     fontFamily: 'Raleway-Regular',
                     fontSize: 12,
+                    includeFontPadding: false,
                     color: '#747474',
                   }}>
                   All Servers →
@@ -322,13 +324,12 @@ export function Dashboard({navigation}) {
               <FlatList
                 showsHorizontalScrollIndicator={false}
                 showsVerticalScrollIndicator={false}
-                style={{marginTop: 10}}
+                style={{marginTop: 5}}
                 data={servers}
                 scrollEnabled={false}
+                removeClippedSubviews={true}
                 // onRefresh={() => onRefresh()}
                 // refreshing={isFetching}
-                onViewableItemsChanged={handleViewableItemsChanged}
-                viewabilityConfig={{viewAreaCoveragePercentThreshold: 100}}
                 renderItem={({item}) => (
                   <>
                     <TouchableOpacity
@@ -393,13 +394,18 @@ export function Dashboard({navigation}) {
           <View style={{height: '50%'}}>
             <View
               style={{
-                marginTop: 20,
+                marginTop: 10,
                 display: 'flex',
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}>
-              <Text style={{fontFamily: 'Raleway-Medium', fontSize: 18}}>
+              <Text
+                style={{
+                  fontFamily: 'Raleway-Medium',
+                  fontSize: 18,
+                  includeFontPadding: false,
+                }}>
                 Events
               </Text>
               <TouchableOpacity onPress={() => navigation.navigate('Events')}>
@@ -408,6 +414,7 @@ export function Dashboard({navigation}) {
                     fontFamily: 'Raleway-Regular',
                     fontSize: 12,
                     color: '#747474',
+                    includeFontPadding: false,
                   }}>
                   All Events →
                 </Text>
@@ -424,9 +431,10 @@ export function Dashboard({navigation}) {
               </View>
             ) : (
               <FlatList
-                style={{marginTop: 10}}
+                style={{marginTop: 5}}
                 data={events}
                 scrollEnabled={false}
+                showsVerticalScrollIndicator={false}
                 contentContainerStyle={
                   events
                     ? events.length === 0 && {

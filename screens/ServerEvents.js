@@ -130,7 +130,7 @@ export default function ServerEvents({route, navigation}) {
               alignItems: 'center',
               justifyContent: 'space-between',
             }}>
-            <View style={{width: '90%'}}>
+            <View style={{flexGrow: 1}}>
               <View
                 style={{
                   display: 'flex',
@@ -142,15 +142,17 @@ export default function ServerEvents({route, navigation}) {
                   style={{
                     marginStart: 5,
                     width: 100,
+                    includeFontPadding: false,
                     fontFamily: 'Raleway-Regular',
-                    fontSize: 12,
+                    fontSize: 14,
                   }}>
                   {this.props.item.serverSlug}
                 </Text>
                 <Text
                   style={{
                     fontFamily: 'Raleway-Light',
-                    fontSize: 10,
+                    fontSize: 12,
+                    includeFontPadding: false,
                     color: '#8F8F8F',
                   }}>
                   {this.props.item.startTime}
@@ -159,13 +161,14 @@ export default function ServerEvents({route, navigation}) {
               <Text
                 style={{
                   fontFamily: 'Raleway-Light',
-                  fontSize: 10,
+                  fontSize: 12,
+                  includeFontPadding: false,
                   color: '#8F8F8F',
                 }}>
                 {this.props.item.action}
               </Text>
             </View>
-            <View>
+            <View style={{flexGrow: 0}}>
               {this.props.item.status != 'waiting' &&
               this.props.item.status != 'finished' &&
               this.props.item.status != 'working' ? (
@@ -320,7 +323,20 @@ export default function ServerEvents({route, navigation}) {
             </>
           )}
           keyExtractor={item => item.id}
-          ListEmptyComponent={<EmptyList />}
+          ListEmptyComponent={
+            <View
+              style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <Text style={{textAlign: 'center'}}>
+                {'Sorry, nothing to see here yet.'}
+              </Text>
+            </View>
+          }
           // onEndReached={loadMoreItems}
           // onEndReachedThreshold={0.5}
           // onScrollBeginDrag={() => {

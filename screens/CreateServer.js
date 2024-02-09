@@ -168,17 +168,16 @@ export function Step1({navigation, route}) {
         getProfiles(userToken, locations[locationSelected].id).then(datas => {
           if (Array.isArray(datas)) {
             var count = 0;
-            datas.map(item => {
-              setNewServerHardware(count == 2 ? item : null);
-              item.isExpanded = count == 2 ? true : false;
-              count++;
-            });
-
             datas = datas.filter(item =>
               platformSelected == 0
                 ? !item.name.includes('Ryzen')
                 : item.name.includes('Ryzen'),
             );
+            datas.map(item => {
+              setNewServerHardware(count == 2 ? item : null);
+              item.isExpanded = count == 2 ? true : false;
+              count++;
+            });
             setProfiles(datas);
           }
         });
@@ -212,11 +211,13 @@ export function Step1({navigation, route}) {
             }}
             onPress={onClickFunction}>
             <Card.Title
+              titleNumberOfLines={2}
               titleStyle={{
                 color: item.isExpanded ? 'white' : 'white',
                 fontFamily: 'Raleway-Medium',
-                fontSize: 16,
+                fontSize: 18,
                 includeFontPadding: false,
+                flexWrap: 'wrap',
               }}
               title={item.name}
               style={{backgroundColor: '#00A1A1'}}
@@ -374,16 +375,16 @@ export function Step1({navigation, route}) {
     );
   };
   const updateLayout = index => {
-    LayoutAnimation.configureNext({
-      duration: 300,
-      create: {
-        type: LayoutAnimation.Types.easeInEaseOut,
-        property: LayoutAnimation.Properties.opacity,
-      },
-      update: {
-        type: LayoutAnimation.Types.easeInEaseOut,
-      },
-    });
+    // LayoutAnimation.configureNext({
+    //   duration: 1,
+    //   create: {
+    //     type: LayoutAnimation.Types.linear,
+    //     property: LayoutAnimation.Properties.opacity,
+    //   },
+    //   update: {
+    //     type: LayoutAnimation.Types.easeInEaseOut,
+    //   },
+    // });
     const array = [...profiles];
     array.map((value, placeindex) =>
       placeindex === index
@@ -395,7 +396,35 @@ export function Step1({navigation, route}) {
   if (Platform.OS === 'android') {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
-
+  const goToNextStep = (virtualization, platform, location, profile) => {
+    console.log(profile);
+    if (virtualization == null) {
+      Toast.show({
+        type: 'info',
+        position: 'bottom',
+        text1: 'Select at least one virtualization',
+        visibilityTime: 4000,
+        autoHide: true,
+      });
+    } else if (platform == null) {
+    } else if (location == null) {
+    } else if (profile == null) {
+      Toast.show({
+        type: 'info',
+        position: 'bottom',
+        text1: 'Select at least one profile for your new server',
+        visibilityTime: 4000,
+        autoHide: true,
+      });
+    } else {
+      navigation.navigate('2. Image', {
+        virtualization: virtualization,
+        platform: platform,
+        location: location,
+        profile: profile,
+      });
+    }
+  };
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -506,12 +535,12 @@ export function Step1({navigation, route}) {
       <TouchableOpacity
         style={{marginVertical: 20, paddingHorizontal: '8%'}}
         onPress={() =>
-          navigation.navigate('2. Image', {
-            virtualization: virtualization[virtualizationSelected],
-            platform: platforms[platformSelected],
-            location: locations[locationSelected],
-            profile: newServerHardware,
-          })
+          goToNextStep(
+            virtualization[virtualizationSelected],
+            platforms[platformSelected],
+            locations[locationSelected],
+            newServerHardware,
+          )
         }>
         <GradientButton text="Continue" />
       </TouchableOpacity>
@@ -549,7 +578,9 @@ export function Step2({route, navigation}) {
             }
           });
           setWebServerImages(webImages);
+          console.log(webImages);
           setSelectedWebServer(Object.keys(webImages)[0]);
+          handleOnchange(webImages[Object.keys(webImages)[0]][0].slug, 'image');
           setCleanImages(cleanLinux);
           setDesktopImages(desktop);
         });
@@ -598,6 +629,7 @@ export function Step2({route, navigation}) {
     if (input == 'name') {
       generateSlug(text);
     }
+    console.log(text);
     setInputs(prevState => ({...prevState, [input]: text}));
   };
   const handleError = (error, input) => {
@@ -694,6 +726,10 @@ export function Step2({route, navigation}) {
                     }}
                     onValueChange={(itemValue, itemIndex) => {
                       setSelectedWebServer(itemValue);
+                      handleOnchange(
+                        webServerImages[itemValue][0].slug,
+                        'image',
+                      );
                     }}>
                     {Object.keys(webServerImages).map(item => (
                       <Picker.Item
@@ -1249,7 +1285,7 @@ export function Step3({navigation, route}) {
                 width: '20%',
                 justifyContent: 'center',
               }}>
-              {route.params ? route.params.virtualization.image : ''}
+              {/* {route.params ? route.params.virtualization.image : ''} */}
             </View>
           </View>
         </View>

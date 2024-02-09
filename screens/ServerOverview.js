@@ -383,6 +383,7 @@ export default function ServerOverview({route, navigation}) {
       getImages(userToken).then(data => {
         console.log(data);
         setImages(data);
+        handleOnchange(data[0].slug, 'image');
       });
     } catch (e) {
       alert(e);
@@ -675,7 +676,8 @@ export default function ServerOverview({route, navigation}) {
             style={{
               fontFamily: 'Raleway-Regular',
               marginLeft: 10,
-              fontSize: 12,
+              fontSize: 14,
+              includeFontPadding: false,
               color: '#4C9F5A',
             }}>
             {icon.charAt(0).toUpperCase() + icon.slice(1)}
@@ -891,6 +893,7 @@ export default function ServerOverview({route, navigation}) {
               onPress={() => {
                 setSuspendModal(true);
               }}
+              style={{fontFamily: 'Raleway-Regular'}}
               title="ARCHIVE SERVER"
             />
             <Menu.Item
@@ -979,10 +982,10 @@ export default function ServerOverview({route, navigation}) {
               <Text
                 style={{
                   marginStart: 5,
-                  includeFontPadding: false,
                   textAlign: 'center',
                   fontFamily: 'Raleway-SemiBold',
-                  fontSize: 10,
+                  fontSize: 12,
+                  includeFontPadding: false,
                   color: '#4C9F5A',
                 }}>
                 Start
@@ -1027,7 +1030,8 @@ export default function ServerOverview({route, navigation}) {
                 style={{
                   marginStart: 5,
                   fontFamily: 'Raleway-SemiBold',
-                  fontSize: 10,
+                  fontSize: 12,
+                  includeFontPadding: false,
                   color: '#E15241',
                 }}>
                 Stop
@@ -1072,7 +1076,8 @@ export default function ServerOverview({route, navigation}) {
                 style={{
                   marginStart: 5,
                   fontFamily: 'Raleway-SemiBold',
-                  fontSize: 10,
+                  fontSize: 12,
+                  includeFontPadding: false,
                   color: '#449ADF',
                 }}>
                 Restart
@@ -1102,10 +1107,10 @@ export default function ServerOverview({route, navigation}) {
                   justifyContent: 'space-between',
                 }}>
                 <View>
-                  <Text style={{fontFamily: 'Raleway-Medium', fontSize: 12}}>
+                  <Text style={{fontFamily: 'Raleway-Medium', fontSize: 14}}>
                     Name
                   </Text>
-                  <Text style={{fontFamily: 'Raleway-Light', fontSize: 12}}>
+                  <Text style={{fontFamily: 'Raleway-Light', fontSize: 14}}>
                     {server.name}
                   </Text>
                 </View>
@@ -1132,7 +1137,7 @@ export default function ServerOverview({route, navigation}) {
                 }}>
                 {server.aliases ? (
                   <View>
-                    <Text style={{fontFamily: 'Raleway-Medium', fontSize: 12}}>
+                    <Text style={{fontFamily: 'Raleway-Medium', fontSize: 14}}>
                       Alias
                     </Text>
                     <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -1155,8 +1160,9 @@ export default function ServerOverview({route, navigation}) {
                             <Text
                               style={{
                                 fontFamily: 'Raleway-Light',
-                                fontSize: 12,
+                                fontSize: 14,
                                 marginStart: 5,
+                                includeFontPadding: false,
                               }}>
                               {server.aliases[0]}
                             </Text>
@@ -1164,7 +1170,7 @@ export default function ServerOverview({route, navigation}) {
                         </>
                       ) : (
                         <Text
-                          style={{fontFamily: 'Raleway-Light', fontSize: 12}}>
+                          style={{fontFamily: 'Raleway-Light', fontSize: 14}}>
                           {server.aliases[0]}
                         </Text>
                       )}
@@ -1203,7 +1209,7 @@ export default function ServerOverview({route, navigation}) {
                   justifyContent: 'space-between',
                 }}>
                 <View>
-                  <Text style={{fontFamily: 'Raleway-Medium', fontSize: 12}}>
+                  <Text style={{fontFamily: 'Raleway-Medium', fontSize: 14}}>
                     Location
                   </Text>
                   {locations
@@ -1227,7 +1233,7 @@ export default function ServerOverview({route, navigation}) {
                               <Text
                                 style={{
                                   fontFamily: 'Raleway-Light',
-                                  fontSize: 12,
+                                  fontSize: 14,
                                   includeFontPadding: false,
                                   marginLeft: 5,
                                 }}>
@@ -1261,10 +1267,15 @@ export default function ServerOverview({route, navigation}) {
                   justifyContent: 'space-between',
                 }}>
                 <View>
-                  <Text style={{fontFamily: 'Raleway-Medium', fontSize: 12}}>
+                  <Text style={{fontFamily: 'Raleway-Medium', fontSize: 14}}>
                     Profile
                   </Text>
-                  <Text style={{fontFamily: 'Raleway-Light', fontSize: 12}}>
+                  <Text
+                    style={{
+                      fontFamily: 'Raleway-Light',
+                      fontSize: 14,
+                      includeFontPadding: false,
+                    }}>
                     {'[' +
                       (server.virtualization === 'container' ? 'LXD' : 'KVM') +
                       '] '}
@@ -1317,10 +1328,15 @@ export default function ServerOverview({route, navigation}) {
                     justifyContent: 'space-between',
                   }}>
                   <View>
-                    <Text style={{fontFamily: 'Raleway-Medium', fontSize: 12}}>
+                    <Text style={{fontFamily: 'Raleway-Medium', fontSize: 14}}>
                       IPv4
                     </Text>
-                    <Text style={{fontFamily: 'Raleway-Light', fontSize: 12}}>
+                    <Text
+                      style={{
+                        fontFamily: 'Raleway-Light',
+                        fontSize: 14,
+                        includeFontPadding: false,
+                      }}>
                       {server.ipv4}
                     </Text>
                   </View>
@@ -1357,10 +1373,15 @@ export default function ServerOverview({route, navigation}) {
                     justifyContent: 'space-between',
                   }}>
                   <View>
-                    <Text style={{fontFamily: 'Raleway-Medium', fontSize: 12}}>
+                    <Text style={{fontFamily: 'Raleway-Medium', fontSize: 14}}>
                       IPv6
                     </Text>
-                    <Text style={{fontFamily: 'Raleway-Light', fontSize: 12}}>
+                    <Text
+                      style={{
+                        fontFamily: 'Raleway-Light',
+                        fontSize: 14,
+                        includeFontPadding: false,
+                      }}>
                       {server.ipv6}
                     </Text>
                   </View>
@@ -1371,7 +1392,7 @@ export default function ServerOverview({route, navigation}) {
           <Text
             style={{
               fontFamily: 'Raleway-Medium',
-              fontSize: 18,
+              fontSize: 20,
               marginVertical: 10,
             }}>
             Server info

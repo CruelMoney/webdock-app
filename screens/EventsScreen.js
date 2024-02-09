@@ -54,6 +54,7 @@ export function EventsScreen({navigation}) {
 
   useEffect(() => {
     setTimeout(async () => {
+      setIsLoading(true);
       let userToken = null;
       try {
         userToken = await AsyncStorage.getItem('userToken');
@@ -66,6 +67,7 @@ export function EventsScreen({navigation}) {
         });
       } catch (e) {
         alert(e);
+        setIsLoading(false);
       }
     }, 0);
   }, [pageCurrent]);
@@ -111,6 +113,7 @@ export function EventsScreen({navigation}) {
                     width: 100,
                     fontFamily: 'Raleway-Regular',
                     fontSize: 14,
+                    includeFontPadding: false,
                   }}>
                   {this.props.item.serverSlug}
                 </Text>
@@ -119,6 +122,7 @@ export function EventsScreen({navigation}) {
                     fontFamily: 'Raleway-Light',
                     fontSize: 12,
                     color: '#8F8F8F',
+                    includeFontPadding: false,
                   }}>
                   {this.props.item.startTime}
                 </Text>
@@ -166,47 +170,47 @@ export function EventsScreen({navigation}) {
 
   return (
     <>
-      {events == [] ? (
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <ActivityIndicator size="medium" color="#00a1a1" />
-        </div>
-      ) : (
+      <View
+        width="100%"
+        height="100%"
+        style={{
+          backgroundColor: '#F4F8F8',
+          paddingTop: '8%',
+          paddingHorizontal: '8%',
+        }}>
         <View
-          width="100%"
-          height="100%"
           style={{
-            backgroundColor: '#F4F8F8',
-            paddingTop: '8%',
-            paddingHorizontal: '8%',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
           }}>
+          <TouchableOpacity onPress={navigation.openDrawer}>
+            <MenuIcon height={45} width={28} />
+          </TouchableOpacity>
+          <Text
+            style={{
+              color: '#00A1A1',
+              fontFamily: 'Raleway-Medium',
+              fontSize: 20,
+              textAlign: 'center',
+            }}>
+            Events
+          </Text>
+          <View style={{width: 50}}></View>
+        </View>
+        {isLoading ? (
           <View
             style={{
+              width: '100%',
+              height: '100%',
               display: 'flex',
-              flexDirection: 'row',
+              justifyContent: 'center',
               alignItems: 'center',
-              justifyContent: 'space-between',
             }}>
-            <TouchableOpacity onPress={navigation.openDrawer}>
-              <MenuIcon height={45} width={28} />
-            </TouchableOpacity>
-            <Text
-              style={{
-                color: '#00A1A1',
-                fontFamily: 'Raleway-Medium',
-                fontSize: 20,
-                textAlign: 'center',
-              }}>
-              Events
-            </Text>
-            <View style={{width: 50}}></View>
+            <ActivityIndicator size="medium" color="#00a1a1" />
           </View>
+        ) : (
           <FlatList
             data={events}
             keyExtractor={item => item.id}
@@ -246,12 +250,24 @@ export function EventsScreen({navigation}) {
             onScrollBeginDrag={() => {
               stopFetchMore = false;
             }}
-            ListEmptyComponent={<EmptyList />}
-            // ListFooterComponent={() => loadingMore && <ListFooterComponent />}
+            ListEmptyComponent={
+              <View
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <Text style={{textAlign: 'center'}}>
+                  {'Sorry, nothing to see here yet.'}
+                </Text>
+              </View>
+            }
           />
-          {/* Alias domains Modal */}
-        </View>
-      )}
+        )}
+        {/* Alias domains Modal */}
+      </View>
       <Modal
         testID={'modal'}
         isVisible={eventDetailsModal}

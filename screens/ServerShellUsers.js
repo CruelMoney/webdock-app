@@ -41,6 +41,7 @@ import {xorBy} from 'lodash';
 import {getAccountPublicKeys} from '../service/accountPublicKeys';
 import DeleteIcon from '../assets/delete-icon.svg';
 import EditIcon from '../assets/edit-icon.svg';
+import ConnectIcon from '../assets/connect-icon.svg';
 import BackIcon from '../assets/back-icon.svg';
 import PlusIcon from '../assets/plus-icon.svg';
 import PlayIcon from '../assets/play-icon.svg';
@@ -197,46 +198,60 @@ export default function ServerShellUsers({route, navigation}) {
   const Item = ({item}) => (
     <>
       <View
-        style={{backgroundColor: 'white', borderRadius: 10, marginBottom: 10}}>
-        <View
-          style={{
-            display: 'flex',
-            padding: 15,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-          <View>
-            <Text style={{fontFamily: 'Raleway-Regular', fontSize: 12}}>
-              {item.username}
+        style={{
+          backgroundColor: 'white',
+          borderRadius: 10,
+          marginBottom: 10,
+          display: 'flex',
+          padding: 15,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+        <View style={{flex: 1}}>
+          <Text style={{fontFamily: 'Raleway-Regular', fontSize: 14}}>
+            {item.username}
+          </Text>
+          <View style={{display: 'flex', flexDirection: 'row'}}>
+            <Text
+              style={{
+                fontFamily: 'Raleway-Light',
+                fontSize: 12,
+                includeFontPadding: false,
+                color: '#8F8F8F',
+                flexWrap: 'wrap',
+              }}>
+              {item.created}
             </Text>
-            <View style={{display: 'flex', flexDirection: 'row'}}>
-              <Text
-                style={{
-                  width: 100,
-                  fontFamily: 'Raleway-Light',
-                  fontSize: 10,
-                  color: '#8F8F8F',
-                }}>
-                {item.created}
-              </Text>
-            </View>
           </View>
+        </View>
+        <View style={{}}>
           <View
             style={{
               display: 'flex',
               flexDirection: 'row',
               justifyContent: 'space-between',
             }}>
-            <EditIcon width={25} height={25} style={{marginHorizontal: 2}} />
-            {/* <TouchableOpacity
+            <TouchableOpacity
               style={{marginHorizontal: 2}}
               onPress={() => {
-                setIsDeleteModalVisible(true);
+                openConsoleWithUsername(item.username);
+              }}>
+              <ConnectIcon
+                width={25}
+                height={25}
+                style={{marginHorizontal: 2}}
+              />
+            </TouchableOpacity>
+            <EditIcon width={25} height={25} style={{marginHorizontal: 2}} />
+            <TouchableOpacity
+              style={{marginHorizontal: 2}}
+              onPress={() => {
                 setSelectedShellUser(item);
+                setIsDeleteModalVisible(true);
               }}>
               <DeleteIcon fill="#D94B4B" width={25} height={25} />
-            </TouchableOpacity> */}
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -284,54 +299,29 @@ export default function ServerShellUsers({route, navigation}) {
       }),
     );
   };
-  const [isModalVisible2, setModalVisible2] = useState();
-  const toggleModal2 = () => {
-    setModalVisible2(!isModalVisible2);
-  };
-  const modalOpen2 = item => {
-    toggleModal();
-    setSelectedTeams(
-      item.publicKeys.map(item => {
-        return {
-          id: item.id,
-          item: item.name,
-        };
-      }),
-    );
-  };
-  const [newUsername, setNewUsername] = useState();
-  const [newPassword, setNewPassword] = useState();
-  const [newGroup, setNewGroup] = useState('sudo');
-  const [newShell, setNewShell] = useState('/bin/bash');
-
-  const createShellUseModal = async (a, b, c, d, e) => {
+  const openConsoleWithUsername = async username => {
     let userToken = null;
-
     userToken = await AsyncStorage.getItem('userToken');
-    var publicKeysId = e.map(item => {
-      return item.id;
-    });
-
-    var result = await createShellUser(
+    var result = await createAShortLivedTokenForWebSSH(
       userToken,
       route.params.slug,
-      a,
-      b,
-      c,
-      d,
-      publicKeysId,
+      username,
     );
-    if (result.status == 202) {
-      onBackgroundRefresh();
+    console.log(result);
+    if (result.status == 200) {
       try {
         Toast.show({
           type: 'success',
           position: 'bottom',
-          text1: 'Shell user creation initiated!',
+          text1: 'WebSSH initiated!',
           visibilityTime: 4000,
           autoHide: true,
         });
-        toggleModal2();
+        navigation.navigate('ServerConsole', {
+          slug: route.params.slug,
+          username: username,
+          token: result.response.token,
+        });
       } catch (e) {
         alert(e);
       }
@@ -352,7 +342,7 @@ export default function ServerShellUsers({route, navigation}) {
         Toast.show({
           type: 'error',
           position: 'bottom',
-          text1: 'Server or shell user not found',
+          text1: 'Server not found',
           visibilityTime: 4000,
           autoHide: true,
         });
@@ -369,7 +359,6 @@ export default function ServerShellUsers({route, navigation}) {
       route.params.slug,
       modalData.username,
     );
-    console.log(result);
     if (result.status == 200) {
       try {
         toggleModal();
@@ -492,20 +481,15 @@ export default function ServerShellUsers({route, navigation}) {
                 justifyContent: 'space-between',
               }}>
               <Text
-                style={{textAlign: 'center', paddingStart: 20, fontSize: 18}}>
+                style={{
+                  textAlign: 'center',
+                  paddingStart: 20,
+                  fontFamily: 'Raleway-Medium',
+                  marginTop: 10,
+                  fontSize: 18,
+                }}>
                 {modalData ? modalData.username : ''}
               </Text>
-
-              <View style={{flexDirection: 'row-reverse'}}>
-                <View style={styles.closebutton}>
-                  <IconButton
-                    icon="close"
-                    color="black"
-                    size={25}
-                    onPress={toggleModal}
-                  />
-                </View>
-              </View>
             </View>
           </View>
           <View style={{padding: 20}}>
@@ -583,11 +567,13 @@ export default function ServerShellUsers({route, navigation}) {
                 justifyContent: 'space-between',
               }}>
               <TouchableOpacity
-                onPress={() => deleteShellUserAlert(modalData.id)}
+                onPress={() => toggleModal()}
                 style={{
                   width: '45%',
                   height: 40,
-                  backgroundColor: '#D94B4B',
+                  borderColor: '#00956c',
+                  borderWidth: 1,
+                  backgroundColor: '#FFFFFF',
                   borderRadius: 4,
                   justifyContent: 'center',
                 }}>
@@ -595,11 +581,11 @@ export default function ServerShellUsers({route, navigation}) {
                   style={{
                     fontFamily: 'Raleway-Bold',
                     fontSize: 16,
-                    color: '#FFFFFF',
+                    color: '#00956c',
                     textAlign: 'center',
                     includeFontPadding: false,
                   }}>
-                  Delete
+                  Cancel
                 </Text>
               </TouchableOpacity>
 
@@ -608,7 +594,7 @@ export default function ServerShellUsers({route, navigation}) {
                 style={{
                   width: '45%',
                   height: 40,
-                  backgroundColor: '#00a1a1',
+                  backgroundColor: '#449ADF',
                   borderRadius: 4,
                   justifyContent: 'center',
                 }}>
@@ -627,124 +613,108 @@ export default function ServerShellUsers({route, navigation}) {
           </View>
         </View>
       </Modal>
-      <Modal isVisible={isModalVisible2} style={{margin: 0}}>
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: 'space-between',
-            flexDirection: 'column',
-          }}
-          style={{backgroundColor: 'white', paddingBottom: 20}}>
-          <View style={styles.content1}>
-            <View style={{width: '100%'}}>
-              <View style={styles.closebutton}>
-                <IconButton
-                  icon="close"
-                  color="black"
-                  size={25}
-                  onPress={toggleModal2}
-                />
-              </View>
-
-              <Text style={styles.contentTitle}>Create new Shell User</Text>
-            </View>
-            <View style={{padding: 20}}>
-              <TextInput
-                mode="outlined"
-                label="Username"
-                style={{marginBottom: 10}}
-                value={newUsername}
-                onChangeText={newUsername => setNewUsername(newUsername)}
-                theme={{
-                  colors: {
-                    primary: '#00a1a1',
-                  },
-                }}
-              />
-              <TextInput
-                mode="outlined"
-                label="Password"
-                style={{marginBottom: 10}}
-                value={newPassword}
-                onChangeText={newPassword => setNewPassword(newPassword)}
-                theme={{
-                  colors: {
-                    primary: '#00a1a1',
-                  },
-                }}
-              />
-              <TextInput
-                mode="outlined"
-                label="Group"
-                style={{marginBottom: 10}}
-                value={newGroup}
-                onChangeText={newGroup => setNewGroup(newGroup)}
-                theme={{
-                  colors: {
-                    primary: '#00a1a1',
-                  },
-                }}
-              />
-              <TextInput
-                mode="outlined"
-                label="Shell"
-                style={{marginBottom: 10}}
-                value={newShell}
-                onChangeText={newShell => setNewShell(newShell)}
-                theme={{
-                  colors: {
-                    primary: '#00a1a1',
-                  },
-                }}
-              />
-
-              <SelectBox
-                label="Select public keys you want to assign to this user"
-                options={K_OPTIONS}
-                multiOptionContainerStyle={{
-                  backgroundColor: '#008570',
-                }}
-                arrowIconColor="#008570"
-                searchIconColor="#008570"
-                toggleIconColor="#008570"
-                selectedValues={selectedKeys}
-                onMultiSelect={onMultiChange2()}
-                onTapClose={onMultiChange2()}
-                isMulti
-              />
-            </View>
-            <View
+      {/* Delete Snapshot Modal */}
+      <Modal
+        testID={'modal'}
+        isVisible={isDeleteModalVisible}
+        swipeDirection={['up', 'left', 'right', 'down']}
+        onSwipeComplete={() => setIsDeleteModalVisible(false)}
+        style={{justifyContent: 'flex-end', margin: 0}}>
+        <View
+          style={{
+            backgroundColor: 'white',
+            padding: 30,
+            borderTopStartRadius: 10,
+            borderTopEndRadius: 10,
+          }}>
+          <Text
+            style={{
+              fontFamily: 'Raleway-Medium',
+              fontSize: 18,
+              color: '#00a1a1',
+              marginVertical: 10,
+            }}>
+            Delete user {selectedShellUser ? selectedShellUser.username : null}
+          </Text>
+          <Text
+            style={{
+              fontFamily: 'Raleway-Regular',
+              fontSize: 14,
+              includeFontPadding: false,
+              color: '#000000',
+              marginVertical: 10,
+            }}>
+            Please confirm you want to delete this shell user
+          </Text>
+          <View
+            style={{display: 'flex', flexDirection: 'row', marginVertical: 10}}>
+            <View style={{backgroundColor: '#D94B4B', width: 1}}></View>
+            <Text
               style={{
-                padding: 20,
-                width: '100%',
-                alignSelf: 'baseline',
+                fontFamily: 'Raleway-Regular',
+                fontSize: 14,
+                includeFontPadding: false,
+                color: '#000000',
+                marginStart: 10,
               }}>
-              <View
-                style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-                <Button
-                  mode="contained"
-                  icon="send"
-                  style={{width: '100%'}}
-                  theme={{
-                    colors: {
-                      primary: '#008570',
-                    },
-                  }}
-                  onPress={() =>
-                    createShellUseModal(
-                      newUsername,
-                      newPassword,
-                      newGroup,
-                      newShell,
-                      selectedKeys,
-                    )
-                  }>
-                  Add User
-                </Button>
-              </View>
-            </View>
+              Warning: As is standard behavior in Linux, all data in this users
+              home directory will be deleted. Please make sure you have not
+              placed any important files there you want to keep.
+            </Text>
           </View>
-        </ScrollView>
+          <View
+            style={{
+              width: '100%',
+              marginVertical: 15,
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+            <TouchableOpacity
+              onPress={() => setIsDeleteModalVisible(false)}
+              style={{
+                width: '45%',
+                height: 40,
+                borderColor: '#00956c',
+                borderWidth: 1,
+                backgroundColor: '#FFFFFF',
+                borderRadius: 4,
+                justifyContent: 'center',
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Raleway-Bold',
+                  fontSize: 16,
+                  color: '#00956c',
+                  textAlign: 'center',
+                  includeFontPadding: false,
+                }}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => deleteShellUserAlert(selectedShellUser.id)}
+              style={{
+                width: '45%',
+                height: 40,
+                backgroundColor: '#D94B4B',
+                borderRadius: 4,
+                justifyContent: 'center',
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Raleway-Bold',
+                  fontSize: 16,
+                  color: '#FFFFFF',
+                  textAlign: 'center',
+                  includeFontPadding: false,
+                }}>
+                Delete
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
     </>
   );

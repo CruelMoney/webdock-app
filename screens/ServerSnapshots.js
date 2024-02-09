@@ -122,7 +122,7 @@ export default function ServerSnapshots({route, navigation}) {
             justifyContent: 'space-between',
           }}>
           <View>
-            <Text style={{fontFamily: 'Raleway-Regular', fontSize: 12}}>
+            <Text style={{fontFamily: 'Raleway-Regular', fontSize: 14}}>
               {item.name == 'user' ? item.name : item.date}
             </Text>
             <View style={{display: 'flex', flexDirection: 'row'}}>
@@ -130,7 +130,8 @@ export default function ServerSnapshots({route, navigation}) {
                 style={{
                   width: 100,
                   fontFamily: 'Raleway-Light',
-                  fontSize: 10,
+                  fontSize: 12,
+                  includeFontPadding: false,
                   color: '#8F8F8F',
                 }}>
                 {item.type} snapshot
@@ -409,7 +410,8 @@ export default function ServerSnapshots({route, navigation}) {
           <Text
             style={{
               fontFamily: 'Raleway-Regular',
-              fontSize: 12,
+              fontSize: 14,
+              includeFontPadding: false,
               color: '#000000',
               marginVertical: 10,
             }}>
@@ -421,7 +423,8 @@ export default function ServerSnapshots({route, navigation}) {
             <Text
               style={{
                 fontFamily: 'Raleway-Regular',
-                fontSize: 12,
+                fontSize: 14,
+                includeFontPadding: false,
                 color: '#000000',
                 marginStart: 10,
               }}>
@@ -531,13 +534,13 @@ export default function ServerSnapshots({route, navigation}) {
               borderRadius: 4,
               padding: 20,
             }}>
-            <Text style={{fontSize: 10}}>
+            <Text style={{fontSize: 12}}>
               Name: {selectedSnapshot ? selectedSnapshot.name : null}
             </Text>
-            <Text style={{fontSize: 10}}>
+            <Text style={{fontSize: 12}}>
               Type: {selectedSnapshot ? selectedSnapshot.type : null}
             </Text>
-            <Text style={{fontSize: 10}}>
+            <Text style={{fontSize: 12}}>
               Date: {selectedSnapshot ? selectedSnapshot.date : null}
             </Text>
           </View>
@@ -547,7 +550,8 @@ export default function ServerSnapshots({route, navigation}) {
             <Text
               style={{
                 fontFamily: 'Raleway-Regular',
-                fontSize: 12,
+                fontSize: 14,
+                includeFontPadding: false,
                 color: '#000000',
                 marginStart: 10,
               }}>
@@ -562,7 +566,8 @@ export default function ServerSnapshots({route, navigation}) {
             <Text
               style={{
                 fontFamily: 'Raleway-Regular',
-                fontSize: 12,
+                fontSize: 14,
+                includeFontPadding: false,
                 color: '#000000',
                 marginStart: 10,
               }}>

@@ -20,31 +20,50 @@ export function ServerConsole({navigation, route}) {
   const {signIn} = React.useContext(AuthContext);
   const deviceWidthPx = Dimensions.get('window').width;
   const [token, setToken] = useState('');
-  const loginHandle = usertoken => {
-    getPing(usertoken).then(data => {
-      console.log(data);
-      if (data.webdock === 'rocks') {
-        console.log('logged in');
-        signIn(usertoken);
-      } else {
-        Alert.alert('Error', 'Something went wrong!');
-      }
-    });
-  };
-  const runFirst = `
-  const meta = document.createElement('meta'); 
-  meta.setAttribute('content', 'width=width, initial-scale=0.5, maximum-scale=0.5, user-scalable=2.0'); 
-  meta.setAttribute('name', 'viewport'); 
-  document.getElementsByTagName('head')[0].appendChild(meta); 
-      window.isNativeApp = true;
-      true; // note: this is required, or you'll sometimes get silent failures
+  const desiredWidth = 600;
+  // Calculate scale based on actual device width
+  const scale = deviceWidthPx / desiredWidth;
+  console.log(scale);
+  console.log(desiredWidth);
+  // Update viewport content dynamically
+  const runFirst = `     
+    window.isNativeApp = true;
+    true; // note: this is required, or you'll sometimes get silent failures
     `;
+  const injectedJavaScript = `
+//mobile viewport hack
+(function(){
+
+  function apply_viewport(){
+    if( /Webdock Mobile App WebView v1.0|Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)   ) {
+
+      var ww = window.screen.width;
+      var mw = 600; // min width of site
+      var ratio =  ww / mw; //calculate ratio
+      var viewport_meta_tag = document.getElementById('viewport');
+      if( ww < mw){ //smaller than minimum size
+        viewport_meta_tag.setAttribute('content', 'initial-scale=' + ratio + ', maximum-scale=' + ratio + ', minimum-scale=' + ratio + ', user-scalable=no, width=' + mw);
+      }
+      else { //regular size
+        viewport_meta_tag.setAttribute('content', 'initial-scale=1.0, maximum-scale=1, minimum-scale=1.0, user-scalable=yes, width=' + ww);
+      }
+    }
+  }
+
+  //ok, i need to update viewport scale if screen dimentions changed
+  window.addEventListener('resize', function(){
+    apply_viewport();
+  });
+
+  apply_viewport();
+
+}());
+`;
   useEffect(() => {
     DeviceInfo.getDeviceName().then(deviceName => {
       setDeviceName(deviceName);
     });
-    console.log(route.params);
-  }, []);
+  }, [navigation]);
 
   const [loading, setLoading] = useState(true);
   const hideSpinner = () => {
@@ -62,7 +81,10 @@ export function ServerConsole({navigation, route}) {
             paddingHorizontal: '2%',
             padding: '2%',
           }}>
-          <TouchableOpacity onPress={navigation.goBack}>
+          <TouchableOpacity
+            onPress={() => {
+              navigation.goBack();
+            }}>
             <BackIcon height={45} width={50} />
           </TouchableOpacity>
           <Text
@@ -90,17 +112,15 @@ export function ServerConsole({navigation, route}) {
               'X-Device-Name': deviceName,
             },
           }}
-          style={{resizeMode: 'cover'}}
-          scalesPageToFit={false}
+          //style={{resizeMode: 'cover'}}
+          //scalesPageToFit={false}
           javaScriptEnabled={true}
+          injectedJavaScript={injectedJavaScript}
           incognito={true}
           cacheEnabled={false}
           onLoadEnd={hideSpinner}
           injectedJavaScriptBeforeContentLoaded={runFirst}
-          onMessage={event => {
-            // const {data} = event.nativeEvent;
-            // loginHandle(data);
-          }}
+          onMessage={event => {}}
         />
       </View>
       {loading && (

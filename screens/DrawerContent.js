@@ -64,7 +64,13 @@ export function DrawerContent(props) {
       <DrawerContentScrollView {...props}>
         <View style={styles.drawerContent}>
           <View style={styles.userInfoSection}>
-            <View style={{flexDirection: 'row', marginTop: 15}}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: 10,
+              }}>
               <Avatar.Image
                 source={{
                   uri: !account.userAvatar
@@ -226,11 +232,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     marginTop: 3,
-    fontWeight: 'bold',
+    fontFamily: 'Raleway-Bold',
+    includeFontPadding: false,
   },
   caption: {
     fontSize: 14,
     lineHeight: 14,
+    flexWrap: 'wrap',
+    includeFontPadding: false,
+    fontFamily: 'Raleway-Normal',
   },
   row: {
     marginTop: 20,

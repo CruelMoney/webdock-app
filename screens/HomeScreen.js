@@ -13,6 +13,7 @@ import {
   UIManager,
   LayoutAnimation,
   Pressable,
+  PixelRatio,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -108,19 +109,17 @@ export function HomeScreen({navigation}) {
             datas.push({label: item.name, value: item.slug});
           });
           setImages(datas);
+          setAPIBusy(false);
         });
       } catch (e) {
         alert(e);
       }
     }, 0);
-    setAPIBusy(false);
   }, [navigation]);
   useEffect(() => {
-    setAPIBusy(true);
     setTimeout(async () => {
       let userToken = null;
       try {
-        console.log('im changing myself');
         userToken = await AsyncStorage.getItem('userToken');
         getProfiles(userToken, newServerLocation).then(datas => {
           datas.map(item => {
@@ -132,7 +131,6 @@ export function HomeScreen({navigation}) {
         alert(e);
       }
     }, 0);
-    setAPIBusy(false);
   }, [newServerLocation]);
   const onBackgroundRefresh = async () => {
     setAPIBusy(true);
@@ -150,11 +148,11 @@ export function HomeScreen({navigation}) {
         };
 
         setServers(data.sort(sorter));
+        setAPIBusy(false);
       });
     } catch (e) {
       alert(e);
     }
-    setAPIBusy(false);
   };
 
   const renderStatusIcon = icon => {
@@ -197,7 +195,7 @@ export function HomeScreen({navigation}) {
                 alignItems: 'center',
               }}>
               {renderStatusIcon(status)}
-              <Text style={{fontFamily: 'Raleway-Regular', fontSize: 12}}>
+              <Text style={{fontFamily: 'Raleway-Regular', fontSize: 14}}>
                 {' '}
                 {title}
               </Text>
@@ -205,7 +203,7 @@ export function HomeScreen({navigation}) {
             <Text
               style={{
                 fontFamily: 'Raleway-Light',
-                fontSize: 10,
+                fontSize: 12,
                 color: '#8F8F8F',
               }}>
               {profile} · {ipv4}
@@ -235,11 +233,11 @@ export function HomeScreen({navigation}) {
 
         setServers(data.sort(sorter));
         setIsFetching(false);
+        setAPIBusy(false);
       });
     } catch (e) {
       alert(e);
     }
-    setAPIBusy(false);
   };
   var currency_symbols = {
     USD: '$', // US Dollar
@@ -531,6 +529,8 @@ export function HomeScreen({navigation}) {
               height: 39,
               borderColor: '#00a1a1',
               color: '#00a1a1',
+              lineHeight: 39,
+              includeFontPadding: false,
             }}
             selectionColor="#00A1A1"
             dense={true}
@@ -633,7 +633,14 @@ export function HomeScreen({navigation}) {
             keyExtractor={item => item.slug}
           />
         ) : (
-          <LoadingList />
+          <View
+            style={{
+              height: '80%',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            <ActivityIndicator size="small" color="#00A1A1" />
+          </View>
         )}
         <TouchableOpacity
           onPress={() => navigation.navigate('CreateServer')} //toggleModal

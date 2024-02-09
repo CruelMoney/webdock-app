@@ -124,13 +124,16 @@ export default function ChangeProfile({navigation, route}) {
             borderRadius: 8,
             overflow: 'hidden',
           }}
+          key={item.slug}
           onPress={onClickFunction}>
           <Card.Title
+            titleNumberOfLines={2}
             titleStyle={{
               color: item.isExpanded ? '#00a1a1' : 'black',
               fontFamily: 'Raleway-Bold',
               fontSize: 16,
               includeFontPadding: false,
+              flexWrap: 'wrap',
             }}
             title={item.name}
             right={() => (
@@ -305,16 +308,16 @@ export default function ChangeProfile({navigation, route}) {
     }
   }, [selectedPlan]);
   const updateLayout = index => {
-    LayoutAnimation.configureNext({
-      duration: 200,
-      create: {
-        type: LayoutAnimation.Types.easeInEaseOut,
-        property: LayoutAnimation.Properties.opacity,
-      },
-      update: {
-        type: LayoutAnimation.Types.easeInEaseOut,
-      },
-    });
+    // LayoutAnimation.configureNext({
+    //   duration: 200,
+    //   create: {
+    //     type: LayoutAnimation.Types.easeInEaseOut,
+    //     property: LayoutAnimation.Properties.opacity,
+    //   },
+    //   update: {
+    //     type: LayoutAnimation.Types.easeInEaseOut,
+    //   },
+    // });
     const array = [...profiles];
     array.map((value, placeindex) =>
       placeindex === index
