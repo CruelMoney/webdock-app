@@ -89,6 +89,7 @@ export default function CreateServerScript({route, navigation}) {
           text1: 'Script deployed',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -103,6 +104,7 @@ export default function CreateServerScript({route, navigation}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -116,6 +118,7 @@ export default function CreateServerScript({route, navigation}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);

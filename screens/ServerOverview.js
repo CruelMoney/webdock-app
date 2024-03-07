@@ -149,6 +149,7 @@ export default function ServerOverview({route, navigation}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -162,6 +163,7 @@ export default function ServerOverview({route, navigation}) {
           text1: 'Server not found',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -199,6 +201,7 @@ export default function ServerOverview({route, navigation}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -212,6 +215,7 @@ export default function ServerOverview({route, navigation}) {
           text1: 'Server not found',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -249,6 +253,7 @@ export default function ServerOverview({route, navigation}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -262,6 +267,7 @@ export default function ServerOverview({route, navigation}) {
           text1: 'Server not found',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -300,6 +306,7 @@ export default function ServerOverview({route, navigation}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -313,6 +320,7 @@ export default function ServerOverview({route, navigation}) {
           text1: 'Server not found',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -343,6 +351,7 @@ export default function ServerOverview({route, navigation}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -356,6 +365,7 @@ export default function ServerOverview({route, navigation}) {
           text1: 'Server not found',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -612,6 +622,7 @@ export default function ServerOverview({route, navigation}) {
           text1: 'Server Profile Change initiated',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -625,6 +636,7 @@ export default function ServerOverview({route, navigation}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -637,6 +649,7 @@ export default function ServerOverview({route, navigation}) {
           text1: 'Server not found!',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -1298,6 +1311,7 @@ export default function ServerOverview({route, navigation}) {
                       profile: profiles.filter(
                         item => server.profile === item.slug,
                       )[0].slug,
+                      virtualization: server.virtualization,
                     })
                   }>
                   <EditIcon width={25} height={25} />
@@ -1941,22 +1955,6 @@ export default function ServerOverview({route, navigation}) {
               future. Your passwords and settings will not be deleted, and your
               server shortname (slug) will be reserved. Statistics and
               monitoring rules will be deleted.
-            </Text>
-          </View>
-          <View
-            style={{display: 'flex', flexDirection: 'row', marginVertical: 10}}>
-            <View style={{backgroundColor: '#03A84E', width: 1}}></View>
-            <Text
-              style={{
-                fontFamily: 'Raleway-Regular',
-                fontSize: 12,
-                color: '#000000',
-                marginStart: 10,
-              }}>
-              You can only have up to 3 archived servers at any one time. If you
-              want more, click here to view current pricing. You can permanently
-              delete archived servers in your servers overview. You do not pay
-              for the first 3 archived servers in your account.
             </Text>
           </View>
           <View

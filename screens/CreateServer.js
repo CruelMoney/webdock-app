@@ -1127,6 +1127,7 @@ export function Step3({navigation, route}) {
           text1: 'Server provisioning initiated',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
         navigation.pop();
       } catch (e) {
@@ -1140,6 +1141,7 @@ export function Step3({navigation, route}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -1152,6 +1154,7 @@ export function Step3({navigation, route}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);

@@ -59,6 +59,7 @@ export default function CreatePublicKey({navigation}) {
           text1: 'PublicKey created',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
         setSubmitting(false);
         navigation.goBack();
@@ -73,6 +74,7 @@ export default function CreatePublicKey({navigation}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
         setSubmitting(false);
       } catch (e) {

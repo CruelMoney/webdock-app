@@ -73,6 +73,7 @@ export default function UpdateServerMetadata({route, navigation}) {
           text1: 'Server metadata updated',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -86,6 +87,7 @@ export default function UpdateServerMetadata({route, navigation}) {
           text1: 'Server not found!',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -197,7 +199,7 @@ export default function UpdateServerMetadata({route, navigation}) {
                 (slug)
               </Text>
             </View>
-            <View style={{marginTop: 5}}>
+            <View style={{marginTop: 15}}>
               <TextInput
                 mode="outlined"
                 label="Server name"
@@ -264,7 +266,8 @@ export default function UpdateServerMetadata({route, navigation}) {
                   }}>
                   Here you can define a date where you need to take some action
                   regarding this server. You can then sort your server list by
-                  this date in Metadata view on the All Servers page.
+                  this date in Metadata view on the All Servers page once logged
+                  in to the Web Dashboard.
                 </Text>
               </View>
               <TouchableOpacity onPress={showDatepicker}>

@@ -61,54 +61,6 @@ export default function ServerSnapshots({route, navigation}) {
     return unsubscribe;
   }, [route]);
 
-  const createSnapshot = async name => {
-    let userToken = null;
-    userToken = await AsyncStorage.getItem('userToken');
-    let result = await createSnapshotForServer(
-      userToken,
-      route.params.slug,
-      name,
-    );
-    if (result.status == 202) {
-      try {
-        Toast.show({
-          type: 'success',
-          position: 'bottom',
-          text1: 'Snapshot initiated',
-          visibilityTime: 4000,
-          autoHide: true,
-        });
-      } catch (e) {
-        alert(e);
-      }
-      toggleModal2();
-    } else if (result.status == 400) {
-      try {
-        Toast.show({
-          type: 'error',
-          position: 'bottom',
-          text1: result.response.message,
-          visibilityTime: 4000,
-          autoHide: true,
-        });
-      } catch (e) {
-        alert(e);
-      }
-    } else if (result.status == 404) {
-      try {
-        Toast.show({
-          type: 'error',
-          position: 'bottom',
-          text1: 'Server or snapshot not found!',
-          visibilityTime: 4000,
-          autoHide: true,
-        });
-      } catch (e) {
-        alert(e);
-      }
-    }
-  };
-
   const Item = ({item}) => (
     <>
       <View
@@ -253,6 +205,7 @@ export default function ServerSnapshots({route, navigation}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -265,6 +218,7 @@ export default function ServerSnapshots({route, navigation}) {
           text1: 'Server or snapshot not found!',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
         toggleModal();
       } catch (e) {

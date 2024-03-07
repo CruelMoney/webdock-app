@@ -49,6 +49,7 @@ export default function CreateAccountScript({navigation}) {
           text1: 'Account script added',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -62,6 +63,7 @@ export default function CreateAccountScript({navigation}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);

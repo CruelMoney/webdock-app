@@ -20,7 +20,7 @@ export default function ServerActivity({route, navigation}) {
         userToken = await AsyncStorage.getItem('userToken');
         getMetrics(userToken, route.params.slug).then(data => {
           setMetrics(data);
-          console.log(data);
+          console.log(data.cpu.usageSamplings);
         });
       } catch (e) {
         alert(e);
@@ -78,8 +78,11 @@ export default function ServerActivity({route, navigation}) {
                   ? metrics.cpu.usageSamplings.slice(-1).map(item => {
                       const dateString = item.timestamp.replace(/ /g, 'T');
                       var date = new Date(dateString);
-                      const day = String(date.getDay()).padStart(2, '0');
-                      const month = String(date.getMonth()).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      const month = String(date.getMonth() + 1).padStart(
+                        2,
+                        '0',
+                      );
                       const year = String(date.getFullYear()).padStart(4, '0');
                       return month + '-' + day + '-' + year;
                     })
@@ -177,8 +180,11 @@ export default function ServerActivity({route, navigation}) {
                   ? metrics.disk.samplings.slice(-1).map(item => {
                       const dateString = item.timestamp.replace(/ /g, 'T');
                       var date = new Date(dateString);
-                      const day = String(date.getDay()).padStart(2, '0');
-                      const month = String(date.getMonth()).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      const month = String(date.getMonth() + 1).padStart(
+                        2,
+                        '0',
+                      );
                       const year = String(date.getFullYear()).padStart(4, '0');
                       return month + '-' + day + '-' + year;
                     })
@@ -269,8 +275,11 @@ export default function ServerActivity({route, navigation}) {
                   ? metrics.memory.usageSamplings.slice(-1).map(item => {
                       const dateString = item.timestamp.replace(/ /g, 'T');
                       var date = new Date(dateString);
-                      const day = String(date.getDay()).padStart(2, '0');
-                      const month = String(date.getMonth()).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      const month = String(date.getMonth() + 1).padStart(
+                        2,
+                        '0',
+                      );
                       const year = String(date.getFullYear()).padStart(4, '0');
                       return month + '-' + day + '-' + year;
                     })
@@ -360,8 +369,11 @@ export default function ServerActivity({route, navigation}) {
                   ? metrics.network.egressSamplings.slice(-1).map(item => {
                       const dateString = item.timestamp.replace(/ /g, 'T');
                       var date = new Date(dateString);
-                      const day = String(date.getDay()).padStart(2, '0');
-                      const month = String(date.getMonth()).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      const month = String(date.getMonth() + 1).padStart(
+                        2,
+                        '0',
+                      );
                       const year = String(date.getFullYear()).padStart(4, '0');
                       return month + '-' + day + '-' + year;
                     })

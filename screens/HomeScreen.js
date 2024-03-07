@@ -79,36 +79,6 @@ export function HomeScreen({navigation}) {
             return dateB - dateA;
           };
           setServers(data.sort(sorter));
-
-          let snaps = [];
-          data.map(serveritem => {
-            getServerSnapshots(userToken, serveritem.slug).then(itemsnap => {
-              itemsnap.map(item => {
-                snaps.push({
-                  label:
-                    serveritem.slug + ' - ' + item.type + ' - ' + item.name,
-                  value: item.id,
-                });
-              });
-            });
-          });
-          setSnapshots(snaps);
-        });
-        getLocations(userToken).then(data => {
-          setLocations(data);
-          getProfiles(userToken, newServerLocation).then(datas => {
-            datas.map(item => {
-              item.isExpanded = false;
-            });
-            setProfiles(datas);
-          });
-        });
-        getImages(userToken).then(data => {
-          let datas = [{label: 'Your own image', value: 'snapshot'}];
-          data.map(item => {
-            datas.push({label: item.name, value: item.slug});
-          });
-          setImages(datas);
           setAPIBusy(false);
         });
       } catch (e) {
@@ -116,22 +86,6 @@ export function HomeScreen({navigation}) {
       }
     }, 0);
   }, [navigation]);
-  useEffect(() => {
-    setTimeout(async () => {
-      let userToken = null;
-      try {
-        userToken = await AsyncStorage.getItem('userToken');
-        getProfiles(userToken, newServerLocation).then(datas => {
-          datas.map(item => {
-            item.isExpanded = false;
-          });
-          setProfiles([...datas]);
-        });
-      } catch (e) {
-        alert(e);
-      }
-    }, 0);
-  }, [newServerLocation]);
   const onBackgroundRefresh = async () => {
     setAPIBusy(true);
     let userToken = null;
@@ -176,7 +130,7 @@ export function HomeScreen({navigation}) {
     return null;
   };
 
-  const Item = ({title, alias, dc, profile, ipv4, status}) => (
+  const Item = ({title, alias, dc, virtualization, profile, ipv4, status}) => (
     <>
       <View style={{backgroundColor: 'white', borderRadius: 10}}>
         <View
@@ -187,7 +141,7 @@ export function HomeScreen({navigation}) {
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
-          <View>
+          <View style={{flex: 4}}>
             <View
               style={{
                 display: 'flex',
@@ -206,10 +160,11 @@ export function HomeScreen({navigation}) {
                 fontSize: 12,
                 color: '#8F8F8F',
               }}>
-              {profile} · {ipv4}
+              {profile} · {virtualization == 'container' ? 'LXD' : 'KVM'} ·{' '}
+              {ipv4}
             </Text>
           </View>
-          <ArrowIcon width={15} height={15} />
+          <ArrowIcon style={{flex: 1}} width={15} height={15} />
         </View>
       </View>
     </>
@@ -222,6 +177,7 @@ export function HomeScreen({navigation}) {
     try {
       userToken = await AsyncStorage.getItem('userToken');
       getServers(userToken).then(data => {
+        console.log(data);
         const sorter = (a, b) => {
           var dA = a.date.split(' ');
           var dB = b.date.split(' ');
@@ -262,205 +218,6 @@ export function HomeScreen({navigation}) {
     setModalVisible(!isModalVisible);
   };
 
-  const [newServerName, setNewServerName] = useState();
-  const [newServerSlug, setNewServerSlug] = useState();
-  const [newServerLocation, setNewServerLocation] = useState('ca');
-  const [newServerHardware, setNewServerHardware] = useState();
-  const [newServerImage, setNewServerImage] = useState();
-  const [newServerSnapshot, setNewServerSnapshot] = useState(0);
-
-  const changeLocation = async lc => {
-    let userToken = null;
-    try {
-      userToken = await AsyncStorage.getItem('userToken');
-      getProfiles(userToken, lc).then(datas => {
-        datas.map(item => {
-          item.isExpanded = false;
-        });
-        setProfiles([...datas]);
-      });
-    } catch (e) {
-      alert(e);
-    }
-  };
-  const ExpandableComponent = ({item, onClickFunction}) => {
-    const [layoutHeight, setLayoutHeight] = useState(0);
-
-    useEffect(() => {
-      if (item.isExpanded) {
-        setLayoutHeight(null);
-        setNewServerHardware(item);
-      } else {
-        setLayoutHeight(0);
-      }
-    }, [item.isExpanded]);
-
-    return (
-      <>
-        <Card
-          style={{
-            borderColor: item.isExpanded ? '#00a1a1' : '#eee',
-            borderWidth: item.isExpanded ? 2 : 1,
-            marginVertical: 10,
-          }}
-          onPress={onClickFunction}>
-          <Card.Title
-            titleStyle={{color: item.isExpanded ? '#00a1a1' : 'black'}}
-            title={item.name}
-            right={() => (
-              <Title style={{color: '#00a1a1', marginRight: 10}}>
-                {currency_symbols[item.price.currency] +
-                  item.price.amount / 100 +
-                  '/mo'}
-              </Title>
-            )}
-          />
-          {item.isExpanded ? <Divider /> : null}
-          {item.isExpanded ? (
-            <Card.Content style={{height: layoutHeight, overflow: 'hidden'}}>
-              <View
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  paddingTop: 10,
-                  paddingHorizontal: 10,
-                }}>
-                <SVGCpu height={30} width={30} color="#787878" />
-                <Paragraph style={{width: '90%', textAlign: 'center'}}>
-                  {item.cpu.cores + ' Cores,' + item.cpu.threads + ' Threads'}
-                </Paragraph>
-              </View>
-              <View
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  paddingTop: 10,
-                  paddingHorizontal: 10,
-                }}>
-                <View>
-                  <SVGRam height={30} width={30} color="#787878" />
-                </View>
-                <Paragraph style={{width: '90%', textAlign: 'center'}}>
-                  {Math.round(item.ram * 0.001048576 * 100) / 100 + ' GB RAM'}
-                </Paragraph>
-              </View>
-
-              <View
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  paddingTop: 10,
-                  paddingHorizontal: 10,
-                }}>
-                <SVGStorage height={30} width={30} color="#787878" />
-                <Paragraph style={{width: '90%', textAlign: 'center'}}>
-                  {Math.round(item.disk * 0.001048576 * 100) / 100 +
-                    ' GB On-Board SSD Drive'}
-                </Paragraph>
-              </View>
-              <View
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  paddingTop: 10,
-                  paddingHorizontal: 10,
-                }}>
-                <Icon name="wifi" size={30} color="#787878" />
-                <Paragraph style={{width: '90%', textAlign: 'center'}}>
-                  1 Gbit/s-Port
-                </Paragraph>
-              </View>
-              <View
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  paddingTop: 10,
-                  paddingHorizontal: 10,
-                }}>
-                <Icon name="location-on" size={30} color="#787878" />
-                <Paragraph style={{width: '90%', textAlign: 'center'}}>
-                  1 dedicated IPv4 address
-                </Paragraph>
-              </View>
-            </Card.Content>
-          ) : null}
-        </Card>
-      </>
-    );
-  };
-
-  const updateLayout = index => {
-    LayoutAnimation.configureNext({
-      duration: 300,
-      create: {
-        type: LayoutAnimation.Types.easeInEaseOut,
-        property: LayoutAnimation.Properties.opacity,
-      },
-      update: {
-        type: LayoutAnimation.Types.easeInEaseOut,
-      },
-    });
-    const array = [...profiles];
-    array.map((value, placeindex) =>
-      placeindex === index
-        ? (array[placeindex]['isExpanded'] = !array[placeindex]['isExpanded'])
-        : (array[placeindex]['isExpanded'] = false),
-    );
-    setProfiles(array);
-  };
-  if (Platform.OS === 'android') {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-  }
-  const sendRequest = async () => {
-    let userToken = null;
-    userToken = await AsyncStorage.getItem('userToken');
-
-    var result = await provisionAServer(
-      userToken,
-      newServerName,
-      newServerSlug,
-      newServerLocation,
-      newServerHardware.slug,
-      newServerImage == 'snapshot' ? null : newServerImage,
-      newServerImage == 'snapshot' ? newServerSnapshot : 0,
-    );
-    if (result.status == 202) {
-      onBackgroundRefresh();
-      try {
-        Toast.show({
-          type: 'success',
-          position: 'bottom',
-          text1: 'Server provisioning initiated!',
-          visibilityTime: 4000,
-          autoHide: true,
-        });
-      } catch (e) {
-        alert(e);
-      }
-    } else if (result.status == 400) {
-      try {
-        Toast.show({
-          type: 'error',
-          position: 'bottom',
-          text1: result.response.message,
-          visibilityTime: 4000,
-          autoHide: true,
-        });
-      } catch (e) {
-        alert(e);
-      }
-    }
-  };
-  const [visible, setVisible] = React.useState(false);
-
-  const openMenu = () => setVisible(true);
-
-  const closeMenu = () => setVisible(false);
   const [filteredServers, setFilteredServers] = useState();
   const [searchQuery, setSearchQuery] = React.useState('');
   const onChangeSearch = query => setSearchQuery(query);
@@ -615,6 +372,7 @@ export function HomeScreen({navigation}) {
                       title={item.name}
                       alias={item.aliases[0]}
                       dc={item.location}
+                      virtualization={item.virtualization}
                       profile={item.profile}
                       ipv4={item.ipv4}
                       status={item.status}
@@ -658,151 +416,6 @@ export function HomeScreen({navigation}) {
           <PlusIcon height={50} width={50} />
         </TouchableOpacity>
       </View>
-
-      <Modal isVisible={isModalVisible} style={{margin: 0}}>
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: 'space-between',
-            flexDirection: 'column',
-          }}
-          style={{backgroundColor: 'white', paddingBottom: 20}}>
-          <View style={styles.content1}>
-            <View style={{width: '100%'}}>
-              <View style={{alignItems: 'flex-end'}}>
-                <IconButton
-                  icon="close"
-                  color="black"
-                  size={25}
-                  onPress={toggleModal}
-                />
-              </View>
-
-              <Text style={styles.contentTitle}>
-                Create a Server in 2 minutes or less
-              </Text>
-              <Text style={{textAlign: 'center', paddingHorizontal: 20}}>
-                It's free to try. We will not charge your card until tomorrow
-                morning.
-              </Text>
-            </View>
-            <View style={{padding: 20}}>
-              <TextInput
-                mode="outlined"
-                label="Name"
-                value={newServerName}
-                onChangeText={newServerName => setNewServerName(newServerName)}
-                theme={{
-                  colors: {
-                    primary: '#00a1a1',
-                  },
-                }}
-              />
-              <TextInput
-                mode="outlined"
-                label="Slug"
-                value={newServerSlug}
-                onChangeText={newServerSlug => setNewServerSlug(newServerSlug)}
-                theme={{
-                  colors: {
-                    primary: '#00a1a1',
-                  },
-                }}
-                style={{marginTop: 10}}
-              />
-              <View
-                style={{
-                  flexDirection: 'row',
-                  paddingVertical: 10,
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                }}>
-                {locations
-                  ? locations.map(item => (
-                      <Card
-                        onPress={() => {
-                          setNewServerLocation(item.id);
-                          changeLocation(item.id);
-                        }}
-                        key={item.id}
-                        style={{
-                          borderWidth: 0.1,
-                          backgroundColor:
-                            item.id === newServerLocation ? '#00a1a1' : 'white',
-                        }}>
-                        <Card.Content
-                          style={{alignItems: 'center', textAlign: 'center'}}>
-                          <Title style={{fontSize: 16}}>
-                            <Image
-                              source={{uri: item.icon}}
-                              style={{width: 20, height: 20}}
-                            />{' '}
-                            {item.name}
-                          </Title>
-                          <Paragraph>
-                            {item.city}/{item.country}
-                          </Paragraph>
-                        </Card.Content>
-                      </Card>
-                    ))
-                  : null}
-              </View>
-              {profiles
-                ? profiles.map((gr, key) => (
-                    <ExpandableComponent
-                      key={gr.slug}
-                      item={gr}
-                      onClickFunction={() => {
-                        updateLayout(key);
-                      }}
-                    />
-                  ))
-                : null}
-              <Text style={styles.titleText}>Image</Text>
-              {/* {images ? (
-                <RNPickerSelect
-                  onValueChange={value => setNewServerImage(value)}
-                  items={images}
-                  style={{borderColor: 'black'}}
-                />
-              ) : null} */}
-              {newServerImage === 'snapshot' ? (
-                <>
-                  <Text>
-                    Choose from any existing snapshot or suspended server in
-                    your account{' '}
-                  </Text>
-                  {/* {snapshots ? (
-                    <RNPickerSelect
-                      onValueChange={value => setNewServerSnapshot(value)}
-                      items={snapshots}
-                      style={{borderColor: 'black'}}
-                    />
-                  ) : null} */}
-                </>
-              ) : null}
-            </View>
-            <View
-              style={{
-                padding: 20,
-                width: '100%',
-              }}>
-              <View style={{justifyContent: 'center'}}>
-                <Button
-                  mode="contained"
-                  theme={{
-                    colors: {
-                      primary: '#008570',
-                    },
-                  }}
-                  onPress={sendRequest}>
-                  Create Server
-                </Button>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
-      </Modal>
     </>
   );
 }

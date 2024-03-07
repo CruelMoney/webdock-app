@@ -100,6 +100,7 @@ export function ServerManagement({route, navigation}) {
           text1: 'Server updated',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -113,6 +114,7 @@ export function ServerManagement({route, navigation}) {
           text1: 'Server not found!',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -207,6 +209,7 @@ export function ServerManagement({route, navigation}) {
             name: route.params.name,
             location: route.params.location,
             profile: route.params.profile,
+            virtualization: route.params.virtualization,
           }}
         />
         <Stack.Screen

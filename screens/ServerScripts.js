@@ -89,6 +89,7 @@ export default function ServerScripts({route, navigation}) {
           text1: 'Script deleted',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -101,6 +102,7 @@ export default function ServerScripts({route, navigation}) {
           text1: 'Script not found',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
         setIsDeleteModalVisible(false);
       } catch (e) {
@@ -226,6 +228,7 @@ export default function ServerScripts({route, navigation}) {
           text1: 'Script not found!',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);

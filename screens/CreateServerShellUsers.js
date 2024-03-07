@@ -99,6 +99,7 @@ export default function CreateServerShellUsers({route, navigation}) {
           text1: 'Shell user creation initiated',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -113,6 +114,7 @@ export default function CreateServerShellUsers({route, navigation}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -126,6 +128,7 @@ export default function CreateServerShellUsers({route, navigation}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);

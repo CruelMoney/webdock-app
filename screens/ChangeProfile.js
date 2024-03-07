@@ -96,6 +96,9 @@ export default function ChangeProfile({navigation, route}) {
           obj => obj.slug === route.params.profile,
         );
         data = [specificObject, ...data.filter(obj => obj !== specificObject)];
+        if (route.params.virtualization === 'kvm') {
+          data = [...data.filter(obj => obj.disk >= specificObject.disk)];
+        }
         setProfiles(data);
         console.log(data);
       });
@@ -347,6 +350,7 @@ export default function ChangeProfile({navigation, route}) {
           text1: 'Server Profile Change initiated',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -360,6 +364,7 @@ export default function ChangeProfile({navigation, route}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -372,6 +377,7 @@ export default function ChangeProfile({navigation, route}) {
           text1: 'Server not found!',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -410,7 +416,7 @@ export default function ChangeProfile({navigation, route}) {
           justifyContent: 'space-between',
           flexDirection: 'column',
         }}>
-        <View>
+        <View style={{height: '100%'}}>
           <View style={{paddingTop: 10}}>
             <SectionTitle title={'Your Current Server Profile'} />
 
@@ -425,7 +431,7 @@ export default function ChangeProfile({navigation, route}) {
                       }}
                     />
                     {key === 0 ? (
-                      <SectionTitle title={'Your Current Server Profile'} />
+                      <SectionTitle title={'Select New Hardware Profile'} />
                     ) : null}
                   </>
                 ))
@@ -437,29 +443,45 @@ export default function ChangeProfile({navigation, route}) {
 
                   <DataTable>
                     <DataTable.Header>
-                      <DataTable.Title>Name - Profile - Period</DataTable.Title>
-                      <DataTable.Title numeric>Price</DataTable.Title>
+                      <DataTable.Title style={{flex: 3, flexWrap: 'wrap'}}>
+                        Name - Profile - Period
+                      </DataTable.Title>
+                      <DataTable.Title style={{flex: 1}} numeric>
+                        Price
+                      </DataTable.Title>
                     </DataTable.Header>
 
                     {itemsCharge
                       ? itemsCharge.map(item => (
-                          <DataTable.Row key={item.text}>
-                            <DataTable.Cell
-                              style={{fontFamily: 'Raleway-Regular'}}>
+                          <DataTable.Row
+                            key={item.text}
+                            style={{
+                              includeFontPadding: false,
+                              flexWrap: 'wrap',
+                              flexDirection: 'row',
+                              marginTop: 5,
+                            }}>
+                            <Text
+                              style={{
+                                flexWrap: 'wrap',
+                                flex: 1,
+                              }}>
                               {item.text}
-                            </DataTable.Cell>
-                            <DataTable.Cell numeric>
+                            </Text>
+                            <Text numeric>
                               {item.price.amount / 100 +
                                 ' ' +
                                 currency_symbols[item.price.currency]}
-                            </DataTable.Cell>
+                            </Text>
                           </DataTable.Row>
                         ))
                       : null}
                   </DataTable>
-                  <DataTable style={{width: '50%', alignSelf: 'flex-end'}}>
+                  <DataTable>
                     <DataTable.Row>
-                      <DataTable.Cell>Subtotal</DataTable.Cell>
+                      <DataTable.Cell style={{justifyContent: 'flex-end'}}>
+                        Subtotal
+                      </DataTable.Cell>
                       <DataTable.Cell numeric>
                         {dryRun
                           ? dryRun.response
@@ -476,7 +498,9 @@ export default function ChangeProfile({navigation, route}) {
                       </DataTable.Cell>
                     </DataTable.Row>
                     <DataTable.Row>
-                      <DataTable.Cell>VAT</DataTable.Cell>
+                      <DataTable.Cell style={{justifyContent: 'flex-end'}}>
+                        VAT
+                      </DataTable.Cell>
                       <DataTable.Cell numeric>
                         {dryRun
                           ? dryRun.response
@@ -491,7 +515,7 @@ export default function ChangeProfile({navigation, route}) {
                       </DataTable.Cell>
                     </DataTable.Row>
                     <DataTable.Row style={{borderColor: 'red'}}>
-                      <DataTable.Cell>
+                      <DataTable.Cell style={{justifyContent: 'flex-end'}}>
                         <Text style={{fontWeight: 'bold'}}>Pay now</Text>
                       </DataTable.Cell>
                       <DataTable.Cell numeric>

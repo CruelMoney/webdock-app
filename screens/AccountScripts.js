@@ -75,6 +75,7 @@ export default function AccountScripts({navigation}) {
           text1: 'Account script deleted successfully',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -88,6 +89,7 @@ export default function AccountScripts({navigation}) {
           text1: 'Script not found',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);

@@ -107,6 +107,7 @@ export default function ServerShellUsers({route, navigation}) {
           text1: 'Shell user updated!',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -120,6 +121,7 @@ export default function ServerShellUsers({route, navigation}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -133,6 +135,7 @@ export default function ServerShellUsers({route, navigation}) {
           text1: 'Server or shell user not found',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -171,6 +174,7 @@ export default function ServerShellUsers({route, navigation}) {
                   text1: 'Shell user deletion initiated!',
                   visibilityTime: 4000,
                   autoHide: true,
+                  onPress: () => navigation.navigate('Events'),
                 });
               } catch (e) {
                 alert(e);
@@ -185,6 +189,7 @@ export default function ServerShellUsers({route, navigation}) {
                   text1: 'Server or shell user not found',
                   visibilityTime: 4000,
                   autoHide: true,
+                  onPress: () => navigation.navigate('Events'),
                 });
               } catch (e) {
                 alert(e);
@@ -316,6 +321,7 @@ export default function ServerShellUsers({route, navigation}) {
           text1: 'WebSSH initiated!',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
         navigation.navigate('ServerConsole', {
           slug: route.params.slug,
@@ -333,6 +339,7 @@ export default function ServerShellUsers({route, navigation}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -345,6 +352,7 @@ export default function ServerShellUsers({route, navigation}) {
           text1: 'Server not found',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -537,7 +545,7 @@ export default function ServerShellUsers({route, navigation}) {
                       color: '#5F5F5F',
                       marginStart: 10,
                     }}>
-                    Connect now in your browser (easiest way):
+                    Connect now in your browser:
                   </Text>
                   <Text
                     style={{

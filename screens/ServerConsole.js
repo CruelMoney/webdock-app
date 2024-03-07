@@ -94,7 +94,7 @@ export function ServerConsole({navigation, route}) {
               fontSize: 20,
               textAlign: 'center',
             }}>
-            Console
+            Web SSH
           </Text>
           <View style={{width: 50}}></View>
         </View>

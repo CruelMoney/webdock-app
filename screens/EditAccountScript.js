@@ -55,6 +55,7 @@ export default function EditAccountScript({navigation, route}) {
           text1: 'The script has been updated',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -68,6 +69,7 @@ export default function EditAccountScript({navigation, route}) {
           text1: result.response.message,
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
       } catch (e) {
         alert(e);
@@ -80,6 +82,7 @@ export default function EditAccountScript({navigation, route}) {
           text1: 'Script not found',
           visibilityTime: 4000,
           autoHide: true,
+          onPress: () => navigation.navigate('Events'),
         });
         navigation.goBack();
       } catch (e) {
