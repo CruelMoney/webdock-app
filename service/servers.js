@@ -71,7 +71,6 @@ export async function provisionAServer(
   slug,
   locationId,
   profileSlug,
-  virtualization,
   imageSlug,
   snapshotId,
 ) {
@@ -88,7 +87,6 @@ export async function provisionAServer(
         slug: slug,
         locationId: locationId,
         profileSlug: profileSlug,
-        virtualization: virtualization,
         imageSlug: imageSlug,
       }),
     });

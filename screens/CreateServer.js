@@ -81,8 +81,7 @@ export default function CreateServer({route, navigation}) {
       </View>
       <Tab.Navigator
         swipeEnabled={false}
-        tabBar={props => <MyTabBar {...props} />}
-        tab>
+        tabBar={props => <MyTabBar {...props} />}>
         <Tab.Screen name="1. Server info" component={Step1} />
         <Tab.Screen name="2. Image" component={Step2} />
         <Tab.Screen name="3. Summary" component={Step3} />
@@ -145,6 +144,7 @@ export function Step1({navigation, route}) {
         <Image width={19} height={19} color="#00a1a1" source={NADatacenter} />
       ),
       content: 'Server will be located in our datacenter in Montreal, Canada',
+      enabled: false,
     },
     {
       id: 'fi',
@@ -153,10 +153,11 @@ export function Step1({navigation, route}) {
         <Image width={19} height={19} color="#00a1a1" source={EUDatacenter} />
       ),
       content: 'Server will be located in our datacenter in Helsinki, Finland',
+      enabled: true,
     },
   ];
   const [locationSelected, setLocationSelected] = useState(1);
-  const [virtualizationSelected, setVirtulizationSelected] = useState(0);
+  // const [virtualizationSelected, setVirtulizationSelected] = useState(0);
   const [platformSelected, setPlatformSelected] = useState(0);
   const [newServerHardware, setNewServerHardware] = useState();
   const [profiles, setProfiles] = useState([]);
@@ -185,7 +186,7 @@ export function Step1({navigation, route}) {
         alert(e);
       }
     }, 0);
-  }, [navigation, locationSelected, virtualizationSelected, platformSelected]);
+  }, [navigation, locationSelected, platformSelected]);
   const ExpandableComponent = ({item, onClickFunction}) => {
     const [layoutHeight, setLayoutHeight] = useState(0);
 
@@ -398,15 +399,7 @@ export function Step1({navigation, route}) {
   }
   const goToNextStep = (virtualization, platform, location, profile) => {
     console.log(profile);
-    if (virtualization == null) {
-      Toast.show({
-        type: 'info',
-        position: 'bottom',
-        text1: 'Select at least one virtualization',
-        visibilityTime: 4000,
-        autoHide: true,
-      });
-    } else if (platform == null) {
+    if (platform == null) {
     } else if (location == null) {
     } else if (profile == null) {
       Toast.show({
@@ -418,7 +411,6 @@ export function Step1({navigation, route}) {
       });
     } else {
       navigation.navigate('2. Image', {
-        virtualization: virtualization,
         platform: platform,
         location: location,
         profile: profile,
@@ -460,7 +452,7 @@ export function Step1({navigation, route}) {
           ))}
         </View>
       </View>
-      <View style={{paddingBottom: 10, paddingHorizontal: '8%'}}>
+      {/* <View style={{paddingBottom: 10, paddingHorizontal: '8%'}}>
         <SectionTitle
           title="Virtualization"
           question="Which should i choose?"
@@ -485,7 +477,7 @@ export function Step1({navigation, route}) {
             />
           ))}
         </View>
-      </View>
+      </View> */}
       <View style={{paddingBottom: 10, paddingHorizontal: '8%'}}>
         <SectionTitle
           title="Location"
@@ -508,6 +500,7 @@ export function Step1({navigation, route}) {
               image={item.image}
               selected={locationSelected === index}
               onChange={() => setLocationSelected(index)}
+              enabled={item.enabled}
             />
           ))}
         </View>
@@ -536,7 +529,7 @@ export function Step1({navigation, route}) {
         style={{marginVertical: 20, paddingHorizontal: '8%'}}
         onPress={() =>
           goToNextStep(
-            virtualization[virtualizationSelected],
+            // virtualization[virtualizationSelected],
             platforms[platformSelected],
             locations[locationSelected],
             newServerHardware,
@@ -1113,9 +1106,6 @@ export function Step3({navigation, route}) {
       route.params.slug,
       route.params.location.id,
       route.params.profile.slug,
-      route.params.virtualization.title == 'Webdock LXD VPS'
-        ? 'container'
-        : 'kvm',
       route.params.image[0].slug,
       0,
     );
@@ -1129,7 +1119,7 @@ export function Step3({navigation, route}) {
           autoHide: true,
           onPress: () => navigation.navigate('Events'),
         });
-        navigation.pop();
+        navigation.getParent().goBack();
       } catch (e) {
         alert(e);
       }
@@ -1516,7 +1506,7 @@ function SectionTitle({title, question, questionUrl}) {
     </View>
   );
 }
-function SingleCard({image, title, content, selected, onChange}) {
+function SingleCard({image, title, content, selected, onChange, enabled}) {
   const [isSelected, setIsSelected] = useState(false);
   return (
     <View
@@ -1528,8 +1518,9 @@ function SingleCard({image, title, content, selected, onChange}) {
         borderColor: selected ? 'rgba(0, 161, 161, 1)' : 'white',
         borderWidth: 1,
         borderRadius: 10,
+        filter: enabled ? null : grayscale('100%'),
       }}>
-      <TouchableOpacity onPress={onChange}>
+      <TouchableOpacity disabled={!enabled} onPress={onChange}>
         <View style={{height: 125}}>
           <View style={{display: 'flex'}}>
             <View
