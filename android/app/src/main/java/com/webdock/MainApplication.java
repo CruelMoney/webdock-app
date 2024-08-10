@@ -1,25 +1,23 @@
 package com.webdock;
 
 import android.app.Application;
+import android.content.BroadcastReceiver; 
+import android.content.Intent; 
+import android.content.IntentFilter;
+import android.os.Build; 
 import android.content.Context;
+
+import androidx.annotation.Nullable;
+
+import com.facebook.react.BuildConfig;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
-import com.reactnativecommunity.netinfo.NetInfoPackage;
-import com.reactcommunity.rndatetimepicker.RNDateTimePickerPackage;
-import com.zoontek.rnpermissions.RNPermissionsPackage;
-import org.reactnative.camera.RNCameraPackage;
-import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
-import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
-import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerPackage;
-import com.horcrux.svg.SvgPackage;
-import com.oblador.vectoricons.VectorIconsPackage;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-//import com.intercom.reactnative.IntercomModule;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -56,6 +54,15 @@ public class MainApplication extends Application implements ReactApplication {
     SoLoader.init(this, /* native exopackage */ false);
     //IntercomModule.initialize(this, "apiKey", "appId"); // <-- Add this line
     initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
+  }
+
+  @Override
+  public Intent registerReceiver(@Nullable BroadcastReceiver receiver, IntentFilter filter) {
+      if (Build.VERSION.SDK_INT >= 34 && getApplicationInfo().targetSdkVersion >= 34) {
+          return super.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
+      } else {
+          return super.registerReceiver(receiver, filter);
+      }
   }
 
   /**

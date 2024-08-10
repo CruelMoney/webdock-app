@@ -147,12 +147,12 @@ export function Step1({navigation, route}) {
       enabled: false,
     },
     {
-      id: 'fi',
+      id: 'dk',
       title: 'Europe',
       image: (
         <Image width={19} height={19} color="#00a1a1" source={EUDatacenter} />
       ),
-      content: 'Server will be located in our datacenter in Helsinki, Finland',
+      content: 'Server will be located in our datacenter in Denmark',
       enabled: true,
     },
   ];
@@ -167,6 +167,7 @@ export function Step1({navigation, route}) {
       try {
         userToken = await AsyncStorage.getItem('userToken');
         getProfiles(userToken, locations[locationSelected].id).then(datas => {
+          console.log(datas);
           if (Array.isArray(datas)) {
             var count = 0;
             datas = datas.filter(item =>
@@ -397,7 +398,7 @@ export function Step1({navigation, route}) {
   if (Platform.OS === 'android') {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
-  const goToNextStep = (virtualization, platform, location, profile) => {
+  const goToNextStep = (platform, location, profile) => {
     console.log(profile);
     if (platform == null) {
     } else if (location == null) {
@@ -448,6 +449,7 @@ export function Step1({navigation, route}) {
               image={item.image}
               selected={platformSelected === index}
               onChange={() => setPlatformSelected(index)}
+              enabled={true}
             />
           ))}
         </View>
@@ -1119,7 +1121,7 @@ export function Step3({navigation, route}) {
           autoHide: true,
           onPress: () => navigation.navigate('Events'),
         });
-        navigation.getParent().goBack();
+        navigation.navigate('Servers', {screen: 'Servers'});
       } catch (e) {
         alert(e);
       }
@@ -1241,7 +1243,7 @@ export function Step3({navigation, route}) {
             </View>
           </View>
         </View>
-        <View>
+        {/* <View>
           <View
             style={{
               display: 'flex',
@@ -1278,10 +1280,10 @@ export function Step3({navigation, route}) {
                 width: '20%',
                 justifyContent: 'center',
               }}>
-              {/* {route.params ? route.params.virtualization.image : ''} */}
+               {route.params ? route.params.virtualization.image : ''} 
             </View>
           </View>
-        </View>
+        </View> */}
         <View>
           <View
             style={{
@@ -1514,11 +1516,18 @@ function SingleCard({image, title, content, selected, onChange, enabled}) {
       style={{
         width: '48%',
         marginBottom: 10,
-        backgroundColor: selected ? 'rgba(0, 161, 161, 0.06)' : 'white',
+        // backgroundColor: selected ? 'rgba(0, 161, 161, 0.06)' : 'white',
         borderColor: selected ? 'rgba(0, 161, 161, 1)' : 'white',
         borderWidth: 1,
         borderRadius: 10,
-        filter: enabled ? null : grayscale('100%'),
+        backgroundColor: 'grey',
+        opacity: enabled ? 1 : 0.5,
+        // ...StyleSheet.absoluteFillObject,
+        backgroundColor: !enabled
+          ? 'rgba(128, 128, 128, 0.5)'
+          : selected
+          ? 'rgba(0, 161, 161, 0.06)'
+          : 'white',
       }}>
       <TouchableOpacity disabled={!enabled} onPress={onChange}>
         <View style={{height: 125}}>

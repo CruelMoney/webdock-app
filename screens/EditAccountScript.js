@@ -1,28 +1,19 @@
 import AsyncStorage from '@react-native-community/async-storage';
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, Dimensions, ScrollView} from 'react-native';
 import {
-  IconButton,
-  Button,
-  Divider,
-  HelperText,
-  Snackbar,
-} from 'react-native-paper';
-import {TextInput} from 'react-native-paper';
-import * as Yup from 'yup';
-import {postAccountPublicKeys} from '../service/accountPublicKeys';
-import {
-  patchAccountScripts,
-  postAccountScripts,
-} from '../service/accountScripts';
-import Toast from 'react-native-toast-message';
+  ActivityIndicator,
+  Keyboard,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
+import {HelperText, TextInput} from 'react-native-paper';
+import Toast from 'react-native-toast-message';
 import BackIcon from '../assets/back-icon.svg';
-import {Pressable} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import {ActivityIndicator} from 'react-native';
-import {Keyboard} from 'react-native';
 import GradientButton from '../components/GradientButton';
+import {patchAccountScripts} from '../service/accountScripts';
 export default function EditAccountScript({navigation, route}) {
   const [inputs, setInputs] = React.useState({
     id: 0,

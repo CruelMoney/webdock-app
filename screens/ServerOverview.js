@@ -1306,13 +1306,22 @@ export default function ServerOverview({route, navigation}) {
                 style={{display: 'flex', flexDirection: 'row', width: '10%'}}>
                 <TouchableOpacity
                   onPress={() =>
-                    navigation.navigate('ChangeProfile', {
-                      location: server.location,
-                      profile: profiles.filter(
-                        item => server.profile === item.slug,
-                      )[0].slug,
-                      virtualization: server.virtualization,
-                    })
+                    profiles.filter(item => server.profile === item.slug)
+                      .length > 0
+                      ? navigation.navigate('ChangeProfile', {
+                          location: server.location,
+                          profile: profiles.filter(
+                            item => server.profile === item.slug,
+                          )[0].slug,
+                          virtualization: server.virtualization,
+                        })
+                      : Toast.show({
+                          type: 'error',
+                          position: 'bottom',
+                          text1: 'Profile not found!',
+                          visibilityTime: 4000,
+                          autoHide: true,
+                        })
                   }>
                   <EditIcon width={25} height={25} />
                 </TouchableOpacity>
