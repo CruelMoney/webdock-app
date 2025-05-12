@@ -400,6 +400,7 @@ export function HomeScreen({navigation}) {
             <ActivityIndicator size="small" color="#00A1A1" />
           </View>
         )}
+        {/* TODO: next version
         <TouchableOpacity
           onPress={() => navigation.navigate('CreateServer')} //toggleModal
           style={{
@@ -414,7 +415,7 @@ export function HomeScreen({navigation}) {
             borderRadius: 50 / 2,
           }}>
           <PlusIcon height={50} width={50} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </>
   );

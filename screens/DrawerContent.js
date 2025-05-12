@@ -100,6 +100,7 @@ export function DrawerContent(props) {
           </View>
           {/* Display the active tab */}
           <Drawer.Section style={styles.drawerSection}>
+            {/* TODO: next version
             <DrawerItem
               icon={({color, size}) => (
                 <CreateServerIcon width={size} height={size} />
@@ -111,7 +112,7 @@ export function DrawerContent(props) {
               onPress={() => {
                 props.navigation.navigate('CreateServer');
               }}
-            />
+            /> */}
             <DrawerItem
               icon={({color, size}) => (
                 <DashboardIcon width={size} height={size} />
