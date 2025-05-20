@@ -1,45 +1,35 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
-
 import AsyncStorage from '@react-native-community/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import {createDrawerNavigator} from '@react-navigation/drawer';
 import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
 import React, {useContext, useEffect, useState} from 'react';
-import {StyleSheet, useColorScheme} from 'react-native';
-import {Colors, Provider, useTheme, DefaultTheme} from 'react-native-paper';
+import {Provider} from 'react-native-paper';
 import SplashScreen from 'react-native-splash-screen';
 import Toast from 'react-native-toast-message';
 import {AuthContext} from './components/context';
 import OfflineNotice from './components/OfflineNotice';
-import {AccountRootStack} from './screens/AccountRootStack';
-import CreateServer from './screens/CreateServer';
-import {Dashboard} from './screens/Dashboard';
-import {DrawerContent} from './screens/DrawerContent';
-import {EventsStackNavigator} from './screens/EventsStack';
-import {MainStackNavigator} from './screens/HomeStack';
 import {RootStack} from './screens/RootStack';
-import {ServerManagement} from './screens/ServerManagement';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import MainTabs from './screens/MainTabs';
-import {HomeScreen} from './screens/HomeScreen';
 import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
-import {ThemeContext, ThemeProvider} from './components/ThemeContext';
-import WebdockApp from './WebdockApp';
-
-const Drawer = createDrawerNavigator();
-const Stack = createStackNavigator();
-const Tab = createBottomTabNavigator();
-export default function App() {
+import {ThemeContext} from './components/ThemeContext';
+import CrispChat, {
+  configure,
+  setUserEmail,
+  setUserNickname,
+  setUserPhone,
+  resetSession,
+} from 'react-native-crisp-chat-sdk';
+export default function WebdockApp() {
   //const [isLoading, setIsLoading] = React.useState(true);
   //const [userToken, setUserToken] = React.useState(null);
+  configure('6752e856bad04e1f6cc59556');
 
+  // this should be user ID that way app will load previous user chats
+  setUserTokenId('abcd12345');
+
+  // Set user's info
+  setUserEmail('test@test.com');
+  setUserNickname('John Smith');
+  setUserPhone('+614430231224');
   const initialLoginState = {
     isLoading: true,
     userToken: null,
@@ -122,28 +112,22 @@ export default function App() {
     }
   }, [loginState]);
 
+  const {theme} = useContext(ThemeContext);
+
   return (
-    <ThemeProvider>
-      <WebdockApp />
-    </ThemeProvider>
+    <Provider theme={theme}>
+      <AuthContext.Provider value={authContext}>
+        <NavigationContainer>
+          <BottomSheetModalProvider>
+            {loginState.userToken !== null ? <MainTabs /> : <RootStack />}
+          </BottomSheetModalProvider>
+          <OfflineNotice style={{zIndex: 200000}} />
+          <Toast ref={ref => Toast.setRef(ref)} style={{zIndex: 200000}} />
+        </NavigationContainer>
+        <CrispChat />
+        <OfflineNotice style={{zIndex: 200000}} />
+        <Toast ref={ref => Toast.setRef(ref)} style={{zIndex: 200000}} />
+      </AuthContext.Provider>
+    </Provider>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});

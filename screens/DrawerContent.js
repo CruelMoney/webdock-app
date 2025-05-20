@@ -58,6 +58,7 @@ export function DrawerContent(props) {
       }
     }, 0);
   }, []);
+  const theme = useTheme();
 
   return account ? (
     <View style={{flex: 1}}>
@@ -214,6 +215,13 @@ export function DrawerContent(props) {
             signOut();
           }}
         />
+        <View>
+          <Text>Follow Webdock on</Text>
+          <View></View>
+        </View>
+        <View style={{backgroundColor: theme.colors.grey, width: '100%'}}>
+          <Text>Version number {}</Text>
+        </View>
       </Drawer.Section>
     </View>
   ) : (

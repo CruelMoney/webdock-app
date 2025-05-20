@@ -11,6 +11,7 @@ buildscript {
     }
     repositories {
         google()
+        mavenCentral()
         jcenter()
     }
     dependencies {
@@ -33,7 +34,14 @@ allprojects {
         }
 
         google()
+        mavenCentral()
         jcenter()
         maven { url 'https://www.jitpack.io' }
+    }
+    configurations.all {
+        resolutionStrategy {
+            force 'com.google.firebase:firebase-iid:19.0.1'
+            force 'com.google.firebase:firebase-messaging:19.0.1'
+        }
     }
 }

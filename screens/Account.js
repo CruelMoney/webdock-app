@@ -1,11 +1,15 @@
 import AsyncStorage from '@react-native-community/async-storage';
-import React, {useEffect, useState} from 'react';
-import {ActivityIndicator, Image, Text, View} from 'react-native';
+import React, {useContext, useEffect, useState} from 'react';
+import {ActivityIndicator, Image, Switch, Text, View} from 'react-native';
 import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
 import MenuIcon from '../assets/menu-icon.svg';
 import PubicKeyIcon from '../assets/public-key-icon.svg';
 import ScriptsIcon from '../assets/scripts-icon.svg';
 import {getAccountInformations} from '../service/accountInformations';
+import {useTheme} from 'react-native-paper';
+import Spacer from '../components/Spacer';
+import ThemeSwitch from '../components/ThemeSwitch';
+import {ThemeContext} from '../components/ThemeContext';
 
 export default function Account({navigation}) {
   const [account, setAccount] = useState();
@@ -23,50 +27,79 @@ export default function Account({navigation}) {
     }, 0);
   }, []);
 
+  const theme = useTheme();
   const tabs = [
     // {"label":"General","icon":<UserIcon width={30} height={30} color="#00a1a1" />,"navigate":"AccountInfo"},
     {
-      label: 'Public Keys',
-      icon: <PubicKeyIcon width={30} height={30} color="#00a1a1" />,
+      label: 'Edit profile',
+      icon: (
+        <PubicKeyIcon width={12} height={12} color={theme.colors.background} />
+      ),
+      description:
+        'See current and past network, disk, memory and CPU activity for your server',
+      navigate: 'Edit profile',
+    },
+    {
+      label: 'Team',
+      description:
+        'See current and past network, disk, memory and CPU activity for your server',
+      icon: (
+        <ScriptsIcon width={12} height={12} color={theme.colors.background} />
+      ),
+      navigate: 'Team',
+    },
+    {
+      label: 'Notification settings',
+      icon: (
+        <PubicKeyIcon width={12} height={12} color={theme.colors.background} />
+      ),
+      description:
+        'See current and past network, disk, memory and CPU activity for your server',
+      navigate: 'Notification settings',
+    },
+    {
+      label: 'Public keys',
+      icon: (
+        <PubicKeyIcon width={12} height={12} color={theme.colors.background} />
+      ),
+      description:
+        'See current and past network, disk, memory and CPU activity for your server',
       navigate: 'PublicKeys',
     },
     {
       label: 'Scripts',
-      icon: <ScriptsIcon width={30} height={30} color="#00a1a1" />,
+      description:
+        'See current and past network, disk, memory and CPU activity for your server',
+      icon: (
+        <ScriptsIcon width={12} height={12} color={theme.colors.background} />
+      ),
       navigate: 'Scripts',
     },
+    {
+      label: 'Legal documents',
+      description:
+        'See current and past network, disk, memory and CPU activity for your server',
+      icon: (
+        <ScriptsIcon width={12} height={12} color={theme.colors.background} />
+      ),
+      navigate: 'Legal documents',
+    },
   ];
+  const {isDark, toggleTheme} = useContext(ThemeContext);
+
   return account ? (
     <View
       width="100%"
       height="100%"
-      style={{backgroundColor: '#F4F8F8', padding: '8%'}}>
+      style={{
+        backgroundColor: theme.colors.background,
+        padding: 20,
+      }}>
       <View
         style={{
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-        <TouchableOpacity onPress={navigation.openDrawer}>
-          <MenuIcon height={45} width={28} />
-        </TouchableOpacity>
-        <Text
-          style={{
-            color: '#00A1A1',
-            fontFamily: 'Raleway-Medium',
-            fontSize: 20,
-          }}>
-          Account
-        </Text>
-        <View style={{width: 50}}></View>
-      </View>
-      <View
-        style={{
-          marginTop: 20,
-          padding: 15,
-          backgroundColor: 'white',
-          borderRadius: 10,
+          padding: 20,
+          backgroundColor: theme.colors.surface,
+          borderRadius: 4,
         }}>
         <View
           style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
@@ -79,26 +112,44 @@ export default function Account({navigation}) {
                   ? account.userAvatar
                   : 'https:' + account.userAvatar,
               }}
-              style={{borderRadius: 70 / 2, width: 70, height: 70}}
+              style={{borderRadius: 58 / 2, width: 58, height: 58}}
             />
           </View>
-          <View style={{marginStart: 20, height: '100%'}}>
-            <Text
-              style={{flex: 1, fontFamily: 'Raleway-Regular', fontSize: 18}}>
-              {account.userName}
-            </Text>
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              marginStart: 20,
+              justifyContent: 'center',
+            }}>
             <Text
               style={{
-                flex: 1,
-                fontFamily: 'Raleway-Light',
+                textAlignVertical: 'center',
+                fontFamily: 'Poppins-Medium',
+                fontSize: 18,
+                lineHeight: 18 * 1.2,
+                fontWeight: '500',
+                color: theme.colors.text,
+              }}>
+              {account.userName}
+            </Text>
+            <Spacer size={5} />
+            <Text
+              style={{
+                fontFamily: 'Poppins',
+                textAlignVertical: 'center',
                 fontSize: 12,
+                lineHeight: 12 * 1.2,
+                fontWeight: '500',
                 color: '#7c7c7c',
               }}>
               Credit Balance:
               <Text
                 style={{
-                  fontFamily: 'Raleway-Light',
-                  fontSize: 14,
+                  fontFamily: 'Poppins',
+                  fontSize: 12,
+                  fontWeight: '400',
+                  lineHeight: 12 * 1.2,
                   color: '#4C9F5A',
                 }}>
                 {' '}
@@ -109,17 +160,7 @@ export default function Account({navigation}) {
           </View>
         </View>
       </View>
-      <Text
-        style={{
-          marginTop: 25,
-          marginBottom: 5,
-          fontFamily: 'Raleway-Regular',
-          fontSize: 18,
-          color: '#000000',
-        }}>
-        Account info
-      </Text>
-      <FlatList
+      {/* <FlatList
         data={tabs}
         renderItem={({item}) => (
           <TouchableOpacity onPress={() => navigation.navigate(item.navigate)}>
@@ -149,7 +190,79 @@ export default function Account({navigation}) {
             </View>
           </TouchableOpacity>
         )}
-      />
+      /> */}
+      <Spacer size={24} />
+      <View>
+        <ThemeSwitch
+          options={[
+            {label: 'Light mode', icon: 'white-balance-sunny'},
+            {label: 'Dark mode', icon: 'weather-night'},
+          ]}
+          onToggle={value => toggleTheme()}
+        />
+      </View>
+      <Spacer size={24} />
+      <View
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+        {tabs.map(item => (
+          <View
+            key={item.label}
+            style={{
+              width: '48%',
+              marginBottom: 10,
+              borderRightWidth: 4,
+              borderRightColor: theme.colors.primary,
+              backgroundColor: '#022213',
+              borderRadius: 10,
+            }}>
+            <TouchableOpacity
+              key={item.label}
+              onPress={() => navigation.navigate(item.navigate)}>
+              <View style={{height: 132, padding: 12}}>
+                <View style={{display: 'flex'}}>
+                  <View
+                    style={{
+                      width: 20,
+                      height: 20,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    {item.icon}
+                  </View>
+                  <Spacer size={8} />
+                  <Text
+                    style={{
+                      fontFamily: 'Poppins-SemiBold',
+                      fontWeight: '600',
+                      fontSize: 14,
+                      lineHeight: 14 * 1.2,
+                      color: 'white',
+                    }}>
+                    {item.label}
+                  </Text>
+                  <Spacer size={8} />
+                  <Text
+                    style={{
+                      fontFamily: 'Poppins-Light',
+                      fontWeight: '300',
+                      fontSize: 12,
+                      lineHeight: 12 * 1.2,
+                      color: 'white',
+                    }}>
+                    {item.description}
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
+        ))}
+      </View>
     </View>
   ) : (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>

@@ -29,6 +29,7 @@ import {
   Title,
   Paragraph,
   Menu,
+  useTheme,
 } from 'react-native-paper';
 import {Avatar, Divider} from 'react-native-paper';
 import {getServers, provisionAServer} from '../service/servers';
@@ -54,6 +55,8 @@ import DropdownIcon from '../assets/dropdown-icon.svg';
 import ArrowIcon from '../assets/arrow-icon.svg';
 import LoadingList from '../components/LoadingList';
 import EmptyList from '../components/EmptyList';
+import ServerItem from '../components/ServerItem';
+import Spacer from '../components/Spacer';
 export function HomeScreen({navigation}) {
   const [servers, setServers] = useState();
   const [locations, setLocations] = useState();
@@ -239,104 +242,123 @@ export function HomeScreen({navigation}) {
   };
   const [rerenderFlatList, setRerenderFlatList] = useState(false);
   const [isAPIbusy, setAPIBusy] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const openMenu = () => {
+    setVisible(true);
+  };
+  const closeMenu = () => {
+    setVisible(false);
+  };
+  const theme = useTheme();
   return (
     <>
       <View
         width="100%"
         height="100%"
-        style={{backgroundColor: '#F4F8F8', padding: '8%'}}>
+        style={{
+          backgroundColor: theme.colors.background,
+          paddingHorizontal: 20,
+          paddingVertical: 10,
+        }}>
         <View
           style={{
-            display: 'flex',
             flexDirection: 'row',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            height: 38,
+            padding: 0,
+            margin: 0,
           }}>
-          <TouchableOpacity onPress={navigation.openDrawer}>
-            <MenuIcon height={45} width={28} />
-          </TouchableOpacity>
-          <Text
-            style={{
-              color: '#00A1A1',
-              fontFamily: 'Raleway-Medium',
-              fontSize: 20,
-              textAlign: 'center',
-            }}>
-            Servers
-          </Text>
-          <View style={{width: 28}}></View>
-        </View>
-        <View
-          style={{
-            marginTop: 10,
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}>
-          <TextInput
-            mode="outlined"
-            label="Search"
-            onChangeText={searchtext => {
-              onChangeSearch(searchtext);
-              search();
-            }}
-            style={{
-              flex: 1,
-              width: '100%',
-              height: 39,
-              borderColor: '#00a1a1',
-              color: '#00a1a1',
-              lineHeight: 39,
-              includeFontPadding: false,
-            }}
-            selectionColor="#00A1A1"
-            dense={true}
-            outlineColor="#00A1A1"
-            activeOutlineColor="#00A1A1"
-            underlineColorAndroid="transparent"
-            left={
-              <TextInput.Icon
-                icon="magnify"
-                color="#00a1a1"
-                style={{
-                  marginBottom: 0,
-                }}
-              />
-            }
-            theme={{
-              colors: {
-                primary: '#00a1a1',
-                accent: '#00a1a1',
-                text: '#00a1a1',
-                placeholder: '#00A1A1',
-              },
-            }}
-          />
-          {/* <TouchableOpacity onPress={openMenu}style={{width:'30%'}}><TextInput
-            mode="outlined"
-            label="Order By"
-            style={{height:39,borderColor:'#00a1a1',color:'#00a1a1'}}
-            editable={false}
-            outlineColor='#00A1A1'
-            activeOutlineColor='#00A1A1'
-            right={<><TextInput.Icon icon="menu-down" onPress={openMenu} />  <Menu
+          <View style={{flex: 1, height: 38}}>
+            <TextInput
+              mode="flat" // 'flat' avoids double borders and works better for custom height
+              label="Search"
+              dense
+              multiline={false}
+              onChangeText={searchtext => {
+                onChangeSearch(searchtext);
+                search();
+              }}
+              style={{
+                flex: 1,
+                height: 38,
+                backgroundColor: theme.colors.surface,
+                borderRadius: 4,
+                justifyContent: 'center',
+              }}
+              contentStyle={{
+                paddingVertical: 0,
+                height: 38,
+                fontFamily: 'Poppins',
+                fontWeight: '400',
+                fontSize: 12,
+                lineHeight: 12,
+                includeFontPadding: false,
+              }}
+              left={<TextInput.Icon icon="magnify" color={theme.colors.text} />}
+              underlineColor="transparent"
+              theme={{
+                colors: {
+                  primary: 'transparent',
+                  text: theme.colors.text,
+                  placeholder: theme.colors.text,
+                  background: theme.colors.surface,
+                },
+                roundness: 4,
+              }}
+            />
+          </View>
+
+          <Spacer size={4} horizontal />
+
+          <Menu
             visible={visible}
             onDismiss={closeMenu}
-            >
-            <Menu.Item onPress={() => {}} title="Newest First" />
-            <Menu.Item onPress={() => {}} title="Oldest First" />
-            <Menu.Item onPress={() => {}} title="Alphabetical" />
-          </Menu></>}
-            theme={{
-              colors: {
-                primary: '#00a1a1',
-                accent: '#00a1a1',
-                text:'#00a1a1',
-                placeholder:'#00A1A1'
-              },
+            anchorPosition="bottom"
+            style={{
+              shadowOpacity: 0.1,
+              borderRadius: 4,
+              backgroundColor: theme.colors.surface,
             }}
-          /></TouchableOpacity> */}
+            contentStyle={{
+              width: 160,
+              backgroundColor: theme.colors.surface,
+            }}
+            anchor={
+              <IconButton
+                style={{
+                  height: 38,
+                  width: 38,
+                  backgroundColor: theme.colors.surface,
+                  borderRadius: 4,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: 0,
+                }}
+                icon="swap-vertical"
+                size={20}
+                iconColor={theme.colors.text}
+                onPress={openMenu}
+              />
+            }>
+            <Menu.Item
+              title="Oldest first"
+              onPress={() => {}}
+              titleStyle={{fontSize: 14, fontFamily: 'Poppins'}}
+            />
+            <Menu.Item
+              title="Newest first"
+              onPress={() => {}}
+              titleStyle={{fontSize: 14, fontFamily: 'Poppins'}}
+            />
+            <Menu.Item
+              title="Alphabetical"
+              onPress={() => {}}
+              titleStyle={{fontSize: 14, fontFamily: 'Poppins'}}
+            />
+          </Menu>
         </View>
+
         {!isAPIbusy ? (
           <FlatList
             style={{marginTop: 30}}
@@ -368,7 +390,7 @@ export function HomeScreen({navigation}) {
                     })
                   }>
                   <View>
-                    <Item
+                    <ServerItem
                       title={item.name}
                       alias={item.aliases[0]}
                       dc={item.location}

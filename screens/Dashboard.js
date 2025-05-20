@@ -34,6 +34,9 @@ import {
   Title,
   Paragraph,
   Menu,
+  useTheme,
+  Chip,
+  Badge,
 } from 'react-native-paper';
 import {Avatar, Divider} from 'react-native-paper';
 import {getServers, provisionAServer} from '../service/servers';
@@ -56,13 +59,18 @@ import PlusIcon from '../assets/plus-icon.svg';
 import SearchIcon from '../assets/search-icon.svg';
 import PowerIcon from '../assets/power-icon.svg';
 import DropdownIcon from '../assets/dropdown-icon.svg';
+import CirclePercent from '../assets/circle-percent.svg';
 import ArrowIcon from '../assets/arrow-icon.svg';
 import {getEventsPerPage} from '../service/events';
 import EmptyList from '../components/EmptyList';
+import {getNews} from '../service/news';
+import Spacer from '../components/Spacer';
+import NewsItem from '../components/NewsItem';
+import ServerItem from '../components/ServerItem';
 
 export function Dashboard({navigation}) {
   const [servers, setServers] = useState();
-  const [events, setEvents] = useState();
+  const [news, setNews] = useState();
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -89,10 +97,10 @@ export function Dashboard({navigation}) {
         };
         setServers(data.sort(sorter).slice(0, 3));
       });
-      getEventsPerPage(userToken, 5).then(data => {
-        setEvents(data.slice(0, 3));
-        setLoading(false);
+      getNews(userToken).then(data => {
+        setNews(data.results);
       });
+      setLoading(false);
     } catch (e) {
       alert(e);
       setLoading(false);
@@ -192,44 +200,6 @@ export function Dashboard({navigation}) {
     return null;
   };
 
-  const Item = ({title, alias, dc, profile, ipv4, status}) => (
-    <>
-      <View style={{backgroundColor: 'white', borderRadius: 10}}>
-        <View
-          style={{
-            display: 'flex',
-            padding: 15,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-          <View>
-            <View
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}>
-              {renderStatusIcon(status)}
-              <Text style={{fontFamily: 'Raleway-Regular', fontSize: 14}}>
-                {' '}
-                {title}
-              </Text>
-            </View>
-            <Text
-              style={{
-                fontFamily: 'Raleway-Light',
-                fontSize: 12,
-                color: '#8F8F8F',
-              }}>
-              {profile} · {ipv4}
-            </Text>
-          </View>
-          <ArrowIcon width={15} height={15} />
-        </View>
-      </View>
-    </>
-  );
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
     setIsFetching(true);
@@ -253,39 +223,66 @@ export function Dashboard({navigation}) {
       alert(e);
     }
   };
+
+  const theme = useTheme();
   return (
     <>
       <SafeAreaView
-        style={{width: '100%', height: '100%', backgroundColor: '#F4F8F8'}}>
-        <View
-          width="100%"
-          height="100%"
-          style={{backgroundColor: '#F4F8F8', padding: '8%'}}>
+        style={{
+          width: '100%',
+          height: '100%',
+          backgroundColor: theme.colors.surface,
+        }}>
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          style={{
+            backgroundColor: theme.colors.background,
+            paddingHorizontal: 20,
+            paddingVertical: 10,
+            height: '100%',
+          }}>
           <View
             style={{
-              display: 'flex',
               flexDirection: 'row',
+              height: 42,
+              borderRadius: 4,
+              gap: 5,
+              backgroundColor: theme.colors.primary,
+              width: '100%',
+              justifyContent: 'center',
               alignItems: 'center',
-              justifyContent: 'space-between',
             }}>
-            <TouchableOpacity onPress={navigation.openDrawer}>
-              <MenuIcon height={45} width={28} />
-            </TouchableOpacity>
+            <CirclePercent />
+            <Spacer size={8} horizontal />
             <Text
               style={{
-                color: '#00A1A1',
-                fontFamily: 'Raleway-Medium',
-                fontSize: 20,
-                textAlign: 'center',
+                fontFamily: 'Poppins',
+                fontSize: 14,
+                fontWeight: '600',
+                includeFontPadding: false,
               }}>
-              Overview
+              Refer and Earn up to{' '}
+              <Text
+                style={{
+                  fontFamily: 'Poppins',
+                  fontSize: 14,
+                  fontWeight: '800',
+                  includeFontPadding: false,
+                }}>
+                200 Credits
+              </Text>
             </Text>
-            <View style={{width: 28}}></View>
           </View>
-          <View style={{height: '50%'}}>
+          <View>
             <View
               style={{
+                height: 44,
                 marginTop: 20,
+                borderTopLeftRadius: 4,
+                borderTopRightRadius: 4,
+                backgroundColor: theme.colors.accent,
+                paddingHorizontal: 16,
+                paddingVertical: 10,
                 display: 'flex',
                 flexDirection: 'row',
                 justifyContent: 'space-between',
@@ -293,23 +290,14 @@ export function Dashboard({navigation}) {
               }}>
               <Text
                 style={{
-                  fontFamily: 'Raleway-Medium',
-                  fontSize: 18,
+                  fontFamily: 'Poppins',
+                  fontWeight: '500',
+                  color: 'white',
+                  fontSize: 16,
                   includeFontPadding: false,
                 }}>
-                Servers
+                All VPS Servers
               </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Servers')}>
-                <Text
-                  style={{
-                    fontFamily: 'Raleway-Regular',
-                    fontSize: 12,
-                    includeFontPadding: false,
-                    color: '#747474',
-                  }}>
-                  All Servers →
-                </Text>
-              </TouchableOpacity>
             </View>
             {loading ? (
               <View
@@ -324,7 +312,6 @@ export function Dashboard({navigation}) {
               <FlatList
                 showsHorizontalScrollIndicator={false}
                 showsVerticalScrollIndicator={false}
-                style={{marginTop: 5}}
                 data={servers}
                 scrollEnabled={false}
                 removeClippedSubviews={true}
@@ -355,7 +342,7 @@ export function Dashboard({navigation}) {
                         });
                       }}>
                       <View>
-                        <Item
+                        <ServerItem
                           title={item.name}
                           alias={item.aliases[0]}
                           dc={item.location}
@@ -369,10 +356,8 @@ export function Dashboard({navigation}) {
                     </TouchableOpacity>
                     <View
                       style={{
-                        height: 10,
-                        width: '100%',
-                      }}
-                    />
+                        height: 1,
+                      }}></View>
                   </>
                 )}
                 contentContainerStyle={
@@ -390,11 +375,39 @@ export function Dashboard({navigation}) {
                 keyExtractor={item => item.slug}
               />
             )}
-          </View>
-          <View style={{height: '50%'}}>
             <View
               style={{
-                marginTop: 10,
+                height: 42,
+                backgroundColor: theme.colors.surface,
+                borderBottomLeftRadius: 4,
+                borderBottomRightRadius: 4,
+                padding: 12,
+                alignItems: 'flex-end',
+              }}>
+              <TouchableOpacity onPress={() => navigation.navigate('Servers')}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins',
+                    fontWeight: '400',
+                    fontSize: 12,
+                    includeFontPadding: false,
+                    color: theme.colors.primaryText,
+                  }}>
+                  All Servers →
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View>
+            <View
+              style={{
+                height: 44,
+                marginTop: 20,
+                borderTopLeftRadius: 4,
+                borderTopRightRadius: 4,
+                backgroundColor: theme.colors.accent,
+                paddingHorizontal: 16,
+                paddingVertical: 10,
                 display: 'flex',
                 flexDirection: 'row',
                 justifyContent: 'space-between',
@@ -402,23 +415,14 @@ export function Dashboard({navigation}) {
               }}>
               <Text
                 style={{
-                  fontFamily: 'Raleway-Medium',
-                  fontSize: 18,
+                  fontFamily: 'Poppins',
+                  fontWeight: '500',
+                  color: 'white',
+                  fontSize: 16,
                   includeFontPadding: false,
                 }}>
-                Events
+                Notification center
               </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Events')}>
-                <Text
-                  style={{
-                    fontFamily: 'Raleway-Regular',
-                    fontSize: 12,
-                    color: '#747474',
-                    includeFontPadding: false,
-                  }}>
-                  All Events →
-                </Text>
-              </TouchableOpacity>
             </View>
             {loading ? (
               <View
@@ -431,44 +435,157 @@ export function Dashboard({navigation}) {
               </View>
             ) : (
               <FlatList
-                style={{marginTop: 5}}
-                data={events}
-                scrollEnabled={false}
+                showsHorizontalScrollIndicator={false}
                 showsVerticalScrollIndicator={false}
+                data={servers}
+                scrollEnabled={false}
+                removeClippedSubviews={true}
+                // onRefresh={() => onRefresh()}
+                // refreshing={isFetching}
+                renderItem={({item}) => (
+                  <>
+                    <TouchableOpacity
+                      key={item.slug}
+                      onPress={() => {
+                        navigation.setParams({
+                          slug: item.slug,
+                          name: item.name,
+                          description: item.description,
+                          notes: item.notes,
+                          nextActionDate: item.nextActionDate,
+                          location: item.location,
+                          profile: item.profile,
+                        });
+                        navigation.navigate('ServerManagement', {
+                          slug: item.slug,
+                          name: item.name,
+                          description: item.description,
+                          notes: item.notes,
+                          nextActionDate: item.nextActionDate,
+                          location: item.location,
+                          profile: item.profile,
+                        });
+                      }}>
+                      <View>
+                        <ServerItem
+                          title={item.name}
+                          alias={item.aliases[0]}
+                          dc={item.location}
+                          profile={item.profile}
+                          // profile={profiles.filter(obj => {
+                          //   return obj.slug === item.profile}).name}
+                          ipv4={item.ipv4}
+                          status={item.status}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                    <View
+                      style={{
+                        height: 1,
+                      }}></View>
+                  </>
+                )}
                 contentContainerStyle={
-                  events
-                    ? events.length === 0 && {
+                  servers
+                    ? servers.length === 0 && {
                         flexGrow: 1,
                         justifyContent: 'center',
                         alignItems: 'center',
                       }
                     : {}
                 }
-                // onRefresh={() => onRefresh()}
-                // refreshing={isFetching}
-                keyExtractor={(item, index) => item.id}
                 ListEmptyComponent={
-                  events ? events.length > 0 ? <EmptyList /> : null : null
+                  servers ? servers.length > 0 ? <EmptyList /> : null : null
                 }
+                keyExtractor={item => item.slug}
+              />
+            )}
+            <View
+              style={{
+                height: 42,
+                backgroundColor: theme.colors.surface,
+                borderBottomLeftRadius: 4,
+                borderBottomRightRadius: 4,
+                padding: 12,
+                alignItems: 'flex-end',
+              }}>
+              <TouchableOpacity onPress={() => navigation.navigate('Servers')}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins',
+                    fontWeight: '400',
+                    fontSize: 12,
+                    includeFontPadding: false,
+                    color: theme.colors.primaryText,
+                  }}>
+                  All notifications →
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View>
+            <View
+              style={{
+                height: 44,
+                marginTop: 20,
+                borderTopLeftRadius: 4,
+                borderTopRightRadius: 4,
+                backgroundColor: theme.colors.accent,
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins',
+                  fontWeight: '500',
+                  color: 'white',
+                  fontSize: 16,
+                  includeFontPadding: false,
+                }}>
+                News
+              </Text>
+            </View>
+            <View
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderBottomLeftRadius: 4,
+                borderBottomRightRadius: 4,
+                padding: 12,
+                alignItems: 'flex-end',
+              }}>
+              <FlatList
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                data={news}
+                scrollEnabled={false}
+                removeClippedSubviews={true}
                 renderItem={({item}) => (
-                  <>
-                    <TouchableOpacity item={item}>
-                      <View>
-                        <EventItem item={item} />
-                      </View>
+                  <View key={item.id}>
+                    <TouchableOpacity
+                      key={item.id}
+                      onPress={() => {
+                        navigation.navigate('News', {});
+                      }}>
+                      <NewsItem key={item.id} item={item} />
                     </TouchableOpacity>
                     <View
                       style={{
-                        height: 10,
-                        width: '100%',
-                      }}
-                    />
-                  </>
+                        height: 12,
+                      }}></View>
+                  </View>
                 )}
+                ListEmptyComponent={
+                  servers ? servers.length > 0 ? <EmptyList /> : null : null
+                }
+                keyExtractor={item => item.slug}
               />
-            )}
+            </View>
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </>
   );
