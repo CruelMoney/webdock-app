@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import {Icon, useTheme} from 'react-native-paper';
 import Spacer from './Spacer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ThemeSwitch = ({
   options = [
@@ -9,8 +10,9 @@ const ThemeSwitch = ({
     {label: 'Off', icon: ''},
   ],
   onToggle,
+  selectedOption,
 }) => {
-  const [selected, setSelected] = useState(0);
+  const [selected, setSelected] = useState(selectedOption);
 
   const handleToggle = index => {
     setSelected(index);

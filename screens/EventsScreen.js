@@ -26,7 +26,7 @@ import {
 import Modal from 'react-native-modal';
 import ArrowIcon from '../assets/arrow-icon.svg';
 import {getEvents} from '../service/events';
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import MenuIcon from '../assets/menu-icon.svg';
 import {PureComponent} from 'react';
 import GradientButton from '../components/GradientButton';

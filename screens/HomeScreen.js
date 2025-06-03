@@ -1,62 +1,31 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import {
   FlatList,
-  Image,
-  SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
   View,
   TouchableOpacity,
-  UIManager,
-  LayoutAnimation,
-  Pressable,
-  PixelRatio,
+  Dimensions,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import {
   ActivityIndicator,
   Colors,
-  FAB,
-  Searchbar,
   IconButton,
   TextInput,
-  Button,
-  Card,
-  Title,
-  Paragraph,
   Menu,
   useTheme,
 } from 'react-native-paper';
-import {Avatar, Divider} from 'react-native-paper';
-import {getServers, provisionAServer} from '../service/servers';
-import {AuthContext} from '../components/context';
-import Modal from 'react-native-modal';
-import AsyncStorage from '@react-native-community/async-storage';
-import {
-  getImages,
-  getLocations,
-  getProfiles,
-} from '../service/serverConfiguration';
-import {SvgUri, SvgXml} from 'react-native-svg';
-import SVGCpu from '../assets/icon-cpu.svg';
-import SVGRam from '../assets/icon-ram2.svg';
-import SVGStorage from '../assets/icon-storage.svg';
-import IconOcticons from 'react-native-vector-icons/Octicons';
-import {getServerSnapshots} from '../service/serverSnapshots';
-import MenuIcon from '../assets/menu-icon.svg';
-import PlusIcon from '../assets/plus-icon.svg';
-import SearchIcon from '../assets/search-icon.svg';
+import {getServers} from '../service/servers';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import PowerIcon from '../assets/power-icon.svg';
-import DropdownIcon from '../assets/dropdown-icon.svg';
 import ArrowIcon from '../assets/arrow-icon.svg';
-import LoadingList from '../components/LoadingList';
 import EmptyList from '../components/EmptyList';
 import ServerItem from '../components/ServerItem';
-import Spacer from '../components/Spacer';
+import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
+
+const initialLayout = {width: Dimensions.get('window').width};
+
 export function HomeScreen({navigation}) {
   const [servers, setServers] = useState();
   const [locations, setLocations] = useState();
@@ -133,45 +102,6 @@ export function HomeScreen({navigation}) {
     return null;
   };
 
-  const Item = ({title, alias, dc, virtualization, profile, ipv4, status}) => (
-    <>
-      <View style={{backgroundColor: 'white', borderRadius: 10}}>
-        <View
-          style={{
-            display: 'flex',
-            padding: 15,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-          <View style={{flex: 4}}>
-            <View
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}>
-              {renderStatusIcon(status)}
-              <Text style={{fontFamily: 'Raleway-Regular', fontSize: 14}}>
-                {' '}
-                {title}
-              </Text>
-            </View>
-            <Text
-              style={{
-                fontFamily: 'Raleway-Light',
-                fontSize: 12,
-                color: '#8F8F8F',
-              }}>
-              {profile} · {virtualization == 'container' ? 'LXD' : 'KVM'} ·{' '}
-              {ipv4}
-            </Text>
-          </View>
-          <ArrowIcon style={{flex: 1}} width={15} height={15} />
-        </View>
-      </View>
-    </>
-  );
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
     setAPIBusy(true);
@@ -250,6 +180,122 @@ export function HomeScreen({navigation}) {
     setVisible(false);
   };
   const theme = useTheme();
+  const [index, setIndex] = useState(0);
+  const [routes] = useState([
+    {key: 'first', title: 'All servers'},
+    {key: 'second', title: 'Snapshots'},
+  ]);
+
+  const renderScene = SceneMap({
+    first: () => (
+      <FlatList
+        style={{}}
+        data={
+          searchQuery
+            ? searchQuery.length == 0
+              ? servers
+              : filteredServers
+            : servers
+        }
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        onRefresh={() => onRefresh()}
+        ListEmptyComponent={
+          servers ? servers.length > 0 ? <EmptyList /> : null : null
+        }
+        refreshing={isFetching}
+        ListFooterComponent={<View style={{height: 60}}></View>}
+        renderItem={({item}) => (
+          <>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('ServerManagement', {
+                  slug: item.slug,
+                  name: item.name,
+                  description: item.description,
+                  notes: item.notes,
+                  nextActionDate: item.nextActionDate,
+                })
+              }>
+              <View>
+                <ServerItem
+                  title={item.name}
+                  alias={item.aliases[0]}
+                  dc={item.location}
+                  virtualization={item.virtualization}
+                  profile={item.profile}
+                  ipv4={item.ipv4}
+                  status={item.status}
+                />
+              </View>
+            </TouchableOpacity>
+            <View
+              style={{
+                height: 10,
+                width: '100%',
+              }}
+            />
+          </>
+        )}
+        extraData={rerenderFlatList}
+        keyExtractor={item => item.slug}
+      />
+    ),
+    second: () => (
+      <FlatList
+        style={{}}
+        data={
+          searchQuery
+            ? searchQuery.length == 0
+              ? servers
+              : filteredServers
+            : servers
+        }
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        onRefresh={() => onRefresh()}
+        ListEmptyComponent={
+          servers ? servers.length > 0 ? <EmptyList /> : null : null
+        }
+        refreshing={isFetching}
+        renderItem={({item}) => (
+          <>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('ServerManagement', {
+                  slug: item.slug,
+                  name: item.name,
+                  description: item.description,
+                  notes: item.notes,
+                  nextActionDate: item.nextActionDate,
+                })
+              }>
+              <View>
+                <ServerItem
+                  title={item.name}
+                  alias={item.aliases[0]}
+                  dc={item.location}
+                  virtualization={item.virtualization}
+                  profile={item.profile}
+                  ipv4={item.ipv4}
+                  status={item.status}
+                />
+              </View>
+            </TouchableOpacity>
+            <View
+              style={{
+                height: 10,
+                width: '100%',
+              }}
+            />
+          </>
+        )}
+        extraData={rerenderFlatList}
+        keyExtractor={item => item.slug}
+      />
+    ),
+  });
+
   return (
     <>
       <View
@@ -259,15 +305,15 @@ export function HomeScreen({navigation}) {
           backgroundColor: theme.colors.background,
           paddingHorizontal: 20,
           paddingVertical: 10,
+          gap: 15,
         }}>
         <View
           style={{
             flexDirection: 'row',
-            justifyContent: 'space-between',
             alignItems: 'center',
-            height: 38,
-            padding: 0,
-            margin: 0,
+            flexWrap: 'nowrap',
+            width: '100%',
+            gap: 16,
           }}>
           <View style={{flex: 1, height: 38}}>
             <TextInput
@@ -309,8 +355,6 @@ export function HomeScreen({navigation}) {
             />
           </View>
 
-          <Spacer size={4} horizontal />
-
           <Menu
             visible={visible}
             onDismiss={closeMenu}
@@ -329,6 +373,8 @@ export function HomeScreen({navigation}) {
                 style={{
                   height: 38,
                   width: 38,
+                  margin: 0,
+                  padding: 0,
                   backgroundColor: theme.colors.surface,
                   borderRadius: 4,
                   justifyContent: 'center',
@@ -336,7 +382,7 @@ export function HomeScreen({navigation}) {
                   padding: 0,
                 }}
                 icon="swap-vertical"
-                size={20}
+                size={24}
                 iconColor={theme.colors.text}
                 onPress={openMenu}
               />
@@ -358,60 +404,33 @@ export function HomeScreen({navigation}) {
             />
           </Menu>
         </View>
-
-        {!isAPIbusy ? (
-          <FlatList
-            style={{marginTop: 30}}
-            data={
-              searchQuery
-                ? searchQuery.length == 0
-                  ? servers
-                  : filteredServers
-                : servers
-            }
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
-            onRefresh={() => onRefresh()}
-            ListEmptyComponent={
-              servers ? servers.length > 0 ? <EmptyList /> : null : null
-            }
-            refreshing={isFetching}
-            ListFooterComponent={<View style={{height: 60}}></View>}
-            renderItem={({item}) => (
-              <>
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate('ServerManagement', {
-                      slug: item.slug,
-                      name: item.name,
-                      description: item.description,
-                      notes: item.notes,
-                      nextActionDate: item.nextActionDate,
-                    })
-                  }>
-                  <View>
-                    <ServerItem
-                      title={item.name}
-                      alias={item.aliases[0]}
-                      dc={item.location}
-                      virtualization={item.virtualization}
-                      profile={item.profile}
-                      ipv4={item.ipv4}
-                      status={item.status}
-                    />
-                  </View>
-                </TouchableOpacity>
-                <View
-                  style={{
-                    height: 10,
-                    width: '100%',
-                  }}
-                />
-              </>
-            )}
-            extraData={rerenderFlatList}
-            keyExtractor={item => item.slug}
-          />
+        <TabView
+          navigationState={{index, routes}}
+          renderScene={renderScene}
+          onIndexChange={setIndex}
+          initialLayout={initialLayout}
+          renderTabBar={props => (
+            <TabBar
+              {...props}
+              indicatorStyle={{
+                backgroundColor: theme.colors.primary,
+              }}
+              activeColor={theme.colors.text}
+              pressColor={theme.colors.surface}
+              inactiveColor="#99A199"
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderTopLeftRadius: 4,
+                borderTopRightRadius: 4,
+                elevation: 0, // Android
+                shadowOpacity: 0, // iOS
+                borderTopWidth: 0, // Optional: remove top border
+              }}
+            />
+          )}
+        />
+        {/* {!isAPIbusy ? (
+          
         ) : (
           <View
             style={{
@@ -421,23 +440,7 @@ export function HomeScreen({navigation}) {
             }}>
             <ActivityIndicator size="small" color="#00A1A1" />
           </View>
-        )}
-        {/* TODO: next version
-        <TouchableOpacity
-          onPress={() => navigation.navigate('CreateServer')} //toggleModal
-          style={{
-            backgroundColor: 'white',
-            position: 'absolute',
-            justifyContent: 'center',
-            alignItems: 'center',
-            right: 20,
-            bottom: 20,
-            width: 50,
-            height: 50,
-            borderRadius: 50 / 2,
-          }}>
-          <PlusIcon height={50} width={50} />
-        </TouchableOpacity> */}
+        )} */}
       </View>
     </>
   );

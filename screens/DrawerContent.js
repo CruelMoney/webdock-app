@@ -2,42 +2,27 @@ import React, {useEffect, useState} from 'react';
 import {
   View,
   StyleSheet,
-  Linking,
   Alert,
   ActivityIndicator,
+  Image,
+  Linking,
 } from 'react-native';
-import {
-  useTheme,
-  Avatar,
-  Title,
-  Caption,
-  Paragraph,
-  Drawer,
-  Text,
-  TouchableRipple,
-  Switch,
-} from 'react-native-paper';
-import {DrawerContentScrollView, DrawerItem} from '@react-navigation/drawer';
+import {useTheme, Text, IconButton, Divider, Icon} from 'react-native-paper';
 
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import {AuthContext} from '../components/context';
 import {getAccountInformations} from '../service/accountInformations';
-import AsyncStorage from '@react-native-community/async-storage';
-import ServersIcon from '../assets/servers.svg';
-import DashboardIcon from '../assets/dashboard.svg';
-import NewsIcon from '../assets/news.svg';
-import EventsIcon from '../assets/events.svg';
-import TeamIcon from '../assets/team.svg';
-import HelpIcon from '../assets/help.svg';
-import ProfileIcon from '../assets/profile.svg';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import LogoutIcon from '../assets/logout.svg';
-import FeedbackIcon from '../assets/feedback.svg';
-import CreateServerIcon from '../assets/create-server.svg';
+import {resetSession} from 'react-native-crisp-chat-sdk';
+import {Pressable, ScrollView} from 'react-native-gesture-handler';
+import {getMainMenu} from '../service/menu';
+import {getReadableVersion, getVersion} from 'react-native-device-info';
+
 export function DrawerContent(props) {
   const {signOut} = React.useContext(AuthContext);
   const [account, setAccountInfo] = useState();
-  const {state, navigation} = props;
-  const activeRouteName = state.routeNames[state.index];
+  const [mainMenu, setMainMenu] = useState();
+  // const activeRouteName = state.routeNames[state.index];
   useEffect(() => {
     setTimeout(async () => {
       console.table(props);
@@ -49,10 +34,14 @@ export function DrawerContent(props) {
           data => {
             setAccountInfo(data);
           },
+
           error => {
             Alert.alert('Error', 'Something went wrong!');
           },
         );
+        getMainMenu(userToken).then(data => {
+          setMainMenu(data.menu);
+        });
       } catch (e) {
         alert(e);
       }
@@ -60,170 +49,357 @@ export function DrawerContent(props) {
   }, []);
   const theme = useTheme();
 
+  const MenuLevel2 = ({items, onPress}) => {
+    return (
+      <View style={{gap: 4}}>
+        {items.map(item => (
+          <Pressable
+            key={item.title}
+            onPress={() => onPress(item.url)}
+            android_ripple={{color: '#ccc'}}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingLeft: 46,
+            }}>
+            {item.icon ? (
+              <Image
+                source={{uri: item.icon}}
+                style={{width: 16, height: 16}}
+              />
+            ) : null}
+            <Text
+              style={{
+                fontSize: 13,
+                fontFamily: 'Poppins-Light',
+                fontWeight: '300',
+              }}>
+              {item.title}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+    );
+  };
+
+  const MenuLevel1 = ({items, expanded, toggleExpand, onPress}) => {
+    return (
+      <View
+        style={{
+          backgroundColor: theme.colors.menu.surface,
+          borderRadius: 10,
+          gap: 16,
+          padding: 20,
+        }}>
+        {items.map(item => {
+          const isExpanded = expanded[item.title];
+          const hasChildren =
+            Array.isArray(item.children) && item.children.length > 0;
+
+          return (
+            <View key={item.title}>
+              <Pressable
+                onPress={() =>
+                  hasChildren ? toggleExpand(item.title) : onPress(item.url)
+                }
+                android_ripple={{color: '#ccc'}}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'flex-start',
+                    gap: 10,
+                  }}>
+                  {item.icon ? (
+                    <Image
+                      source={{uri: item.icon}}
+                      style={{width: 20, height: 20}}
+                    />
+                  ) : null}
+                  <Text style={{fontSize: 16, fontFamily: 'Poppins'}}>
+                    {item.title}
+                  </Text>
+                </View>
+                {hasChildren && (
+                  <Text>
+                    {isExpanded ? (
+                      <Icon
+                        source="chevron-up"
+                        size={18}
+                        color={theme.colors.primary}
+                      />
+                    ) : (
+                      <Icon
+                        source="chevron-down"
+                        size={18}
+                        color={theme.colors.primary}
+                      />
+                    )}
+                  </Text>
+                )}
+              </Pressable>
+
+              {hasChildren && isExpanded && (
+                <MenuLevel2 items={item.children} onPress={onPress} />
+              )}
+            </View>
+          );
+        })}
+      </View>
+    );
+  };
+
+  const MenuLevel0 = ({data}) => {
+    const [expanded, setExpanded] = useState({});
+
+    const toggleExpand = key => {
+      setExpanded(prev => ({...prev, [key]: !prev[key]}));
+    };
+
+    const handlePress = url => {
+      url = 'https://webdock.io' + url;
+      if (!url.includes('https://') && !url.includes('http://')) {
+        url = 'https://' + url;
+      }
+      Linking.canOpenURL(url).then(supported => {
+        if (supported) {
+          Linking.openURL(url);
+        } else {
+          console.log("Don't know how to open URI: " + url);
+        }
+      });
+    };
+
+    return data?.map(item => {
+      const hasChildren =
+        Array.isArray(item.children) && item.children.length > 0;
+
+      return (
+        <View key={item.title} style={{}}>
+          <Pressable
+            onPress={() => {
+              if (!hasChildren) handlePress(item.url);
+            }}
+            android_ripple={{color: '#ccc'}}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              paddingVertical: 12,
+            }}>
+            {item.icon ? (
+              <Image
+                source={{uri: item.icon}}
+                style={{width: 24, height: 24}}
+              />
+            ) : null}
+            <Text
+              style={{
+                fontSize: 22,
+                fontFamily: 'Poppins-Medium',
+                fontWeight: '500',
+              }}>
+              {item.title}
+            </Text>
+          </Pressable>
+
+          {(hasChildren && (
+            <MenuLevel1
+              items={item.children}
+              expanded={expanded}
+              toggleExpand={toggleExpand}
+              onPress={handlePress}
+            />
+          )) || <Divider />}
+        </View>
+      );
+    });
+  };
+  const handlePress = url => {
+    if (!url.includes('https://') && !url.includes('http://')) {
+      url = 'https://' + url;
+    }
+    Linking.canOpenURL(url).then(supported => {
+      if (supported) {
+        Linking.openURL(url);
+      } else {
+        console.log("Don't know how to open URI: " + url);
+      }
+    });
+  };
   return account ? (
-    <View style={{flex: 1}}>
-      <DrawerContentScrollView {...props}>
-        <View style={styles.drawerContent}>
-          <View style={styles.userInfoSection}>
+    <>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: theme.colors.menu.background,
+          paddingHorizontal: 20,
+          paddingTop: 20,
+        }}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={styles.drawerContent}>
+          <View
+            style={{
+              padding: 20,
+              backgroundColor: theme.colors.menu.surface,
+              borderRadius: 4,
+            }}>
             <View
               style={{
+                display: 'flex',
                 flexDirection: 'row',
-                justifyContent: 'center',
                 alignItems: 'center',
-                padding: 10,
               }}>
-              <Avatar.Image
-                source={{
-                  uri: !account.userAvatar
-                    ? 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
-                    : account.userAvatar.startsWith('https://')
-                    ? account.userAvatar
-                    : 'https:' + account.userAvatar,
-                }}
-                size={50}
-              />
-              <View style={{marginLeft: 15, flexDirection: 'column'}}>
-                <Title style={styles.title}>{account.userName}</Title>
-                <Caption style={styles.caption}>{account.userEmail}</Caption>
+              <View>
+                <Image
+                  source={{
+                    uri: !account.userAvatar
+                      ? 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
+                      : account.userAvatar.startsWith('https://')
+                      ? account.userAvatar
+                      : 'https:' + account.userAvatar,
+                  }}
+                  style={{borderRadius: 58 / 2, width: 58, height: 58}}
+                />
               </View>
-            </View>
-
-            <View style={styles.row}>
-              <View style={styles.section}>
-                <Caption style={styles.caption}>Balance: </Caption>
-                <Paragraph style={[styles.paragraph, styles.caption]}>
-                  {account.accountBalanceRaw / 100 +
-                    ' ' +
-                    account.accountBalanceCurrency}
-                </Paragraph>
+              <View
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  marginStart: 20,
+                  justifyContent: 'center',
+                  gap: 5,
+                }}>
+                <Text
+                  style={{
+                    textAlignVertical: 'center',
+                    fontFamily: 'Poppins-Medium',
+                    fontSize: 18,
+                    lineHeight: 18 * 1.2,
+                    fontWeight: '500',
+                    color: theme.colors.text,
+                  }}>
+                  {account.userName}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-Medium',
+                    textAlignVertical: 'center',
+                    fontSize: 12,
+                    lineHeight: 12 * 1.2,
+                    fontWeight: '500',
+                    color: '#7c7c7c',
+                  }}>
+                  Credit Balance:
+                  <Text
+                    style={{
+                      fontFamily: 'Poppins-Regular',
+                      fontSize: 12,
+                      fontWeight: '400',
+                      lineHeight: 12 * 1.2,
+                      color: '#4C9F5A',
+                    }}>
+                    {' '}
+                    {account.accountBalanceRaw / 100}{' '}
+                    {account.accountBalanceCurrency}
+                  </Text>
+                </Text>
               </View>
             </View>
           </View>
-          {/* Display the active tab */}
-          <Drawer.Section style={styles.drawerSection}>
-            {/* TODO: next version
-            <DrawerItem
-              icon={({color, size}) => (
-                <CreateServerIcon width={size} height={size} />
-              )}
-              activeBackgroundColor="#e0efef"
-              activeTintColor="#00A1A1"
-              focused={activeRouteName == 'CreateServer'}
-              label="Create Server"
-              onPress={() => {
-                props.navigation.navigate('CreateServer');
-              }}
-            /> */}
-            <DrawerItem
-              icon={({color, size}) => (
-                <DashboardIcon width={size} height={size} />
-              )}
-              activeBackgroundColor="#e0efef"
-              activeTintColor="#00A1A1"
-              label="Overview"
-              focused={activeRouteName == 'Dashboard'}
-              onPress={() => {
-                props.navigation.navigate('Dashboard');
-              }}
-            />
-            <DrawerItem
-              icon={({color, size}) => (
-                <ServersIcon width={size} height={size} />
-              )}
-              activeBackgroundColor="#e0efef"
-              activeTintColor="#00A1A1"
-              focused={activeRouteName == 'Servers'}
-              label="Servers"
-              onPress={() => {
-                props.navigation.navigate('Servers');
-              }}
-            />
-            <DrawerItem
-              icon={({color, size}) => (
-                <EventsIcon width={size} height={size} />
-              )}
-              activeBackgroundColor="#e0efef"
-              activeTintColor="#00A1A1"
-              label="Events"
-              focused={activeRouteName == 'Events'}
-              onPress={() => {
-                props.navigation.navigate('Events');
-              }}
-            />
-            <DrawerItem
-              icon={({color, size}) => (
-                <ProfileIcon width={size} height={size} />
-              )}
-              activeBackgroundColor="#e0efef"
-              activeTintColor="#00A1A1"
-              label="Account"
-              focused={activeRouteName == 'Account'}
-              onPress={() => {
-                props.navigation.navigate('Account');
-              }}
-            />
-            <DrawerItem
-              icon={({color, size}) => <HelpIcon width={size} height={size} />}
-              label="Help"
-              onPress={() => {
-                Linking.openURL(
-                  'https://webdock.io/en/docs/webdock-mobile-app',
-                );
-              }}
-            />
-            <DrawerItem
-              icon={({color, size}) => <NewsIcon width={size} height={size} />}
-              label="News"
-              onPress={() => {
-                Linking.openURL('https://news.webdock.io');
-              }}
-            />
-            <DrawerItem
-              icon={({color, size}) => (
-                <FeedbackIcon width={size} height={size} />
-              )}
-              label="Feedback"
-              onPress={() => {
-                Linking.openURL('https://feedback.webdock.io');
-              }}
-            />
-          </Drawer.Section>
-          {/* <Drawer.Section title="Preferences">
-                        <TouchableRipple>
-                            <View style={styles.preference}>
-                                <Text>Dark Theme</Text>
-                                <View pointerEvents="none">
-                                    <Switch value={true} color="#008570"/>
-                                </View>
-                            </View>
-                        </TouchableRipple>
-                    </Drawer.Section> */}
-        </View>
-      </DrawerContentScrollView>
-      <Drawer.Section style={styles.bottomDrawerSection}>
-        {/* <DrawerItem
-          icon={({color, size}) => (
-            <Icon name="help" color={color} size={size} />
-          )}
-          label="Live Chat"
-          onPress={() => {}}
-        /> */}
-        <DrawerItem
-          icon={({color, size}) => <LogoutIcon width={size} height={size} />}
-          label="Sign Out"
+          <View>
+            <MenuLevel0 data={mainMenu} />
+          </View>
+        </ScrollView>
+      </View>
+      <View
+        style={[
+          styles.bottomDrawerSection,
+          {backgroundColor: theme.colors.surface},
+        ]}>
+        <Pressable
           onPress={() => {
+            resetSession();
             signOut();
           }}
-        />
-        <View>
-          <Text>Follow Webdock on</Text>
-          <View></View>
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 10,
+            paddingVertical: 12,
+          }}>
+          <LogoutIcon width={24} height={24} color={theme.colors.text} />
+          <Text
+            style={{
+              fontFamily: 'Poppins-Medium',
+              fontWeight: '500',
+              fontSize: 22,
+            }}>
+            Sign Out
+          </Text>
+        </Pressable>
+        <Divider />
+
+        <View style={{paddingVertical: 20}}>
+          <Text
+            style={{
+              fontFamily: 'Poppins',
+              fontSize: 12,
+              color: theme.colors.accent,
+              opacity: 0.56,
+            }}>
+            Follow Webdock on
+          </Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+            }}>
+            <IconButton
+              icon="youtube"
+              onPress={() => handlePress('https://www.youtube.com/@webdock')}
+            />
+            <IconButton
+              icon="instagram"
+              onPress={() =>
+                handlePress('https://www.instagram.com/webdock.io/')
+              }
+            />
+            <IconButton
+              icon="tiktok"
+              onPress={() => handlePress('https://www.tiktok.com/@webdock.io')}
+            />
+            <IconButton
+              icon="linkedin"
+              onPress={() =>
+                handlePress('https://www.linkedin.com/company/webdock-io/')
+              }
+            />
+            <IconButton
+              icon="facebook"
+              onPress={() => handlePress('https://www.facebook.com/webdockio')}
+            />
+          </View>
         </View>
-        <View style={{backgroundColor: theme.colors.grey, width: '100%'}}>
-          <Text>Version number {}</Text>
-        </View>
-      </Drawer.Section>
-    </View>
+      </View>
+      <View
+        style={{
+          backgroundColor: theme.colors.menu.surface,
+          paddingHorizontal: 20,
+          paddingVertical: 10,
+        }}>
+        <Text style={{fontFamily: 'Poppins', fontSize: 12, color: '#BDBDBD'}}>
+          Version number {getReadableVersion()}
+        </Text>
+      </View>
+    </>
   ) : (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <ActivityIndicator size="large" color="#008570" />
@@ -234,6 +410,7 @@ export function DrawerContent(props) {
 const styles = StyleSheet.create({
   drawerContent: {
     flex: 1,
+    gap: 8,
   },
   userInfoSection: {
     paddingLeft: 20,
@@ -265,18 +442,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginRight: 3,
   },
-  drawerSection: {
-    marginTop: 15,
-  },
+  drawerSection: {},
   bottomDrawerSection: {
-    marginBottom: 15,
-    borderTopColor: '#f4f4f4',
-    borderTopWidth: 1,
+    paddingHorizontal: 20,
   },
   preference: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 12,
     paddingHorizontal: 16,
   },
 });

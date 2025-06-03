@@ -18,7 +18,7 @@ import {FAB, Searchbar} from 'react-native-paper';
 import {Avatar, Divider} from 'react-native-paper';
 import {getServers} from '../service/servers';
 import {AuthContext} from '../components/context';
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import EmptyList from '../components/EmptyList';
 export default function SearchServers({navigation}) {
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -93,12 +93,10 @@ export default function SearchServers({navigation}) {
               source={
                 dc === 'fi'
                   ? {
-                      uri:
-                        'https://api.webdock.io/concrete/images/countries/europeanunion.png',
+                      uri: 'https://api.webdock.io/concrete/images/countries/europeanunion.png',
                     }
                   : {
-                      uri:
-                        'https://api.webdock.io/concrete/images/countries/us.png',
+                      uri: 'https://api.webdock.io/concrete/images/countries/us.png',
                     }
               }
             />

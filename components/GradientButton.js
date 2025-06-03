@@ -1,23 +1,24 @@
 import React from 'react';
 import {ActivityIndicator, Text} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {useTheme} from 'react-native-paper';
 
 export default function GradientButton({submitting, text}) {
+  const theme = useTheme();
   return (
     <LinearGradient
       locations={[0.29, 0.8]}
       start={{x: 0, y: 0}}
       end={{x: 1, y: 0}}
-      colors={['#00956c', '#00956c']}
-      style={{borderRadius: 5}}>
+      colors={[theme.colors.primary, theme.colors.primary]}
+      style={{borderRadius: 5, padding: 10}}>
       {!submitting ? (
         <Text
           style={{
             includeFontPadding: false,
-            padding: 15,
-            fontFamily: 'Raleway-Bold',
-            fontSize: 18,
-            color: 'white',
+            fontFamily: 'Poppins-Bold',
+            fontSize: 14,
+            color: theme.colors.text,
             textAlign: 'center',
           }}>
           {text}

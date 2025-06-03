@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useState, useEffect} from 'react';
 import {
   FlatList,
@@ -242,9 +242,8 @@ export default function ServerScripts({route, navigation}) {
   const [selectedScript, setSelectedScript] = React.useState('');
 
   const [isDeleteModalVisible, setIsDeleteModalVisible] = React.useState(false);
-  const [isExecuteModalVisible, setIsExecuteModalVisible] = React.useState(
-    false,
-  );
+  const [isExecuteModalVisible, setIsExecuteModalVisible] =
+    React.useState(false);
   return (
     <>
       <View

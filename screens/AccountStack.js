@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import {View, Button, Text} from 'react-native';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
@@ -14,6 +14,7 @@ import Header from '../shared/header';
 import AccountInfo from './AccountInfo';
 import AccountPublicKeys from './AccountPublicKeys';
 import AccountScripts from './AccountScripts';
+import {AccountRootStack} from './AccountRootStack';
 
 const Tab = createMaterialTopTabNavigator();
 export function AccountStack({navigation}) {
@@ -21,7 +22,7 @@ export function AccountStack({navigation}) {
     <>
       <Tab.Navigator
         swipeEnabled={true}
-        tabBarStyle={{ display: 'none' }}
+        tabBarStyle={{display: 'none'}}
         tabBarOptions={{
           activeTintColor: 'white',
           labelStyle: {fontSize: 12, fontWeight: 'bold'},
@@ -35,7 +36,7 @@ export function AccountStack({navigation}) {
             backgroundColor: 'white',
           },
         }}>
-        <Tab.Screen name="Account" component={AccountInfo} />
+        <Tab.Screen name="Account" component={AccountRootStack} />
         <Tab.Screen name="Public Keys" component={AccountPublicKeys} />
         <Tab.Screen name="Scripts" component={AccountScripts} />
       </Tab.Navigator>

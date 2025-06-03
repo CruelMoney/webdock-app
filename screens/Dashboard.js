@@ -42,7 +42,7 @@ import {Avatar, Divider} from 'react-native-paper';
 import {getServers, provisionAServer} from '../service/servers';
 import {AuthContext} from '../components/context';
 import Modal from 'react-native-modal';
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   getImages,
   getLocations,
@@ -60,6 +60,7 @@ import SearchIcon from '../assets/search-icon.svg';
 import PowerIcon from '../assets/power-icon.svg';
 import DropdownIcon from '../assets/dropdown-icon.svg';
 import CirclePercent from '../assets/circle-percent.svg';
+import ThumbsUp from '../assets/thumbs-up.svg';
 import ArrowIcon from '../assets/arrow-icon.svg';
 import {getEventsPerPage} from '../service/events';
 import EmptyList from '../components/EmptyList';
@@ -67,18 +68,55 @@ import {getNews} from '../service/news';
 import Spacer from '../components/Spacer';
 import NewsItem from '../components/NewsItem';
 import ServerItem from '../components/ServerItem';
+import {CopilotStep, useCopilot, walkthroughable} from 'react-native-copilot';
+const ONBOARDING_KEY = 'hasShownCopilot';
 
 export function Dashboard({navigation}) {
   const [servers, setServers] = useState();
   const [news, setNews] = useState();
   const [loading, setLoading] = useState(true);
+  const {start, copilotEvents} = useCopilot();
+  const [isFirstRun, setIsFirstRun] = useState(false);
+
   useEffect(() => {
+    const checkIfAlreadyShown = async () => {
+      const value = await AsyncStorage.getItem(ONBOARDING_KEY);
+      if (!value) {
+        setIsFirstRun(true);
+        await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+      }
+    };
+
+    checkIfAlreadyShown();
+  }, []);
+
+  useEffect(() => {
+    if (isFirstRun) {
+      // Optional delay to ensure steps are mounted
+      setTimeout(() => start(), 500);
+    }
+  }, [isFirstRun]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      start();
+    }, 3000);
+    const listener = () => {
+      // Copilot tutorial finished!
+    };
+
+    copilotEvents.on('stop', listener);
+
     const unsubscribe = navigation.addListener('focus', () => {
       onBackgroundRefresh();
     });
     setTimeout(async () => {
       onBackgroundRefresh();
     }, 0);
+    return () => {
+      clearTimeout(timer);
+      copilotEvents.off('stop', listener);
+    };
   }, [navigation]);
 
   const onBackgroundRefresh = async () => {
@@ -223,6 +261,9 @@ export function Dashboard({navigation}) {
       alert(e);
     }
   };
+  const WalkthroughableText = walkthroughable(Text);
+  const WalkthroughableIconButton = walkthroughable(IconButton);
+  const WalkthroughableView = walkthroughable(View);
 
   const theme = useTheme();
   return (
@@ -241,38 +282,49 @@ export function Dashboard({navigation}) {
             paddingVertical: 10,
             height: '100%',
           }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              height: 42,
-              borderRadius: 4,
-              gap: 5,
-              backgroundColor: theme.colors.primary,
-              width: '100%',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <CirclePercent />
-            <Spacer size={8} horizontal />
-            <Text
+          <CopilotStep
+            title=""
+            text="Refer a friend|Click the “Refer” button and and start inviting friends and earn credits to use for future payments."
+            order={3}
+            name="referAFriend">
+            <WalkthroughableView
               style={{
-                fontFamily: 'Poppins',
-                fontSize: 14,
-                fontWeight: '600',
-                includeFontPadding: false,
+                flexDirection: 'row',
+                height: 42,
+                borderRadius: 4,
+                backgroundColor: theme.colors.primary,
+                width: '100%',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: 8,
               }}>
-              Refer and Earn up to{' '}
+              <CirclePercent />
               <Text
                 style={{
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Poppins-SemiBold',
                   fontSize: 14,
-                  fontWeight: '800',
+                  fontWeight: '600',
                   includeFontPadding: false,
                 }}>
-                200 Credits
+                Refer and Earn up to{' '}
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-ExtraBold',
+                    fontSize: 14,
+                    fontWeight: '800',
+                    includeFontPadding: false,
+                  }}>
+                  200 Credits
+                </Text>
               </Text>
-            </Text>
-          </View>
+            </WalkthroughableView>
+          </CopilotStep>
+          <CopilotStep
+            text="Choose your display mode|Pick the color scheme that suits you best. You can change this anytime in your account Settings."
+            order={4}
+            name="chooseYourDisplayMode">
+            <WalkthroughableView style={styles.fakeAnchor} />
+          </CopilotStep>
           <View>
             <View
               style={{
@@ -290,7 +342,7 @@ export function Dashboard({navigation}) {
               }}>
               <Text
                 style={{
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Poppins-Medium',
                   fontWeight: '500',
                   color: 'white',
                   fontSize: 16,
@@ -387,7 +439,7 @@ export function Dashboard({navigation}) {
               <TouchableOpacity onPress={() => navigation.navigate('Servers')}>
                 <Text
                   style={{
-                    fontFamily: 'Poppins',
+                    fontFamily: 'Poppins-Regular',
                     fontWeight: '400',
                     fontSize: 12,
                     includeFontPadding: false,
@@ -415,7 +467,7 @@ export function Dashboard({navigation}) {
               }}>
               <Text
                 style={{
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Poppins-Medium',
                   fontWeight: '500',
                   color: 'white',
                   fontSize: 16,
@@ -437,48 +489,13 @@ export function Dashboard({navigation}) {
               <FlatList
                 showsHorizontalScrollIndicator={false}
                 showsVerticalScrollIndicator={false}
-                data={servers}
+                data={[]}
                 scrollEnabled={false}
                 removeClippedSubviews={true}
                 // onRefresh={() => onRefresh()}
                 // refreshing={isFetching}
                 renderItem={({item}) => (
                   <>
-                    <TouchableOpacity
-                      key={item.slug}
-                      onPress={() => {
-                        navigation.setParams({
-                          slug: item.slug,
-                          name: item.name,
-                          description: item.description,
-                          notes: item.notes,
-                          nextActionDate: item.nextActionDate,
-                          location: item.location,
-                          profile: item.profile,
-                        });
-                        navigation.navigate('ServerManagement', {
-                          slug: item.slug,
-                          name: item.name,
-                          description: item.description,
-                          notes: item.notes,
-                          nextActionDate: item.nextActionDate,
-                          location: item.location,
-                          profile: item.profile,
-                        });
-                      }}>
-                      <View>
-                        <ServerItem
-                          title={item.name}
-                          alias={item.aliases[0]}
-                          dc={item.location}
-                          profile={item.profile}
-                          // profile={profiles.filter(obj => {
-                          //   return obj.slug === item.profile}).name}
-                          ipv4={item.ipv4}
-                          status={item.status}
-                        />
-                      </View>
-                    </TouchableOpacity>
                     <View
                       style={{
                         height: 1,
@@ -495,33 +512,58 @@ export function Dashboard({navigation}) {
                     : {}
                 }
                 ListEmptyComponent={
-                  servers ? servers.length > 0 ? <EmptyList /> : null : null
+                  <View
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      paddingVertical: 24,
+                      backgroundColor: theme.colors.surface,
+                      gap: 11,
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      borderBottomRightRadius: 4,
+                      borderBottomLeftRadius: 4,
+                    }}>
+                    <Text
+                      style={{textAlign: 'center', color: theme.colors.text}}>
+                      Nice Job!
+                    </Text>
+                    <Text
+                      style={{textAlign: 'center', color: theme.colors.text}}>
+                      You have no notifications.
+                    </Text>
+                    <ThumbsUp color={theme.colors.text} />
+                  </View>
+                }
+                ListFooterComponent={
+                  <View
+                    style={{
+                      height: 42,
+                      backgroundColor: theme.colors.surface,
+                      borderBottomLeftRadius: 4,
+                      borderBottomRightRadius: 4,
+                      padding: 12,
+                      alignItems: 'flex-end',
+                    }}>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate('Servers')}>
+                      <Text
+                        style={{
+                          fontFamily: 'Poppins-Regular',
+                          fontWeight: '400',
+                          fontSize: 12,
+                          includeFontPadding: false,
+                          color: theme.colors.primaryText,
+                        }}>
+                        All notifications →
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 }
                 keyExtractor={item => item.slug}
               />
             )}
-            <View
-              style={{
-                height: 42,
-                backgroundColor: theme.colors.surface,
-                borderBottomLeftRadius: 4,
-                borderBottomRightRadius: 4,
-                padding: 12,
-                alignItems: 'flex-end',
-              }}>
-              <TouchableOpacity onPress={() => navigation.navigate('Servers')}>
-                <Text
-                  style={{
-                    fontFamily: 'Poppins',
-                    fontWeight: '400',
-                    fontSize: 12,
-                    includeFontPadding: false,
-                    color: theme.colors.primaryText,
-                  }}>
-                  All notifications →
-                </Text>
-              </TouchableOpacity>
-            </View>
           </View>
           <View>
             <View
@@ -540,7 +582,7 @@ export function Dashboard({navigation}) {
               }}>
               <Text
                 style={{
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Poppins-Medium',
                   fontWeight: '500',
                   color: 'white',
                   fontSize: 16,
@@ -555,7 +597,6 @@ export function Dashboard({navigation}) {
                 borderBottomLeftRadius: 4,
                 borderBottomRightRadius: 4,
                 padding: 12,
-                alignItems: 'flex-end',
               }}>
               <FlatList
                 showsHorizontalScrollIndicator={false}
@@ -620,5 +661,14 @@ const styles = StyleSheet.create({
     width: '15%',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  fakeAnchor: {
+    position: 'absolute',
+    top: '50vh',
+    left: '50vw',
+    width: 1,
+    height: 1,
+    marginLeft: -0.5,
+    marginTop: -0.5,
   },
 });

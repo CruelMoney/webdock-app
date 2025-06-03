@@ -6,34 +6,19 @@
  * @flow strict-local
  */
 
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import {createDrawerNavigator} from '@react-navigation/drawer';
-import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
-import React, {useContext, useEffect, useState} from 'react';
-import {StyleSheet, useColorScheme} from 'react-native';
-import {Colors, Provider, useTheme, DefaultTheme} from 'react-native-paper';
-import SplashScreen from 'react-native-splash-screen';
-import Toast from 'react-native-toast-message';
-import {AuthContext} from './components/context';
-import OfflineNotice from './components/OfflineNotice';
-import {AccountRootStack} from './screens/AccountRootStack';
-import CreateServer from './screens/CreateServer';
-import {Dashboard} from './screens/Dashboard';
-import {DrawerContent} from './screens/DrawerContent';
-import {EventsStackNavigator} from './screens/EventsStack';
-import {MainStackNavigator} from './screens/HomeStack';
-import {RootStack} from './screens/RootStack';
-import {ServerManagement} from './screens/ServerManagement';
+import React, {useEffect, useState} from 'react';
+import {StyleSheet} from 'react-native';
+// import SplashScreen from 'react-native-splash-screen';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import MainTabs from './screens/MainTabs';
-import {HomeScreen} from './screens/HomeScreen';
-import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
-import {ThemeContext, ThemeProvider} from './components/ThemeContext';
+import {ThemeProvider} from './components/ThemeContext';
 import WebdockApp from './WebdockApp';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 
-const Drawer = createDrawerNavigator();
+// const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 export default function App() {
@@ -118,13 +103,17 @@ export default function App() {
 
   useEffect(() => {
     if (loginState.isLoading == false) {
-      SplashScreen.hide();
+      // SplashScreen.hide();
     }
   }, [loginState]);
 
   return (
     <ThemeProvider>
-      <WebdockApp />
+      <GestureHandlerRootView style={{flex: 1}}>
+        <SafeAreaProvider>
+          <WebdockApp />
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
     </ThemeProvider>
   );
 }
@@ -145,5 +134,26 @@ const styles = StyleSheet.create({
   },
   highlight: {
     fontWeight: '700',
+  },
+  tooltip: {
+    width: 280,
+    padding: 20,
+    borderRadius: 4,
+    gap: 20,
+  },
+  tooltipTitle: {
+    fontFamily: 'Poppins',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  tooltipText: {
+    fontFamily: 'Poppins',
+    fontWeight: '300',
+    fontSize: 14,
+    lineHeight: 18,
+  },
+  buttons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 });

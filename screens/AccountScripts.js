@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useState, useEffect} from 'react';
 import {
   FlatList,
@@ -10,8 +10,10 @@ import {
   Text,
   useColorScheme,
   View,
+  Pressable,
   TouchableOpacity,
   Alert,
+  Keyboard,
   Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -23,6 +25,7 @@ import {
   FAB,
   Provider,
   IconButton,
+  useTheme,
   TextInput,
 } from 'react-native-paper';
 import {Avatar, Divider} from 'react-native-paper';
@@ -33,14 +36,24 @@ import {
   postAccountScripts,
 } from '../service/accountScripts';
 import Toast from 'react-native-toast-message';
-import Modal from 'react-native-modal';
+import ReactNativeModal from 'react-native-modal';
 import DeleteIcon from '../assets/delete-icon.svg';
 import EditIcon from '../assets/edit-icon.svg';
 import BackIcon from '../assets/back-icon.svg';
 import PlusIcon from '../assets/plus-icon.svg';
 import EmptyList from '../components/EmptyList';
+import BottomSheetWrapper from '../components/BottomSheetWrapper';
+import ScriptItem from '../components/ScriptItem';
+import AccordionItem from '../components/AccordionItem';
+
 export default function AccountScripts({navigation}) {
   const [scripts, setScripts] = useState();
+  const [inputs, setInputs] = React.useState({
+    name: '',
+    filename: '',
+    content: '',
+  });
+  const [errors, setErrors] = React.useState({});
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       onBackgroundRefresh();
@@ -72,7 +85,7 @@ export default function AccountScripts({navigation}) {
         Toast.show({
           type: 'success',
           position: 'bottom',
-          text1: 'Account script deleted successfully',
+          text1: 'Script successfully deleted',
           visibilityTime: 4000,
           autoHide: true,
           onPress: () => navigation.navigate('Events'),
@@ -96,55 +109,7 @@ export default function AccountScripts({navigation}) {
       }
     }
   };
-  const Item = ({item}) => (
-    <View
-      style={{backgroundColor: 'white', borderRadius: 10, marginBottom: 10}}>
-      <View
-        style={{
-          display: 'flex',
-          padding: 15,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-        <View style={{width: '75%'}}>
-          <Text
-            style={{
-              fontFamily: 'Raleway-Regular',
-              fontSize: 14,
-              includeFontPadding: false,
-            }}>
-            {item.name}
-          </Text>
-          <View style={{display: 'flex', flexDirection: 'row'}}>
-            <Text
-              style={{
-                fontFamily: 'Raleway-Light',
-                fontSize: 12,
-                includeFontPadding: false,
-                color: '#8F8F8F',
-              }}>
-              {item.filename}
-            </Text>
-          </View>
-        </View>
-        <View style={{display: 'flex', flexDirection: 'row', width: '20%'}}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('EditAccountScript', item)}>
-            <EditIcon width={25} height={25} />
-          </TouchableOpacity>
-          <View style={{width: 10}}></View>
-          <TouchableOpacity
-            onPress={() => {
-              setIsDeleteModalVisible(true);
-              setSelectedScript(item);
-            }}>
-            <DeleteIcon fill="#D94B4B" width={25} height={25} />
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  );
+
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
     setIsFetching(true);
@@ -173,72 +138,338 @@ export default function AccountScripts({navigation}) {
 
   const [isDeleteModalVisible, setIsDeleteModalVisible] = React.useState(false);
   const [selectedScript, setSelectedScript] = React.useState();
+  const theme = useTheme();
+  const validate = () => {
+    Keyboard.dismiss();
+    setSubmitting(true);
+    let isValid = true;
+
+    if (!inputs.name) {
+      handleError('Descriptive name is required', 'name');
+      isValid = false;
+    }
+
+    if (!inputs.filename) {
+      handleError('Filename is required', 'key');
+      isValid = false;
+    }
+    if (!inputs.content) {
+      handleError('File content is required', 'content');
+      isValid = false;
+    }
+    if (isValid) {
+      sendRequest();
+    } else {
+      setSubmitting(false);
+    }
+  };
+  const handleOnchange = (text, input) => {
+    setInputs(prevState => ({...prevState, [input]: text}));
+  };
+  const handleError = (error, input) => {
+    setErrors(prevState => ({...prevState, [input]: error}));
+  };
+  const handleRequestDelete = key => {
+    setSelectedScript(key);
+    setIsDeleteModalVisible(true);
+  };
+  const sendRequest = async () => {
+    let userToken = null;
+    userToken = await AsyncStorage.getItem('userToken');
+    let result = await postAccountScripts(
+      userToken,
+      inputs.name,
+      inputs.filename,
+      inputs.content,
+    );
+    if (result.status == 201) {
+      try {
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Account script added',
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () => navigation.navigate('Events'),
+        });
+      } catch (e) {
+        alert(e);
+      }
+      onBackgroundRefresh();
+      setInputs({name: '', filename: '', content: ''});
+    } else if (result.status == 400) {
+      try {
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: result.response.message,
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () => navigation.navigate('Events'),
+        });
+      } catch (e) {
+        alert(e);
+      }
+    }
+  };
+
+  const [submitting, setSubmitting] = useState(false);
+
   return (
     <>
-      <View
-        width="100%"
-        height="100%"
-        style={{
-          backgroundColor: '#F4F8F8',
-          paddingHorizontal: '8%',
-          paddingTop: '8%',
-        }}>
+      <BottomSheetWrapper title="Scripts" onClose={() => navigation.goBack()}>
         <View
+          width="100%"
+          height="100%"
           style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            backgroundColor: theme.colors.background,
+            paddingHorizontal: 20,
+            gap: 24,
           }}>
-          <TouchableOpacity onPress={navigation.goBack}>
-            <BackIcon height={45} width={50} />
-          </TouchableOpacity>
-          <Text
-            style={{
-              color: '#00A1A1',
-              fontFamily: 'Raleway-Medium',
-              fontSize: 20,
-              textAlign: 'center',
-            }}>
-            Scripts
-          </Text>
-          <View style={{width: 50}}></View>
-        </View>
-        <FlatList
-          style={{marginTop: 20}}
-          showsVerticalScrollIndicator={false}
-          data={scripts}
-          onRefresh={() => onRefresh()}
-          refreshing={isFetching}
-          ListFooterComponent={<View style={{height: 60}}></View>}
-          renderItem={({item}) => (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('EditAccountScript', item)}>
-              <View>
-                <Item item={item} />
+          <AccordionItem
+            title="Add new script"
+            viewKey="AddAccountScriptAccordion">
+            <View style={{padding: 16, gap: 12}}>
+              <View style={{gap: 4}}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontSize: 14,
+                    color: theme.colors.text,
+                  }}>
+                  Descriptive name
+                </Text>
+                <TextInput
+                  mode="flat"
+                  value={inputs['name']}
+                  dense={true}
+                  onChangeText={text => handleOnchange(text, 'name')}
+                  underlineColorAndroid="transparent"
+                  activeUnderlineColor="transparent"
+                  underlineColor="transparent"
+                  cursorColor="#fff"
+                  theme={{
+                    colors: {
+                      background: '#fff',
+                      surface: '#fff',
+                      text: '#000',
+                      primary: '#000',
+                      placeholder: '#999',
+                    },
+                  }}
+                  style={{
+                    backgroundColor: theme.colors.surface,
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: '#D9D9D9',
+                    fontFamily: 'Poppins-Light',
+                    fontSize: 14,
+                  }}
+                  onFocus={() => handleError(null, 'name')}
+                  error={errors.name}
+                />
+                {errors.name ? (
+                  <HelperText type="error" padding="none" visible={errors.name}>
+                    {errors.name}
+                  </HelperText>
+                ) : null}
               </View>
-            </TouchableOpacity>
-          )}
-          keyExtractor={item => item.id}
-          ListEmptyComponent={<EmptyList />}
-        />
-        <TouchableOpacity
-          onPress={() => navigation.navigate('CreateAccountScript')}
-          style={{
-            backgroundColor: 'white',
-            position: 'absolute',
-            justifyContent: 'center',
-            alignItems: 'center',
-            right: 20,
-            bottom: 20,
-            width: 50,
-            height: 50,
-            borderRadius: 50 / 2,
-          }}>
-          <PlusIcon height={50} width={50} />
-        </TouchableOpacity>
-      </View>
-      <Modal
+              <View style={{gap: 4}}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontSize: 14,
+                    color: theme.colors.text,
+                  }}>
+                  Filename
+                </Text>
+                <TextInput
+                  mode="flat"
+                  value={inputs['filename']}
+                  dense={true}
+                  onChangeText={text => handleOnchange(text, 'filename')}
+                  underlineColorAndroid="transparent"
+                  activeUnderlineColor="transparent"
+                  underlineColor="transparent"
+                  cursorColor="#fff"
+                  theme={{
+                    colors: {
+                      background: '#fff',
+                      surface: '#fff',
+                      text: '#000',
+                      primary: '#000',
+                      placeholder: '#999',
+                    },
+                  }}
+                  style={{
+                    backgroundColor: theme.colors.surface,
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: '#D9D9D9',
+                    fontFamily: 'Poppins-Light',
+                    fontSize: 14,
+                  }}
+                  onFocus={() => handleError(null, 'filename')}
+                  error={errors.filename}
+                />
+                {errors.filename ? (
+                  <HelperText
+                    type="error"
+                    padding="none"
+                    visible={errors.filename}>
+                    {errors.filename}
+                  </HelperText>
+                ) : null}
+              </View>
+              <View style={{gap: 4}}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontSize: 14,
+                    color: theme.colors.text,
+                  }}>
+                  File contents
+                </Text>
+                <TextInput
+                  mode="flat"
+                  value={inputs['content']}
+                  onChangeText={text => handleOnchange(text, 'content')}
+                  dense={true}
+                  multiline
+                  underlineColorAndroid="transparent"
+                  activeUnderlineColor="transparent"
+                  underlineColor="transparent"
+                  cursorColor="#fff"
+                  theme={{
+                    colors: {
+                      background: '#fff',
+                      surface: '#fff',
+                      text: '#000',
+                      primary: '#000',
+                      placeholder: '#999',
+                    },
+                  }}
+                  style={{
+                    backgroundColor: theme.colors.surface,
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: '#D9D9D9',
+                    fontFamily: 'Poppins-Light',
+                    fontSize: 14,
+                  }}
+                  onFocus={() => handleError(null, 'content')}
+                  error={errors.content}
+                />
+                {errors.content ? (
+                  <HelperText
+                    type="error"
+                    padding="none"
+                    visible={errors.content}>
+                    {errors.content}
+                  </HelperText>
+                ) : null}
+              </View>
+              <View
+                style={{
+                  justifyContent: 'flex-end',
+                }}>
+                {/* add public key button */}
+                <Button
+                  mode="contained"
+                  textColor={theme.colors.text}
+                  compact
+                  style={{
+                    borderRadius: 4,
+                    minWidth: 0,
+                    paddingHorizontal: 8,
+                  }}
+                  labelStyle={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontSize: 12,
+                    lineHeight: 12 * 1.2,
+                    fontWeight: '600',
+                  }}
+                  onPress={validate}>
+                  Add script
+                </Button>
+              </View>
+            </View>
+          </AccordionItem>
+          <View>
+            <View
+              style={{
+                height: 44,
+                borderTopLeftRadius: 4,
+                borderTopRightRadius: 4,
+                backgroundColor: theme.colors.accent,
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Medium',
+                  fontWeight: '500',
+                  color: 'white',
+                  fontSize: 16,
+                  includeFontPadding: false,
+                }}>
+                Added scripts
+              </Text>
+            </View>
+            <FlatList
+              style={{}}
+              data={scripts}
+              showsVerticalScrollIndicator={false}
+              onRefresh={() => onRefresh()}
+              refreshing={isFetching}
+              renderItem={({item}) => (
+                <>
+                  <ScriptItem
+                    item={item}
+                    onRequestEdit={item => {
+                      console.log(item);
+                      navigation.navigate('EditAccountScript', item);
+                    }}
+                    onRequestDelete={handleRequestDelete}
+                  />
+                  <View
+                    style={{
+                      height: 1,
+                    }}></View>
+                </>
+              )}
+              keyExtractor={item => item.id}
+              ListEmptyComponent={
+                scripts ? (
+                  scripts.length == 0 ? (
+                    <View
+                      style={{
+                        borderBottomLeftRadius: 4,
+                        borderBottomRightRadius: 4,
+                        padding: 14,
+                        backgroundColor: theme.colors.surface,
+                      }}>
+                      <Text
+                        style={{
+                          color: theme.colors.text,
+                          fontFamily: 'Poppins',
+                          fontSize: 14,
+                        }}>
+                        You do not have any saved Public Keys yet.
+                      </Text>
+                    </View>
+                  ) : null
+                ) : null
+              }
+            />
+          </View>
+        </View>
+      </BottomSheetWrapper>
+      <ReactNativeModal
         testID={'modal'}
         isVisible={isDeleteModalVisible}
         swipeDirection={['up', 'left', 'right', 'down']}
@@ -247,99 +478,75 @@ export default function AccountScripts({navigation}) {
         <View
           style={{
             backgroundColor: 'white',
-            padding: 30,
-            borderTopStartRadius: 10,
-            borderTopEndRadius: 10,
+            padding: 24,
+            borderTopStartRadius: 20,
+            borderTopEndRadius: 20,
+            gap: 12,
           }}>
           <Text
             style={{
-              fontFamily: 'Raleway-Medium',
+              fontFamily: 'Poppins-SemiBold',
               fontSize: 18,
-              color: '#00a1a1',
-              marginVertical: 10,
+              color: theme.colors.accent,
             }}>
-            Remove {selectedScript ? selectedScript.name : null}
+            Are you sure you want to remove script “
+            {selectedScript ? selectedScript.name : null}” from your account?
           </Text>
           <Text
             style={{
-              fontFamily: 'Raleway-Regular',
+              fontFamily: 'Poppins-Light',
               fontSize: 12,
-              color: '#000000',
-              marginVertical: 10,
+              color: theme.colors.text,
             }}>
             Please confirm you want to remove this script
           </Text>
           <View
-            style={{display: 'flex', flexDirection: 'row', marginVertical: 10}}>
-            <View style={{backgroundColor: '#03A84E', width: 1}}></View>
-            <Text
-              style={{
-                fontFamily: 'Raleway-Regular',
-                fontSize: 12,
-                color: '#000000',
-                marginStart: 10,
-              }}>
-              This will not remove any scripts from any of your servers. You are
-              simply removing this script from the globally available scripts
-              saved against your user account.
-            </Text>
-          </View>
-          <View
             style={{
-              width: '100%',
-              marginVertical: 15,
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'space-between',
+              gap: 10,
             }}>
-            <TouchableOpacity
-              onPress={() => setIsDeleteModalVisible(false)}
+            <Button
+              mode="outlined"
+              textColor={theme.colors.text}
+              compact
               style={{
-                width: '45%',
-                height: 40,
                 borderColor: '#00956c',
-                borderWidth: 1,
-                backgroundColor: '#FFFFFF',
                 borderRadius: 4,
-                justifyContent: 'center',
-              }}>
-              <Text
-                style={{
-                  fontFamily: 'Raleway-Bold',
-                  fontSize: 16,
-                  color: '#00956c',
-                  textAlign: 'center',
-                  includeFontPadding: false,
-                }}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => deleteScriptAlert(selectedScript.id)}
+                width: '50%',
+                paddingHorizontal: 8,
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                fontWeight: '600',
+                includeFontPadding: false,
+              }}
+              onPress={() => setIsDeleteModalVisible(false)}>
+              Cancel
+            </Button>
+            <Button
+              mode="contained"
+              textColor={'white'}
+              compact
               style={{
-                width: '45%',
-                height: 40,
-                backgroundColor: '#D94B4B',
+                width: '50%',
                 borderRadius: 4,
-                flexDirection: 'row',
-                justifyContent: 'center',
-              }}>
-              <Text
-                style={{
-                  fontFamily: 'Raleway-Bold',
-                  fontSize: 16,
-                  textAlignVertical: 'center',
-                  color: '#FFFFFF',
-                  textAlign: 'center',
-                  includeFontPadding: false,
-                }}>
-                Delete
-              </Text>
-            </TouchableOpacity>
+                minWidth: 0,
+                backgroundColor: '#D34646',
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                fontWeight: '600',
+              }}
+              onPress={() => deleteScriptAlert(selectedScript.id)}>
+              Delete script
+            </Button>
           </View>
         </View>
-      </Modal>
+      </ReactNativeModal>
     </>
   );
 }

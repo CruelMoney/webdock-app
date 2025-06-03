@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
@@ -30,6 +30,8 @@ import {
   Colors,
   Snackbar,
   Badge,
+  useTheme,
+  ProgressBar,
 } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -68,16 +70,21 @@ import UsersIcon from '../assets/users-icon.svg';
 import MoreIcon from '../assets/more-icon.svg';
 import LinkIcon from '../assets/link-icon.svg';
 import UtilizationIcon from '../assets/utilization-icon.svg';
-import {getEventsByCallbackId} from '../service/events';
+import {getAllEventsBySlug, getEventsByCallbackId} from '../service/events';
 import LinearGradient from 'react-native-linear-gradient';
 import EditIcon from '../assets/edit-icon.svg';
 import GradientButton from '../components/GradientButton';
 import {Picker} from '@react-native-picker/picker';
+import AccordionItem from '../components/AccordionItem';
+import EmptyList from '../components/EmptyList';
+import EventItem from '../components/EventItem';
 
 export default function ServerOverview({route, navigation}) {
+  const [loading, setLoading] = React.useState(false);
   const [visible, setVisible] = React.useState(false);
   const [dryRun, setDryRun] = React.useState();
   const [server, setServer] = React.useState();
+  const [events, setEvents] = React.useState([]);
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       onBackgroundRefresh();
@@ -97,6 +104,36 @@ export default function ServerOverview({route, navigation}) {
         alert(e);
       }
     }, 0);
+    return unsubscribe;
+  }, [route]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      onBackgroundRefresh();
+    });
+
+    setTimeout(async () => {
+      let userToken = null;
+      try {
+        userToken = await AsyncStorage.getItem('userToken');
+        if (route.params.callbackId) {
+          getEventsByCallbackId(userToken, route.params.callbackId).then(
+            data => {
+              setEvents(data);
+              setIsLoading(false);
+            },
+          );
+        } else {
+          getAllEventsBySlug(userToken, route.params.slug).then(data => {
+            setEvents(data.slice(0, 3));
+            setIsLoading(false);
+          });
+        }
+      } catch (e) {
+        alert(e);
+      }
+    }, 0);
+
     return unsubscribe;
   }, [route]);
 
@@ -222,7 +259,6 @@ export default function ServerOverview({route, navigation}) {
       }
     }
   };
-
   const rebootThisServer = async slug => {
     let userToken = null;
 
@@ -274,7 +310,6 @@ export default function ServerOverview({route, navigation}) {
       }
     }
   };
-
   const suspendThisServer = async slug => {
     let userToken = null;
 
@@ -682,13 +717,16 @@ export default function ServerOverview({route, navigation}) {
     if (icon == 'running') {
       return (
         <>
-          <View style={{alignItems: 'center', justifyContent: 'center'}}>
-            <Icon name="done" size={25} color="#4C9F5A" />
-          </View>
+          <View
+            style={{
+              backgroundColor: '#4C9F5A',
+              width: 10,
+              height: 10,
+              borderRadius: 10 / 2,
+            }}></View>
           <Text
             style={{
-              fontFamily: 'Raleway-Regular',
-              marginLeft: 10,
+              fontFamily: 'Poppins-Light',
               fontSize: 14,
               includeFontPadding: false,
               color: '#4C9F5A',
@@ -700,14 +738,18 @@ export default function ServerOverview({route, navigation}) {
     } else if (icon == 'stopped') {
       return (
         <>
-          <View style={{alignItems: 'center', justifyContent: 'center'}}>
-            <Icon name="power-settings-new" size={25} color="#E15241" />
-          </View>
+          <View
+            style={{
+              backgroundColor: '#E15241',
+              width: 10,
+              height: 10,
+              borderRadius: 10 / 2,
+            }}></View>
           <Text
             style={{
-              fontFamily: 'Raleway-Regular',
-              marginLeft: 10,
-              fontSize: 12,
+              fontFamily: 'Poppins-Light',
+              fontSize: 14,
+              includeFontPadding: false,
               color: '#E15241',
             }}>
             {icon.charAt(0).toUpperCase() + icon.slice(1)}
@@ -719,15 +761,15 @@ export default function ServerOverview({route, navigation}) {
         <>
           <ActivityIndicator
             animating={true}
-            size={25}
+            size={10}
             color={Colors.blue400}
           />
           ;
           <Text
             style={{
-              fontFamily: 'Raleway-Regular',
-              marginLeft: 10,
-              fontSize: 12,
+              fontFamily: 'Poppins-Light',
+              fontSize: 14,
+              includeFontPadding: false,
               color: '#4C9F5A',
             }}>
             {icon.charAt(0).toUpperCase() + icon.slice(1)}
@@ -739,14 +781,14 @@ export default function ServerOverview({route, navigation}) {
         <>
           <ActivityIndicator
             animating={true}
-            size={25}
+            size={10}
             color={Colors.blue400}
           />
           <Text
             style={{
-              fontFamily: 'Raleway-Regular',
-              marginLeft: 10,
-              fontSize: 12,
+              fontFamily: 'Poppins-Light',
+              fontSize: 14,
+              includeFontPadding: false,
               color: '#4C9F5A',
             }}>
             {icon.charAt(0).toUpperCase() + icon.slice(1)}
@@ -764,14 +806,14 @@ export default function ServerOverview({route, navigation}) {
         <>
           <ActivityIndicator
             animating={true}
-            size={25}
+            size={10}
             color={Colors.blue400}
           />
           <Text
             style={{
-              fontFamily: 'Raleway-Regular',
-              marginLeft: 10,
-              fontSize: 12,
+              fontFamily: 'Poppins-Light',
+              fontSize: 14,
+              includeFontPadding: false,
               color: '#4C9F5A',
             }}>
             {icon.charAt(0).toUpperCase() + icon.slice(1)}
@@ -795,34 +837,40 @@ export default function ServerOverview({route, navigation}) {
   };
   const tabs = [
     {
-      label: 'Activity',
+      label: 'Server Activity',
       icon: <ActivityIcon width={19} height={19} color="#00a1a1" />,
       navigate: 'Activity',
+      description:
+        'See current and past network, disk, memory and CPU activity for your server',
     },
-    {
-      label: 'Events',
-      icon: <EventsIcon width={19} height={19} color="#00a1a1" />,
-      navigate: 'Events',
-    },
+    // {
+    //   label: 'Events',
+    //   icon: <EventsIcon width={19} height={19} color="#00a1a1" />,
+    //   navigate: 'Events',
+    // },
     // {
     //   label: 'Utilization',
     //   icon: <UtilizationIcon width={19} height={19} color="#00a1a1" />,
     //   navigate: 'Utilization',
     // },
     {
-      label: 'Snapshots',
-      icon: <SnapshotIcon width={19} height={19} color="#00a1a1" />,
-      navigate: 'Snapshots',
+      label: 'Server Scripts',
+      icon: <ScriptsIcon width={19} height={19} color="#00a1a1" />,
+      navigate: 'Scripts',
+      description: 'Deploy and Execute Scripts or Files to your server',
     },
     {
       label: 'Shell users',
       icon: <UsersIcon width={19} height={19} color="#00a1a1" />,
       navigate: 'Shell Users',
+      description: 'Manage your Shell/SFTP Users and deploy SSH Public Keys',
     },
     {
-      label: 'Scripts',
-      icon: <ScriptsIcon width={19} height={19} color="#00a1a1" />,
-      navigate: 'Scripts',
+      label: 'Snapshots',
+      icon: <SnapshotIcon width={19} height={19} color="#00a1a1" />,
+      navigate: 'Snapshots',
+      description:
+        'Create and delete server snapshots or restore your server from a snapshot (backups)',
     },
   ];
 
@@ -833,9 +881,8 @@ export default function ServerOverview({route, navigation}) {
   const [reinstallModal, setReinstallModal] = useState(false);
   const [aliasModal, setAliasModal] = useState(false);
   const [callbackId, setCallbackId] = useState();
-  const [selectedImageForReinstall, setSelectedImageForReinstall] = useState(
-    '',
-  );
+  const [selectedImageForReinstall, setSelectedImageForReinstall] =
+    useState('');
 
   const [visibleSnack, setVisibleSnack] = React.useState(false);
 
@@ -845,463 +892,306 @@ export default function ServerOverview({route, navigation}) {
   const handleOnchange = (itemValue, item) => {
     setSelectedImageForReinstall(itemValue);
   };
-
+  const theme = useTheme();
   return server ? (
     <>
-      <View
-        width="100%"
-        height="100%"
+      <ScrollView
+        showsVerticalScrollIndicator={false}
         style={{
-          backgroundColor: '#F4F8F8',
-          paddingHorizontal: '8%',
-          paddingTop: '8%',
+          backgroundColor: theme.colors.background,
+          paddingHorizontal: 20,
+          paddingVertical: 10,
+          gap: 24,
         }}>
-        <View
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-          <TouchableOpacity onPress={navigation.goBack}>
-            <BackIcon height={45} width={50} />
-          </TouchableOpacity>
-          <Text
-            style={{
-              color: '#00A1A1',
-              fontFamily: 'Raleway-Medium',
-              fontSize: 20,
-              textAlign: 'center',
-            }}>
-            {route.params.name.length > 10
-              ? route.params.name.slice(0, 10 - 1) + ' ...'
-              : route.params.name}
-          </Text>
-          <Menu
-            visible={visible}
-            onDismiss={closeMenu}
-            style={{
-              shadowOpacity: 0.1,
-            }}
-            anchor={
-              <TouchableOpacity onPress={openMenu}>
-                <MoreIcon height={45} width={50} />
-              </TouchableOpacity>
-            }>
-            {/* <Menu.Item
-              icon="pencil"
-              onPress={() => {
-                navigation.navigate('UpdateServerMetadata');
-              }}
-              title="EDIT METADATA"
-            /> */}
-            <Menu.Item
-              icon={({color, size}) => (
-                <Icon
-                  name="pause"
-                  color={'#ffb242'} // replace with your desired color
-                  size={size}
-                />
-              )}
-              onPress={() => {
-                setSuspendModal(true);
-              }}
-              style={{fontFamily: 'Raleway-Regular'}}
-              title="ARCHIVE SERVER"
-            />
-            <Menu.Item
-              icon={({color, size}) => (
-                <Icon
-                  name="autorenew"
-                  color={'#449ADF'} // replace with your desired color
-                  size={size}
-                />
-              )}
-              onPress={() => {
-                setReinstallModal(true);
-              }}
-              title="REINSTALL SERVER"
-            />
-            {/* <Divider /> */}
-            {/* <Menu.Item
-              icon={({color, size}) => (
-                <Icon
-                  name="delete"
-                  color={'#D94B4B'} // replace with your desired color
-                  size={size}
-                />
-              )}
-              onPress={() => {
-                deleteThisServer(server.slug);
-              }}
-              title="DELETE SERVER"
-            /> */}
-          </Menu>
-        </View>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-            <View
-              style={{
-                marginTop: 15,
-                width: '40%',
-                flexDirection: 'row',
-                alignItems: 'center',
-                borderRadius: 4,
-                padding: 10,
-              }}>
-              {renderStatusIcon(server.status)}
-            </View>
-            <TouchableOpacity
-              onPress={() => setStartModal(true)}
-              style={{
-                width: '29%',
-                alignItems: 'center',
-                flexDirection: 'row',
-                backgroundColor: 'white',
-                borderRadius: 4,
-                padding: 10,
-                marginTop: 15,
-                display: server.status == 'running' ? 'none' : 'flex',
-              }}>
-              <View
-                style={{
-                  height: 25,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
+        <View>
+          <AccordionItem
+            title="Overview"
+            viewKey="ServerOverviewAccordion"
+            topContent={
+              <>
                 <View
                   style={{
-                    width: 20,
-                    height: 20,
-                    justifyContent: 'center',
+                    width: '100%',
+                    flexDirection: 'row',
                     alignItems: 'center',
-                    backgroundColor: 'rgba(76,159,90,0.26)',
-                    borderRadius: 20 / 2,
+                    justifyContent: 'flex-start',
+                    backgroundColor: theme.colors.surface,
+                    paddingHorizontal: 14,
+                    paddingVertical: 12,
+                    gap: 15,
                   }}>
-                  <Icon
-                    name="play-arrow"
-                    size={15}
-                    color="#4C9F5A"
-                    onPress={() => setStartModal(true)}
-                  />
-                </View>
-              </View>
-              <Text
-                style={{
-                  marginStart: 5,
-                  textAlign: 'center',
-                  fontFamily: 'Raleway-SemiBold',
-                  fontSize: 12,
-                  includeFontPadding: false,
-                  color: '#4C9F5A',
-                }}>
-                Start
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setStopModal(true)}
-              style={{
-                width: '29%',
-                alignItems: 'center',
-                flexDirection: 'row',
-                display: server.status == 'running' ? 'flex' : 'none',
-                backgroundColor: 'white',
-                borderRadius: 4,
-                padding: 10,
-                marginTop: 15,
-              }}>
-              <View
-                style={{
-                  height: 25,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                <View
-                  style={{
-                    width: 20,
-                    height: 20,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: 'rgba(217,75,75,0.26)',
-                    borderRadius: 20 / 2,
-                  }}>
-                  <Icon
-                    name="stop"
-                    size={15}
-                    color="#E15241"
-                    onPress={() => setStopModal(true)}
-                  />
-                </View>
-              </View>
-              <Text
-                style={{
-                  marginStart: 5,
-                  fontFamily: 'Raleway-SemiBold',
-                  fontSize: 12,
-                  includeFontPadding: false,
-                  color: '#E15241',
-                }}>
-                Stop
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setRestartModal(true)}
-              style={{
-                width: '29%',
-                alignItems: 'center',
-                flexDirection: 'row',
-                display: server.status == 'running' ? 'flex' : 'none',
-                backgroundColor: 'white',
-                borderRadius: 4,
-                padding: 10,
-                marginTop: 15,
-              }}>
-              <View
-                style={{
-                  height: 25,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                <View
-                  style={{
-                    width: 20,
-                    height: 20,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: 'rgba(3,155,229,0.26)',
-                    borderRadius: 20 / 2,
-                  }}>
-                  <Icon
-                    name="replay"
-                    size={15}
-                    color="#449ADF"
-                    onPress={() => setRestartModal(true)}
-                  />
-                </View>
-              </View>
-              <Text
-                style={{
-                  marginStart: 5,
-                  fontFamily: 'Raleway-SemiBold',
-                  fontSize: 12,
-                  includeFontPadding: false,
-                  color: '#449ADF',
-                }}>
-                Restart
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View>
-            <View
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                flexDirection: 'row',
-                marginTop: 15,
-                backgroundColor: 'white',
-                borderRadius: 10,
-                borderBottomRightRadius: 0,
-                borderBottomLeftRadius: 0,
-              }}>
-              <View
-                style={{
-                  display: 'flex',
-                  width: '90%',
-                  padding: 15,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}>
-                <View>
-                  <Text style={{fontFamily: 'Raleway-Medium', fontSize: 14}}>
-                    Name
-                  </Text>
-                  <Text style={{fontFamily: 'Raleway-Light', fontSize: 14}}>
-                    {server.name}
-                  </Text>
-                </View>
-              </View>
-              <View
-                style={{display: 'flex', flexDirection: 'row', width: '10%'}}>
-                <TouchableOpacity
-                  onPress={() => navigation.navigate('UpdateServerMetadata')}>
-                  <EditIcon width={25} height={25} />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-          <View>
-            <View
-              style={{marginTop: 1, backgroundColor: 'white', borderRadius: 0}}>
-              <View
-                style={{
-                  display: 'flex',
-                  padding: 15,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}>
-                {server.aliases ? (
-                  <View>
-                    <Text style={{fontFamily: 'Raleway-Medium', fontSize: 14}}>
-                      Alias
-                    </Text>
-                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                      {server.aliases.length == 1 ? (
-                        <>
-                          <TouchableOpacity
-                            style={{flexDirection: 'row', alignItems: 'center'}}
-                            onPress={() => handleClick(server.aliases[0])}>
-                            <View
-                              style={{
-                                width: 12,
-                                height: 12,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                backgroundColor: 'rgba(0,161,161,0.26)',
-                                borderRadius: 15 / 2,
-                              }}>
-                              <LinkIcon width={8} height={8} />
-                            </View>
-                            <Text
-                              style={{
-                                fontFamily: 'Raleway-Light',
-                                fontSize: 14,
-                                marginStart: 5,
-                                includeFontPadding: false,
-                              }}>
-                              {server.aliases[0]}
-                            </Text>
-                          </TouchableOpacity>
-                        </>
-                      ) : (
-                        <Text
-                          style={{fontFamily: 'Raleway-Light', fontSize: 14}}>
-                          {server.aliases[0]}
-                        </Text>
-                      )}
-                    </View>
-                    {server.aliases.length > 1 ? (
-                      <TouchableOpacity
-                        style={{marginTop: 10}}
-                        onPress={() => setAliasModal(true)}>
-                        <Text
-                          style={{
-                            fontFamily: 'Raleway-Regular',
-                            fontSize: 10,
-                            color: '#00A1A1',
-                          }}>
-                          See {server.aliases.length - 1} more
-                        </Text>
-                      </TouchableOpacity>
-                    ) : null}
-                  </View>
-                ) : null}
-              </View>
-            </View>
-          </View>
-          <View>
-            <View
-              style={{
-                marginTop: 1,
-                backgroundColor: 'white',
-              }}>
-              <View
-                style={{
-                  display: 'flex',
-                  padding: 15,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}>
-                <View>
-                  <Text style={{fontFamily: 'Raleway-Medium', fontSize: 14}}>
-                    Location
-                  </Text>
-                  {locations
-                    ? locations
-                        .filter(item => server.location === item.id)
-                        .map(item => {
-                          return (
-                            <View
-                              key={item.id}
-                              style={{
-                                display: 'flex',
-                                flexDirection: 'row',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                gap: 10,
-                              }}>
-                              <Image
-                                source={{uri: item.icon}}
-                                style={{width: 20, height: 20}}
-                              />
-                              <Text
-                                style={{
-                                  fontFamily: 'Raleway-Light',
-                                  fontSize: 14,
-                                  includeFontPadding: false,
-                                  marginLeft: 5,
-                                }}>
-                                {item.name + ' / ' + item.city}
-                              </Text>
-                            </View>
-                          );
-                        })
-                    : null}
-                </View>
-              </View>
-            </View>
-          </View>
-          <View>
-            <View
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                flexDirection: 'row',
-                marginTop: 1,
-                backgroundColor: 'white',
-              }}>
-              <View
-                style={{
-                  display: 'flex',
-                  width: '90%',
-                  padding: 15,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}>
-                <View>
-                  <Text style={{fontFamily: 'Raleway-Medium', fontSize: 14}}>
-                    Profile
-                  </Text>
                   <Text
                     style={{
-                      fontFamily: 'Raleway-Light',
+                      fontFamily: 'Poppins-Medium',
+                      fontWeight: '500',
                       fontSize: 14,
+                      color: theme.colors.text,
+                    }}>
+                    Status
+                  </Text>
+                  {renderStatusIcon(server.status)}
+                </View>
+                <Divider />
+              </>
+            }
+            bottomContent={
+              <View
+                style={{
+                  backgroundColor: theme.colors.surface,
+                  marginBottom: 16,
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  paddingHorizontal: 12,
+                  paddingVertical: 16,
+                  borderBottomLeftRadius: 4,
+                  borderBottomRightRadius: 4,
+                  gap: 12,
+                }}>
+                <TouchableOpacity
+                  onPress={() => setStartModal(true)}
+                  style={{
+                    width: '100%',
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    backgroundColor: 'white',
+                    borderRadius: 4,
+                    padding: 10,
+                    marginTop: 15,
+                    display: server.status == 'running' ? 'none' : 'flex',
+                  }}>
+                  <View
+                    style={{
+                      height: 25,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <View
+                      style={{
+                        width: 20,
+                        height: 20,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: 'rgba(76,159,90,0.26)',
+                        borderRadius: 20 / 2,
+                      }}>
+                      <Icon
+                        name="play-arrow"
+                        size={15}
+                        color="#4C9F5A"
+                        onPress={() => setStartModal(true)}
+                      />
+                    </View>
+                  </View>
+                  <Text
+                    style={{
+                      marginStart: 5,
+                      textAlign: 'center',
+                      fontFamily: 'Raleway-SemiBold',
+                      fontSize: 12,
+                      includeFontPadding: false,
+                      color: '#4C9F5A',
+                    }}>
+                    Start
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setRestartModal(true)}
+                  style={{
+                    width: '50%',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: 'row',
+                    display: server.status == 'running' ? 'flex' : 'none',
+                    backgroundColor: theme.colors.restartButton.background,
+                    borderRadius: 4,
+                    padding: 10,
+                    gap: 8,
+                  }}>
+                  <View
+                    style={{
+                      width: 15,
+                      height: 15,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: 'rgba(2, 34, 19, 1)',
+                      borderRadius: 15 / 2,
+                    }}>
+                    <Icon
+                      name="replay"
+                      size={10}
+                      color="white"
+                      onPress={() => setRestartModal(true)}
+                    />
+                  </View>
+                  <Text
+                    style={{
+                      fontFamily: 'Poppins-SemiBold',
+                      fontSize: 10,
+                      includeFontPadding: false,
+                      color: theme.colors.restartButton.text,
+                    }}>
+                    Restart server
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setStopModal(true)}
+                  style={{
+                    width: '50%',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: 'row',
+                    display: server.status == 'running' ? 'flex' : 'none',
+                    backgroundColor: 'rgba(217, 75, 75, 0.15)',
+                    borderRadius: 4,
+                    padding: 10,
+                    gap: 8,
+                  }}>
+                  <View
+                    style={{
+                      width: 15,
+                      height: 15,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: 'rgba(217, 75, 75, 1)',
+                      borderRadius: 15 / 2,
+                    }}>
+                    <Icon
+                      name="stop"
+                      size={10}
+                      color="white"
+                      onPress={() => setStopModal(true)}
+                    />
+                  </View>
+                  <Text
+                    style={{
+                      fontFamily: 'Poppins-SemiBold',
+                      fontSize: 10,
+                      color: 'rgba(225, 82, 65, 1)',
                       includeFontPadding: false,
                     }}>
-                    {'[' +
-                      (server.virtualization === 'container' ? 'LXD' : 'KVM') +
-                      '] '}
-                    {profiles
-                      ? profiles
-                          .filter(item => server.profile === item.slug)
-                          .map(item => {
-                            return item.name;
-                          })
-                      : null}
+                    Stop server
                   </Text>
-                </View>
+                </TouchableOpacity>
               </View>
+            }>
+            <View
+              style={{
+                width: '100%',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                backgroundColor: theme.colors.surface,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                gap: 15,
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Medium',
+                  fontWeight: '500',
+                  fontSize: 14,
+                  color: theme.colors.text,
+                }}>
+                Alias
+              </Text>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                {server.aliases.length == 1 ? (
+                  <>
+                    <TouchableOpacity
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                      }}
+                      onPress={() => handleClick(server.aliases[0])}>
+                      <View
+                        style={{
+                          width: 12,
+                          height: 12,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          backgroundColor: 'rgba(0,161,161,0.26)',
+                          borderRadius: 15 / 2,
+                        }}>
+                        <LinkIcon width={8} height={8} />
+                      </View>
+                      <Text
+                        style={{
+                          fontFamily: 'Poppins-Light',
+                          fontSize: 14,
+                          marginStart: 5,
+                          includeFontPadding: false,
+                          color: theme.colors.text,
+                        }}>
+                        {server.aliases[0]}
+                      </Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <Text
+                    style={{
+                      fontFamily: 'Poppins-Light',
+                      fontSize: 14,
+                      color: theme.colors.text,
+                    }}>
+                    {server.aliases[0]}
+                  </Text>
+                )}
+              </View>
+              {server.aliases.length > 1 ? (
+                <TouchableOpacity
+                  style={{marginTop: 10}}
+                  onPress={() => setAliasModal(true)}>
+                  <Text
+                    style={{
+                      fontFamily: 'Poppins-Regular',
+                      fontSize: 10,
+                      color: '#00A1A1',
+                    }}>
+                    See {server.aliases.length - 1} more
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+
+            <Divider />
+            <View
+              style={{
+                width: '100%',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                backgroundColor: theme.colors.surface,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                gap: 15,
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Medium',
+                  fontWeight: '500',
+                  fontSize: 14,
+                  color: theme.colors.text,
+                }}>
+                Profile
+              </Text>
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Light',
+                  fontSize: 14,
+                  includeFontPadding: false,
+                  color: theme.colors.text,
+                }}>
+                {'[' +
+                  (server.virtualization === 'container' ? 'LXD' : 'KVM') +
+                  '] '}
+                {profiles
+                  ? profiles
+                      .filter(item => server.profile === item.slug)
+                      .map(item => {
+                        return item.name;
+                      })
+                  : null}
+              </Text>
               <View
                 style={{display: 'flex', flexDirection: 'row', width: '10%'}}>
                 <TouchableOpacity
@@ -1327,10 +1217,27 @@ export default function ServerOverview({route, navigation}) {
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
-          <View>
+            <Divider />
             <View
-              style={{marginTop: 1, backgroundColor: 'white', borderRadius: 0}}>
+              style={{
+                width: '100%',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                backgroundColor: theme.colors.surface,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                gap: 15,
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Medium',
+                  fontWeight: '500',
+                  fontSize: 14,
+                  color: theme.colors.text,
+                }}>
+                IPv4
+              </Text>
               <TouchableOpacity
                 onPress={() => {
                   Clipboard.setString(server.ipv4);
@@ -1342,40 +1249,38 @@ export default function ServerOverview({route, navigation}) {
                     autoHide: true,
                   });
                 }}>
-                <View
+                <Text
                   style={{
-                    display: 'flex',
-                    padding: 15,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
+                    fontFamily: 'Poppins-Light',
+                    fontSize: 14,
+                    includeFontPadding: false,
+                    color: theme.colors.text,
                   }}>
-                  <View>
-                    <Text style={{fontFamily: 'Raleway-Medium', fontSize: 14}}>
-                      IPv4
-                    </Text>
-                    <Text
-                      style={{
-                        fontFamily: 'Raleway-Light',
-                        fontSize: 14,
-                        includeFontPadding: false,
-                      }}>
-                      {server.ipv4}
-                    </Text>
-                  </View>
-                </View>
+                  {server.ipv4}
+                </Text>
               </TouchableOpacity>
             </View>
-          </View>
-          <View>
+            <Divider />
             <View
               style={{
-                marginTop: 1,
-                backgroundColor: 'white',
-                borderRadius: 10,
-                borderTopRightRadius: 0,
-                borderTopLeftRadius: 0,
+                width: '100%',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                backgroundColor: theme.colors.surface,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                gap: 15,
               }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Medium',
+                  fontWeight: '500',
+                  fontSize: 14,
+                  color: theme.colors.text,
+                }}>
+                IPv6
+              </Text>
               <TouchableOpacity
                 onPress={() => {
                   Clipboard.setString(server.ipv6);
@@ -1387,110 +1292,336 @@ export default function ServerOverview({route, navigation}) {
                     autoHide: true,
                   });
                 }}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-Light',
+                    fontSize: 14,
+                    includeFontPadding: false,
+                    color: theme.colors.text,
+                  }}>
+                  {server.ipv6}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <Divider />
+          </AccordionItem>
+        </View>
+
+        <AccordionItem
+          style={{marginBottom: 12}}
+          title="Utilization"
+          viewKey="ServerUtilizationAccordion">
+          <View
+            style={{
+              flexDirection: 'row',
+              gap: 12,
+              justifyContent: 'center',
+              padding: 12,
+            }}>
+            <View
+              style={{
+                width: '50%',
+                backgroundColor: theme.colors.background,
+                padding: 14,
+                borderRadius: 4,
+                borderWidth: 1,
+                borderColor: '#0000000D',
+                gap: 12,
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins',
+                  fontSize: 14,
+                  color: theme.colors.text,
+                }}>
+                Disk
+              </Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                }}>
                 <View
                   style={{
-                    display: 'flex',
-                    padding: 15,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
+                    width: 8,
+                    height: 8,
+                    borderRadius: 8 / 2,
+                    backgroundColor: '#01AF35',
+                  }}></View>
+
+                <Text
+                  style={{
+                    fontFamily: 'Poppins',
+                    fontSize: 10,
+                    color: theme.colors.text,
                   }}>
-                  <View>
-                    <Text style={{fontFamily: 'Raleway-Medium', fontSize: 14}}>
-                      IPv6
-                    </Text>
+                  Used (5501 MiB)
+                </Text>
+              </View>
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                }}>
+                <View
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 8 / 2,
+                    backgroundColor: '#97C49C',
+                  }}></View>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins',
+                    fontSize: 10,
+                    color: theme.colors.text,
+                  }}>
+                  Allowed (95367 MiB)
+                </Text>
+              </View>
+
+              <ProgressBar
+                progress={0.3}
+                color={'#01AF35'}
+                style={{
+                  height: 20,
+                  borderRadius: 100,
+                  backgroundColor: '#97C49C',
+                }}
+              />
+            </View>
+            <View
+              style={{
+                width: '50%',
+                backgroundColor: theme.colors.background,
+                padding: 14,
+                borderRadius: 4,
+                borderWidth: 1,
+                borderColor: '#0000000D',
+                gap: 12,
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins',
+                  fontSize: 14,
+                  color: theme.colors.text,
+                }}>
+                Network
+              </Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                }}>
+                <View
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 8 / 2,
+                    backgroundColor: '#01AF35',
+                  }}></View>
+
+                <Text
+                  style={{
+                    fontFamily: 'Poppins',
+                    fontSize: 10,
+                    color: theme.colors.text,
+                  }}>
+                  Used (5501 MiB)
+                </Text>
+              </View>
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                }}>
+                <View
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 8 / 2,
+                    backgroundColor: '#97C49C',
+                  }}></View>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins',
+                    fontSize: 10,
+                    color: theme.colors.text,
+                  }}>
+                  Allowed (95367 MiB)
+                </Text>
+              </View>
+
+              <ProgressBar
+                progress={0.3}
+                color={'#01AF35'}
+                style={{
+                  height: 20,
+                  borderRadius: 100,
+                  backgroundColor: '#97C49C',
+                }}
+              />
+            </View>
+          </View>
+        </AccordionItem>
+
+        <View style={{marginBottom: 16}}>
+          <View
+            style={{
+              height: 44,
+              borderTopLeftRadius: 4,
+              borderTopRightRadius: 4,
+              backgroundColor: theme.colors.accent,
+              paddingHorizontal: 16,
+              paddingVertical: 10,
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+            <Text
+              style={{
+                fontFamily: 'Poppins-Medium',
+                fontWeight: '500',
+                color: 'white',
+                fontSize: 16,
+                includeFontPadding: false,
+              }}>
+              Events
+            </Text>
+          </View>
+          {loading ? (
+            <View
+              style={{
+                height: '10%',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <ActivityIndicator size="small" color="#00A1A1" />
+            </View>
+          ) : (
+            <FlatList
+              showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
+              data={events}
+              scrollEnabled={false}
+              removeClippedSubviews={true}
+              // onRefresh={() => onRefresh()}
+              // refreshing={isFetching}
+              renderItem={({item}) => (
+                <>
+                  <TouchableOpacity
+                    key={item.slug}
+                    onPress={() => {
+                      navigation.setParams({
+                        slug: item.slug,
+                        name: item.name,
+                        description: item.description,
+                        notes: item.notes,
+                        nextActionDate: item.nextActionDate,
+                        location: item.location,
+                        profile: item.profile,
+                      });
+                      navigation.navigate('ServerManagement', {
+                        slug: item.slug,
+                        name: item.name,
+                        description: item.description,
+                        notes: item.notes,
+                        nextActionDate: item.nextActionDate,
+                        location: item.location,
+                        profile: item.profile,
+                      });
+                    }}>
+                    <EventItem
+                      key={item.id}
+                      action={item.action}
+                      actionData={item.actionData}
+                      startTime={item.startTime}
+                      status={item.status}
+                      message={item.message}
+                    />
+                  </TouchableOpacity>
+                  <View
+                    style={{
+                      height: 1,
+                    }}></View>
+                </>
+              )}
+              ListEmptyComponent={
+                events ? events.length > 0 ? <EmptyList /> : null : null
+              }
+              keyExtractor={item => item.slug}
+            />
+          )}
+        </View>
+        <View
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+          {tabs.map(item => (
+            <View
+              key={item.label}
+              style={{
+                width: '48%',
+                marginBottom: 10,
+                borderRightWidth: 4,
+                borderRightColor: theme.colors.primary,
+                backgroundColor: '#022213',
+                borderRadius: 10,
+              }}>
+              <TouchableOpacity
+                key={item.label}
+                onPress={() => open('AccountPublicKeys', {})}>
+                <View style={{height: 132, padding: 12}}>
+                  <View style={{display: 'flex', gap: 8}}>
+                    <View
+                      style={{
+                        width: 20,
+                        height: 20,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      {item.icon}
+                    </View>
+
                     <Text
                       style={{
-                        fontFamily: 'Raleway-Light',
+                        fontFamily: 'Poppins-SemiBold',
+                        fontWeight: '600',
                         fontSize: 14,
-                        includeFontPadding: false,
+                        lineHeight: 14 * 1.2,
+                        color: 'white',
                       }}>
-                      {server.ipv6}
+                      {item.label}
+                    </Text>
+
+                    <Text
+                      style={{
+                        fontFamily: 'Poppins-Light',
+                        fontWeight: '300',
+                        fontSize: 12,
+                        lineHeight: 12 * 1.2,
+                        color: 'white',
+                      }}>
+                      {item.description}
                     </Text>
                   </View>
                 </View>
               </TouchableOpacity>
             </View>
-          </View>
-          <Text
-            style={{
-              fontFamily: 'Raleway-Medium',
-              fontSize: 20,
-              marginVertical: 10,
-            }}>
-            Server info
-          </Text>
-          <View>
-            <View
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}>
-              {tabs.map(item => (
-                <View
-                  key={item.label}
-                  style={{
-                    width: '48%',
-                    marginBottom: 10,
-                    backgroundColor: 'rgba(0, 161, 161, 0.06)',
-                    borderRadius: 10,
-                  }}>
-                  <TouchableOpacity
-                    key={item.label}
-                    onPress={() => navigation.navigate(item.navigate)}>
-                    <View style={{height: 125}}>
-                      <View style={{display: 'flex'}}>
-                        <View
-                          style={{
-                            height: 125 / 2,
-                            padding: 10,
-                            justifyContent: 'flex-start',
-                            alignItems: 'flex-end',
-                          }}>
-                          <View
-                            style={{
-                              width: 33,
-                              height: 33,
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              backgroundColor: 'white',
-                              borderRadius: 33 / 2,
-                              opacity: 0.66,
-                            }}>
-                            {item.icon}
-                          </View>
-                        </View>
-                        <View
-                          style={{
-                            height: 125 / 2,
-                            padding: 10,
-                            justifyContent: 'flex-end',
-                            alignItems: 'flex-start',
-                          }}>
-                          <Text
-                            style={{
-                              fontFamily: 'Raleway-Bold',
-                              fontSize: 18,
-                              marginStart: 5,
-                              marginBottom: 5,
-                              color: '#00a1a1',
-                            }}>
-                            {item.label}
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </View>
-          </View>
-          <View style={{width: '100%', height: 20}}></View>
-        </ScrollView>
-      </View>
+          ))}
+        </View>
+      </ScrollView>
       {/* {ChangeProfile} */}
       <Modal isVisible={isModalVisible} style={{margin: 0}}>
         <ScrollView

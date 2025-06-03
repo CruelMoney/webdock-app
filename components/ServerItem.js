@@ -26,8 +26,7 @@ const ServerItem = ({title, alias, dc, profile, ipv4, status}) => {
           }}>
           <Image
             source={{
-              uri:
-                'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
+              uri: 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
             }}
             style={{borderRadius: 4, width: 42, height: 42}}
           />
@@ -41,7 +40,7 @@ const ServerItem = ({title, alias, dc, profile, ipv4, status}) => {
               }}>
               <Text
                 style={{
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Poppins-Medium',
                   fontSize: 16,
                   fontWeight: '500',
                   color: theme.colors.text,
@@ -52,7 +51,7 @@ const ServerItem = ({title, alias, dc, profile, ipv4, status}) => {
             <Text
               style={{
                 height: 18,
-                fontFamily: 'Poppins',
+                fontFamily: 'Poppins-Light',
                 fontSize: 12,
                 fontWeight: '300',
                 color: '#8F8F8F',

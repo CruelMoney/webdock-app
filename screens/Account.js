@@ -1,15 +1,25 @@
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useContext, useEffect, useState} from 'react';
 import {ActivityIndicator, Image, Switch, Text, View} from 'react-native';
-import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
+import {
+  FlatList,
+  Pressable,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native-gesture-handler';
 import MenuIcon from '../assets/menu-icon.svg';
 import PubicKeyIcon from '../assets/public-key-icon.svg';
+import CogsIcon from '../assets/cogs.svg';
+import TeamIcon from '../assets/team-icon.svg';
+import LegalDocsIcon from '../assets/legal-docs.svg';
 import ScriptsIcon from '../assets/scripts-icon.svg';
+import NotificationIcon from '../assets/notification-bell.svg';
 import {getAccountInformations} from '../service/accountInformations';
-import {useTheme} from 'react-native-paper';
+import {Icon, useTheme} from 'react-native-paper';
 import Spacer from '../components/Spacer';
 import ThemeSwitch from '../components/ThemeSwitch';
 import {ThemeContext} from '../components/ThemeContext';
+import {useBottomSheet} from '../components/BottomSheetProvider';
 
 export default function Account({navigation}) {
   const [account, setAccount] = useState();
@@ -32,9 +42,7 @@ export default function Account({navigation}) {
     // {"label":"General","icon":<UserIcon width={30} height={30} color="#00a1a1" />,"navigate":"AccountInfo"},
     {
       label: 'Edit profile',
-      icon: (
-        <PubicKeyIcon width={12} height={12} color={theme.colors.background} />
-      ),
+      icon: <CogsIcon width={20} height={20} color={theme.colors.background} />,
       description:
         'See current and past network, disk, memory and CPU activity for your server',
       navigate: 'Edit profile',
@@ -43,15 +51,17 @@ export default function Account({navigation}) {
       label: 'Team',
       description:
         'See current and past network, disk, memory and CPU activity for your server',
-      icon: (
-        <ScriptsIcon width={12} height={12} color={theme.colors.background} />
-      ),
+      icon: <TeamIcon width={20} height={20} color={theme.colors.background} />,
       navigate: 'Team',
     },
     {
       label: 'Notification settings',
       icon: (
-        <PubicKeyIcon width={12} height={12} color={theme.colors.background} />
+        <NotificationIcon
+          width={20}
+          height={20}
+          color={theme.colors.background}
+        />
       ),
       description:
         'See current and past network, disk, memory and CPU activity for your server',
@@ -60,27 +70,27 @@ export default function Account({navigation}) {
     {
       label: 'Public keys',
       icon: (
-        <PubicKeyIcon width={12} height={12} color={theme.colors.background} />
+        <PubicKeyIcon width={20} height={20} color={theme.colors.background} />
       ),
       description:
         'See current and past network, disk, memory and CPU activity for your server',
-      navigate: 'PublicKeys',
+      navigate: 'AccountPublicKeys',
     },
     {
       label: 'Scripts',
       description:
         'See current and past network, disk, memory and CPU activity for your server',
       icon: (
-        <ScriptsIcon width={12} height={12} color={theme.colors.background} />
+        <ScriptsIcon width={20} height={20} color={theme.colors.background} />
       ),
-      navigate: 'Scripts',
+      navigate: 'AccountScripts',
     },
     {
       label: 'Legal documents',
       description:
         'See current and past network, disk, memory and CPU activity for your server',
       icon: (
-        <ScriptsIcon width={12} height={12} color={theme.colors.background} />
+        <LegalDocsIcon width={20} height={20} color={theme.colors.background} />
       ),
       navigate: 'Legal documents',
     },
@@ -88,9 +98,10 @@ export default function Account({navigation}) {
   const {isDark, toggleTheme} = useContext(ThemeContext);
 
   return account ? (
-    <View
+    <ScrollView
       width="100%"
       height="100%"
+      showsVerticalScrollIndicator={false}
       style={{
         backgroundColor: theme.colors.background,
         padding: 20,
@@ -136,7 +147,7 @@ export default function Account({navigation}) {
             <Spacer size={5} />
             <Text
               style={{
-                fontFamily: 'Poppins',
+                fontFamily: 'Poppins-Medium',
                 textAlignVertical: 'center',
                 fontSize: 12,
                 lineHeight: 12 * 1.2,
@@ -146,7 +157,7 @@ export default function Account({navigation}) {
               Credit Balance:
               <Text
                 style={{
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Poppins-Regular',
                   fontSize: 12,
                   fontWeight: '400',
                   lineHeight: 12 * 1.2,
@@ -160,45 +171,15 @@ export default function Account({navigation}) {
           </View>
         </View>
       </View>
-      {/* <FlatList
-        data={tabs}
-        renderItem={({item}) => (
-          <TouchableOpacity onPress={() => navigation.navigate(item.navigate)}>
-            <View
-              style={{
-                backgroundColor: 'white',
-                marginBottom: 10,
-                borderRadius: 10,
-              }}>
-              <View
-                style={{
-                  display: 'flex',
-                  padding: 15,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                }}>
-                {item.icon}
-                <Text
-                  style={{
-                    fontFamily: 'Raleway-Regular',
-                    fontSize: 16,
-                    marginStart: 15,
-                  }}>
-                  {item.label}
-                </Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        )}
-      /> */}
       <Spacer size={24} />
       <View>
         <ThemeSwitch
           options={[
-            {label: 'Light mode', icon: 'white-balance-sunny'},
-            {label: 'Dark mode', icon: 'weather-night'},
+            {key: 'light', label: 'Light mode', icon: 'white-balance-sunny'},
+            {key: 'dark', label: 'Dark mode', icon: 'weather-night'},
           ]}
-          onToggle={value => toggleTheme()}
+          onToggle={value => toggleTheme(value)}
+          selectedOption={theme.dark ? 1 : 0}
         />
       </View>
       <Spacer size={24} />
@@ -211,8 +192,9 @@ export default function Account({navigation}) {
           justifyContent: 'space-between',
         }}>
         {tabs.map(item => (
-          <View
+          <Pressable
             key={item.label}
+            onPress={() => navigation.navigate(item.navigate)}
             style={{
               width: '48%',
               marginBottom: 10,
@@ -221,49 +203,45 @@ export default function Account({navigation}) {
               backgroundColor: '#022213',
               borderRadius: 10,
             }}>
-            <TouchableOpacity
-              key={item.label}
-              onPress={() => navigation.navigate(item.navigate)}>
-              <View style={{height: 132, padding: 12}}>
-                <View style={{display: 'flex'}}>
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    {item.icon}
-                  </View>
-                  <Spacer size={8} />
-                  <Text
-                    style={{
-                      fontFamily: 'Poppins-SemiBold',
-                      fontWeight: '600',
-                      fontSize: 14,
-                      lineHeight: 14 * 1.2,
-                      color: 'white',
-                    }}>
-                    {item.label}
-                  </Text>
-                  <Spacer size={8} />
-                  <Text
-                    style={{
-                      fontFamily: 'Poppins-Light',
-                      fontWeight: '300',
-                      fontSize: 12,
-                      lineHeight: 12 * 1.2,
-                      color: 'white',
-                    }}>
-                    {item.description}
-                  </Text>
+            <View style={{height: 132, padding: 12}}>
+              <View style={{display: 'flex'}}>
+                <View
+                  style={{
+                    width: 20,
+                    height: 20,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  {item.icon}
                 </View>
+                <Spacer size={8} />
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontWeight: '600',
+                    fontSize: 14,
+                    lineHeight: 14 * 1.2,
+                    color: 'white',
+                  }}>
+                  {item.label}
+                </Text>
+                <Spacer size={8} />
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-Light',
+                    fontWeight: '300',
+                    fontSize: 12,
+                    lineHeight: 12 * 1.2,
+                    color: 'white',
+                  }}>
+                  {item.description}
+                </Text>
               </View>
-            </TouchableOpacity>
-          </View>
+            </View>
+          </Pressable>
         ))}
       </View>
-    </View>
+    </ScrollView>
   ) : (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <ActivityIndicator size="large" color="#008570" />

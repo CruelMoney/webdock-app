@@ -1,9 +1,10 @@
 import React, {Component, useEffect, useState} from 'react';
 import {ActivityIndicator, Alert, StyleSheet, Text, View} from 'react-native';
-import {WebView} from 'react-native-webview';
+
 import DeviceInfo from 'react-native-device-info';
 import {AuthContext} from '../components/context';
 import {getPing} from '../service/ping';
+import {WebView} from 'react-native-webview';
 
 // ...
 export function LoginWebView() {

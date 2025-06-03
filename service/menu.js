@@ -1,0 +1,19 @@
+export async function getMainMenu(api_key) {
+  try {
+    let request = await fetch(
+      'https://webdock.io/en/app_data/getMainMenu?secret=bf34eaa48c2643bb9bec16e8f46d88d8',
+      {
+        method: 'GET',
+        headers: {
+          Authorization: 'Bearer ' + api_key,
+        },
+      },
+    );
+    let result = await request.json();
+    request = null;
+    return result;
+  } catch (error) {
+    console.log('Api call error');
+    alert(error.message);
+  }
+}

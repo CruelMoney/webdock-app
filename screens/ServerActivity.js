@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, TouchableOpacity} from 'react-native';
 import {Dimensions} from 'react-native';
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getMetrics} from '../service/serverMetrics';
 import {BarChart, LineChart} from 'react-native-chart-kit';
 import {ScrollView} from 'react-native-gesture-handler';

@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useContext, useEffect, useState} from 'react';
 import {ActivityIndicator, Image, Switch, Text, View} from 'react-native';
 import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
@@ -10,6 +10,7 @@ import {Button, useTheme} from 'react-native-paper';
 import Spacer from '../components/Spacer';
 import ThemeSwitch from '../components/ThemeSwitch';
 import {ThemeContext} from '../components/ThemeContext';
+import CrispChat, {show} from 'react-native-crisp-chat-sdk';
 
 export default function Chat({navigation}) {
   const [account, setAccount] = useState();
@@ -91,7 +92,7 @@ export default function Chat({navigation}) {
           }}>
           <Text
             style={{
-              fontFamily: 'Poppins',
+              fontFamily: 'Poppins-Medium',
               fontWeight: '500',
               color: 'white',
               fontSize: 16,
@@ -129,6 +130,7 @@ export default function Chat({navigation}) {
                   fontSize: 16,
                   lineHeight: 16 * 1.2,
                   fontWeight: '600',
+                  color: theme.colors.text,
                 }}>
                 The Webdock AI Assistant is good for...
               </Text>
@@ -138,6 +140,7 @@ export default function Chat({navigation}) {
                   fontSize: 12,
                   lineHeight: 12 * 1.2,
                   fontWeight: '300',
+                  color: theme.colors.text,
                 }}>
                 {'\u2022'} Quick and accurate answers based on our
                 documentation.{'\n'}
@@ -202,6 +205,7 @@ export default function Chat({navigation}) {
                   fontSize: 16,
                   lineHeight: 16 * 1.2,
                   fontWeight: '600',
+                  color: theme.colors.text,
                 }}>
                 Chatting with Support is good for...
               </Text>
@@ -211,6 +215,7 @@ export default function Chat({navigation}) {
                   fontSize: 12,
                   lineHeight: 12 * 1.2,
                   fontWeight: '300',
+                  color: theme.colors.text,
                 }}>
                 {'\u2022'} Getting hands-on fixes and support from a real human.
                 {'\n'}
@@ -238,7 +243,7 @@ export default function Chat({navigation}) {
                     fontWeight: '600',
                     includeFontPadding: false,
                   }}
-                  onPress={() => console.log('Pressed')}>
+                  onPress={() => show()}>
                   Start Chatting with Support
                 </Button>
               </View>

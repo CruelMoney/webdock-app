@@ -1,4 +1,5 @@
-import React, {createContext, useState} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, {createContext, useEffect, useState} from 'react';
 import {DefaultTheme, MD3DarkTheme} from 'react-native-paper';
 
 export const ThemeContext = createContext();
@@ -18,6 +19,15 @@ const lightTheme = {
     themeSwitch: {
       primary: '#FFFFFF80',
       secondary: '#FFFFFF',
+      text: 'black',
+    },
+    menu: {
+      background: 'white',
+      surface: '#F3F3F3',
+      text: 'white',
+    },
+    restartButton: {
+      background: '#02221326',
       text: 'black',
     },
   },
@@ -40,14 +50,41 @@ const darkTheme = {
       secondary: '#284336',
       text: 'white',
     },
+    menu: {
+      background: '#022213',
+      surface: '#1E392B',
+      text: 'white',
+    },
+    restartButton: {
+      background: '#284336',
+      text: 'white',
+    },
   },
 };
+const THEME_KEY = 'APP_THEME';
 
 export const ThemeProvider = ({children}) => {
-  const [isDark, setIsDark] = useState(false);
-  const toggleTheme = () => setIsDark(prev => !prev);
-  const theme = isDark ? darkTheme : lightTheme;
+  const [currentTheme, setCurrentTheme] = useState(false);
 
+  useEffect(() => {
+    // Load theme preference from storage
+    const loadTheme = async () => {
+      const savedTheme = await AsyncStorage.getItem(THEME_KEY);
+      if (savedTheme !== null) {
+        setCurrentTheme(savedTheme);
+      }
+    };
+    loadTheme();
+  }, []);
+
+  const toggleTheme = async option => {
+    const newTheme = option.key;
+    setCurrentTheme(newTheme);
+    await AsyncStorage.setItem(THEME_KEY, newTheme);
+  };
+
+  const theme = currentTheme == 'dark' ? darkTheme : lightTheme;
+  const isDark = currentTheme == 'dark';
   return (
     <ThemeContext.Provider value={{theme, isDark, toggleTheme}}>
       {children}

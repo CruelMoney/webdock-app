@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useEffect, useState} from 'react';
 import {
   ActivityIndicator,
@@ -14,6 +14,7 @@ import Toast from 'react-native-toast-message';
 import BackIcon from '../assets/back-icon.svg';
 import GradientButton from '../components/GradientButton';
 import {patchAccountScripts} from '../service/accountScripts';
+import BottomSheetWrapper from '../components/BottomSheetWrapper';
 export default function EditAccountScript({navigation, route}) {
   const [inputs, setInputs] = React.useState({
     id: 0,
@@ -117,141 +118,129 @@ export default function EditAccountScript({navigation, route}) {
   const [submitting, setSubmitting] = useState(false);
 
   return (
-    <View
-      width="100%"
-      height="100%"
-      style={{backgroundColor: '#F4F8F8', padding: '8%'}}>
+    <BottomSheetWrapper title="Edit script">
       <View
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-        <TouchableOpacity onPress={navigation.goBack}>
-          <BackIcon height={45} width={50} />
-        </TouchableOpacity>
-        <Text
-          style={{
-            color: '#00A1A1',
-            fontFamily: 'Raleway-Medium',
-            fontSize: 20,
+        width="100%"
+        height="100%"
+        style={{backgroundColor: '#F4F8F8', padding: '8%'}}>
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: 'space-between',
+            flexDirection: 'column',
           }}>
-          Edit script
-        </Text>
-        <View style={{width: 50}}></View>
-      </View>
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: 'space-between',
-          flexDirection: 'column',
-        }}>
-        {route ? (
-          <>
-            <View style={{flex: 1, justifyContent: 'flex-start'}}>
-              <View style={{marginTop: 25}}>
-                <TextInput
-                  mode="outlined"
-                  label="Descriptive name"
-                  value={inputs.name}
-                  onChangeText={text => handleOnchange(text, 'name')}
-                  selectionColor="#00A1A1"
-                  dense={true}
-                  outlineColor="#00A1A1"
-                  activeOutlineColor="#00A1A1"
-                  underlineColorAndroid="transparent"
-                  underlineColor="transparent"
-                  activeUnderlineColor="transparent"
-                  theme={{
-                    colors: {
-                      primary: '#00a1a1',
-                      accent: '#00a1a1',
-                      placeholder: '#00A1A1',
-                    },
-                  }}
-                  onFocus={() => handleError(null, 'name')}
-                  error={errors.name}
-                />
-                <HelperText type="error" visible={errors.name}>
-                  {errors.name}
-                </HelperText>
-                <TextInput
-                  mode="outlined"
-                  label="Filename"
-                  value={inputs.filename}
-                  onChangeText={text => handleOnchange(text, 'filename')}
-                  selectionColor="#00A1A1"
-                  dense={true}
-                  outlineColor="#00A1A1"
-                  activeOutlineColor="#00A1A1"
-                  underlineColorAndroid="transparent"
-                  underlineColor="transparent"
-                  activeUnderlineColor="transparent"
-                  theme={{
-                    colors: {
-                      primary: '#00a1a1',
-                      accent: '#00a1a1',
-                      placeholder: '#00A1A1',
-                    },
-                  }}
-                  onFocus={() => handleError(null, 'filename')}
-                  error={errors.filename}
-                />
-                <HelperText type="error" visible={errors.filename}>
-                  {errors.filename}
-                </HelperText>
-                <TextInput
-                  mode="outlined"
-                  label="File contents"
-                  multiline
-                  numberOfLines={10}
-                  value={inputs.content}
-                  onChangeText={text => handleOnchange(text, 'content')}
-                  selectionColor="#00A1A1"
-                  dense={true}
-                  outlineColor="#00A1A1"
-                  activeOutlineColor="#00A1A1"
-                  underlineColorAndroid="transparent"
-                  underlineColor="transparent"
-                  activeUnderlineColor="transparent"
-                  theme={{
-                    colors: {
-                      primary: '#00a1a1',
-                      accent: '#00a1a1',
-                      placeholder: '#00A1A1',
-                    },
-                  }}
-                  onFocus={() => handleError(null, 'content')}
-                  error={errors.content}
-                />
-                <HelperText type="error" visible={errors.content}>
-                  {errors.content}
-                </HelperText>
+          {route ? (
+            <>
+              <View style={{flex: 1, justifyContent: 'flex-start'}}>
+                <View style={{marginTop: 25}}>
+                  <TextInput
+                    mode="outlined"
+                    label="Descriptive name"
+                    value={inputs.name}
+                    onChangeText={text => handleOnchange(text, 'name')}
+                    selectionColor="#00A1A1"
+                    dense={true}
+                    outlineColor="#00A1A1"
+                    activeOutlineColor="#00A1A1"
+                    underlineColorAndroid="transparent"
+                    underlineColor="transparent"
+                    activeUnderlineColor="transparent"
+                    theme={{
+                      colors: {
+                        primary: '#00a1a1',
+                        accent: '#00a1a1',
+                        placeholder: '#00A1A1',
+                      },
+                    }}
+                    onFocus={() => handleError(null, 'name')}
+                    error={errors.name}
+                  />
+                  <HelperText type="error" visible={errors.name}>
+                    {errors.name}
+                  </HelperText>
+                  <TextInput
+                    mode="outlined"
+                    label="Filename"
+                    value={inputs.filename}
+                    onChangeText={text => handleOnchange(text, 'filename')}
+                    selectionColor="#00A1A1"
+                    dense={true}
+                    outlineColor="#00A1A1"
+                    activeOutlineColor="#00A1A1"
+                    underlineColorAndroid="transparent"
+                    underlineColor="transparent"
+                    activeUnderlineColor="transparent"
+                    theme={{
+                      colors: {
+                        primary: '#00a1a1',
+                        accent: '#00a1a1',
+                        placeholder: '#00A1A1',
+                      },
+                    }}
+                    onFocus={() => handleError(null, 'filename')}
+                    error={errors.filename}
+                  />
+                  <HelperText type="error" visible={errors.filename}>
+                    {errors.filename}
+                  </HelperText>
+                  <TextInput
+                    mode="outlined"
+                    label="File contents"
+                    multiline
+                    numberOfLines={10}
+                    value={inputs.content}
+                    onChangeText={text => handleOnchange(text, 'content')}
+                    selectionColor="#00A1A1"
+                    dense={true}
+                    outlineColor="#00A1A1"
+                    activeOutlineColor="#00A1A1"
+                    underlineColorAndroid="transparent"
+                    underlineColor="transparent"
+                    activeUnderlineColor="transparent"
+                    theme={{
+                      colors: {
+                        primary: '#00a1a1',
+                        accent: '#00a1a1',
+                        placeholder: '#00A1A1',
+                      },
+                    }}
+                    onFocus={() => handleError(null, 'content')}
+                    error={errors.content}
+                  />
+                  <HelperText type="error" visible={errors.content}>
+                    {errors.content}
+                  </HelperText>
+                </View>
+                <View
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    marginTop: 20,
+                  }}>
+                  <View style={{backgroundColor: '#03A84E', width: 1}}></View>
+                  <Text
+                    style={{
+                      fontFamily: 'Raleway-Regular',
+                      fontSize: 12,
+                      color: '#5F5F5F',
+                      marginStart: 10,
+                    }}>
+                    This will add a globally available File or Script to your
+                    account which you can deploy to any server.
+                  </Text>
+                </View>
               </View>
               <View
-                style={{display: 'flex', flexDirection: 'row', marginTop: 20}}>
-                <View style={{backgroundColor: '#03A84E', width: 1}}></View>
-                <Text
-                  style={{
-                    fontFamily: 'Raleway-Regular',
-                    fontSize: 12,
-                    color: '#5F5F5F',
-                    marginStart: 10,
-                  }}>
-                  This will add a globally available File or Script to your
-                  account which you can deploy to any server.
-                </Text>
-              </View>
-            </View>
-            <View
-              style={{
-                flex: 1,
-                justifyContent: 'flex-end',
-              }}>
-              <TouchableOpacity onPress={validate} disabled={submitting}>
-                <GradientButton text="Update script" submitting={submitting} />
-                {/* <LinearGradient
+                style={{
+                  flex: 1,
+                  justifyContent: 'flex-end',
+                }}>
+                <TouchableOpacity onPress={validate} disabled={submitting}>
+                  <GradientButton
+                    text="Update script"
+                    submitting={submitting}
+                  />
+                  {/* <LinearGradient
                   locations={[0.29, 0.8]}
                   start={{x: 0, y: 0}}
                   end={{x: 1, y: 0}}
@@ -277,14 +266,15 @@ export default function EditAccountScript({navigation, route}) {
                     />
                   )}
                 </LinearGradient> */}
-              </TouchableOpacity>
-            </View>
-          </>
-        ) : (
-          <ActivityIndicator />
-        )}
-      </ScrollView>
-    </View>
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : (
+            <ActivityIndicator />
+          )}
+        </ScrollView>
+      </View>
+    </BottomSheetWrapper>
   );
 }
 

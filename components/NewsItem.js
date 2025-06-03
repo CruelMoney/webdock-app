@@ -80,6 +80,7 @@ const NewsItem = ({
         {changelogCategories.map(item => {
           return (
             <View
+              key={item.name}
               style={{
                 backgroundColor: item.color.toLowerCase(),
                 paddingVertical: 3,
@@ -88,7 +89,7 @@ const NewsItem = ({
               }}>
               <Text
                 style={{
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Poppins-Bold',
                   fontWeight: '700',
                   fontSize: 8,
                   color: 'white',
@@ -105,7 +106,7 @@ const NewsItem = ({
       <Text
         style={{
           width: '100%',
-          fontFamily: 'Poppins',
+          fontFamily: 'Poppins-SemiBold',
           fontWeight: '600',
           fontSize: 14,
           lineHeight: 14,

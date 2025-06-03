@@ -47,7 +47,7 @@ import DoneIcon from '../assets/done-icon.svg';
 import SVGSelected from '../assets/done-icon.svg';
 import SVGLocation from '../assets/icon-location.svg';
 import {getImages, getProfiles} from '../service/serverConfiguration';
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import GradientButton from '../components/GradientButton';
 import {Picker} from '@react-native-picker/picker';
 import {Svg, Circle} from 'react-native-svg';

@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useState, useEffect} from 'react';
 import {
   FlatList,
@@ -14,6 +14,8 @@ import {
   Alert,
   Dimensions,
   Pressable,
+  Keyboard,
+  Linking,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {
@@ -24,7 +26,9 @@ import {
   FAB,
   Provider,
   TextInput,
+  HelperText,
   IconButton,
+  useTheme,
 } from 'react-native-paper';
 import {Avatar, Divider} from 'react-native-paper';
 import {
@@ -32,20 +36,30 @@ import {
   postAccountPublicKeys,
 } from '../service/accountPublicKeys';
 import {deleteAccountPublicKey} from '../service/accountPublicKeys';
-import Modal from 'react-native-modal';
+import Modal, {ReactNativeModal} from 'react-native-modal';
 import Toast from 'react-native-toast-message';
 import MenuIcon from '../assets/menu-icon.svg';
 import PlusIcon from '../assets/plus-icon.svg';
 import DeleteIcon from '../assets/delete-icon.svg';
 import BackIcon from '../assets/back-icon.svg';
 import EmptyList from '../components/EmptyList';
+import PublicKeysItem from '../components/PublicKeysItem';
+import {useSharedValue} from 'react-native-reanimated';
+import AccordionItem from '../components/AccordionItem';
+import GradientButton from '../components/GradientButton';
+import BottomSheetWrapper from '../components/BottomSheetWrapper';
 
 export default function AccountPublicKeys({navigation}) {
-  const [publicKeys, setPublicKeys] = useState();
+  const [publicKeys, setPublicKeys] = useState([]);
+  const [inputs, setInputs] = React.useState({
+    name: '',
+    key: '',
+  });
+  const [errors, setErrors] = React.useState({});
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      onBackgroundRefresh();
-    });
+    // const unsubscribe = navigation.addListener('focus', () => {
+    //   onBackgroundRefresh();
+    // });
     setTimeout(async () => {
       let userToken = null;
       try {
@@ -57,8 +71,8 @@ export default function AccountPublicKeys({navigation}) {
         alert(e);
       }
     }, 0);
-    return unsubscribe;
-  }, [navigation]);
+    // return unsubscribe;
+  }, []);
 
   const deletePublicKeyAlert = async pkey => {
     let userToken = null;
@@ -67,50 +81,7 @@ export default function AccountPublicKeys({navigation}) {
     onBackgroundRefresh();
     setIsDeleteModalVisible(false);
   };
-  const Item = ({item}) => (
-    <>
-      <View
-        style={{backgroundColor: 'white', borderRadius: 10, marginBottom: 10}}>
-        <View
-          style={{
-            display: 'flex',
-            padding: 15,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-          <View style={{width: '85%'}}>
-            <Text
-              style={{
-                fontFamily: 'Raleway-Regular',
-                fontSize: 14,
-                includeFontPadding: false,
-              }}>
-              {item.name}
-            </Text>
-            <View style={{display: 'flex', flexDirection: 'row'}}>
-              <Text
-                style={{
-                  fontFamily: 'Raleway-Light',
-                  fontSize: 12,
-                  color: '#8F8F8F',
-                  includeFontPadding: false,
-                }}>
-                {item.created}
-              </Text>
-            </View>
-          </View>
-          <TouchableOpacity
-            onPress={() => {
-              setIsDeleteModalVisible(true);
-              setSelectedPublicKey(item);
-            }}>
-            <DeleteIcon fill="#D94B4B" />
-          </TouchableOpacity>
-        </View>
-      </View>
-    </>
-  );
+
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
     setIsFetching(true);
@@ -145,67 +116,341 @@ export default function AccountPublicKeys({navigation}) {
 
   const [isDeleteModalVisible, setIsDeleteModalVisible] = React.useState(false);
   const [selectedPublicKey, setSelectedPublicKey] = React.useState('');
+  const handleRequestDelete = key => {
+    setSelectedPublicKey(key);
+    setIsDeleteModalVisible(true);
+  };
+  const theme = useTheme();
+  const validate = () => {
+    Keyboard.dismiss();
+    setSubmitting(true);
+    let isValid = true;
+
+    if (!inputs.name) {
+      handleError('Key name is required', 'name');
+      isValid = false;
+    }
+
+    if (!inputs.key) {
+      handleError('Public Key is required', 'key');
+      isValid = false;
+    }
+
+    if (isValid) {
+      sendRequest();
+    } else {
+      setSubmitting(false);
+    }
+  };
+  const handleOnchange = (text, input) => {
+    setInputs(prevState => ({...prevState, [input]: text}));
+  };
+  const handleError = (error, input) => {
+    setErrors(prevState => ({...prevState, [input]: error}));
+  };
+  const sendRequest = async () => {
+    let userToken = null;
+    userToken = await AsyncStorage.getItem('userToken');
+    let result = await postAccountPublicKeys(
+      userToken,
+      inputs['name'],
+      inputs['key'],
+    );
+    if (result.status == 201) {
+      try {
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'PublicKey created',
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () => navigation.navigate('Events'),
+        });
+        setSubmitting(false);
+        onBackgroundRefresh();
+      } catch (e) {
+        alert(e);
+      }
+    } else if (result.status == 400) {
+      try {
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: result.response.message,
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () => navigation.navigate('Events'),
+        });
+        setSubmitting(false);
+      } catch (e) {
+        alert(e);
+      }
+    }
+  };
+  const handleClick = url => {
+    Linking.canOpenURL(url).then(supported => {
+      if (supported) {
+        Linking.openURL(url);
+      } else {
+        console.log("Don't know how to open URI: " + url);
+      }
+    });
+  };
+  const [submitting, setSubmitting] = useState(false);
+
   return (
     <>
-      <View
-        width="100%"
-        height="100%"
-        style={{backgroundColor: '#F4F8F8', padding: '8%'}}>
+      <BottomSheetWrapper
+        title="Public Keys"
+        onClose={() => navigation.goBack()}>
         <View
+          width="100%"
+          height="100%"
           style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            backgroundColor: theme.colors.background,
+            paddingHorizontal: 20,
+            gap: 24,
           }}>
-          <TouchableOpacity onPress={navigation.goBack}>
-            <BackIcon height={45} width={50} />
-          </TouchableOpacity>
-          <Text
-            style={{
-              color: '#00A1A1',
-              fontFamily: 'Raleway-Medium',
-              fontSize: 20,
-              textAlign: 'center',
-            }}>
-            Public keys
-          </Text>
-          <View style={{width: 50}}></View>
-        </View>
-        <FlatList
-          style={{marginTop: 20}}
-          data={publicKeys}
-          showsVerticalScrollIndicator={false}
-          ListFooterComponent={<View style={{height: 60}}></View>}
-          onRefresh={() => onRefresh()}
-          refreshing={isFetching}
-          renderItem={({item}) => (
-            <View>
-              <Item item={item} />
+          <AccordionItem
+            title="Add new public key"
+            viewKey="PublicKeyAccordion">
+            <View style={{padding: 16, gap: 12}}>
+              <View style={{gap: 4}}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontSize: 14,
+                    color: theme.colors.text,
+                  }}>
+                  Your name
+                </Text>
+                <TextInput
+                  mode="flat"
+                  value={inputs['name']}
+                  dense={true}
+                  onChangeText={text => handleOnchange(text, 'name')}
+                  underlineColorAndroid="transparent"
+                  activeUnderlineColor="transparent"
+                  underlineColor="transparent"
+                  cursorColor="#fff"
+                  theme={{
+                    colors: {
+                      background: '#fff',
+                      surface: '#fff',
+                      text: '#000',
+                      primary: '#000',
+                      placeholder: '#999',
+                    },
+                  }}
+                  style={{
+                    backgroundColor: theme.colors.surface,
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: '#D9D9D9',
+                    fontFamily: 'Poppins-Light',
+                    fontSize: 14,
+                  }}
+                  onFocus={() => handleError(null, 'name')}
+                  error={errors.name}
+                />
+                {errors.name ? (
+                  <HelperText type="error" padding="none" visible={errors.name}>
+                    {errors.name}
+                  </HelperText>
+                ) : null}
+              </View>
+              <View style={{gap: 4}}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontSize: 14,
+                    color: theme.colors.text,
+                  }}>
+                  Your public key
+                </Text>
+                <TextInput
+                  mode="flat"
+                  value={inputs['key']}
+                  onChangeText={text => handleOnchange(text, 'key')}
+                  dense={true}
+                  multiline
+                  underlineColorAndroid="transparent"
+                  activeUnderlineColor="transparent"
+                  underlineColor="transparent"
+                  cursorColor="#fff"
+                  theme={{
+                    colors: {
+                      background: '#fff',
+                      surface: '#fff',
+                      text: '#000',
+                      primary: '#000',
+                      placeholder: '#999',
+                    },
+                  }}
+                  style={{
+                    backgroundColor: theme.colors.surface,
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: '#D9D9D9',
+                    fontFamily: 'Poppins-Light',
+                    fontSize: 14,
+                  }}
+                  onFocus={() => handleError(null, 'key')}
+                  error={errors.key}
+                />
+                {errors.key ? (
+                  <HelperText type="error" padding="none" visible={errors.key}>
+                    {errors.key}
+                  </HelperText>
+                ) : null}
+              </View>
+              <View style={{display: 'flex', flexDirection: 'row'}}>
+                <View style={{backgroundColor: '#01FF48', width: 3}}></View>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-Light',
+                    fontSize: 12,
+                    color: '#869486',
+                    marginStart: 10,
+                  }}>
+                  This will add a globally available SSH Public Key to your
+                  account which you can assign to any of your shell users.
+                </Text>
+              </View>
+              <View style={{display: 'flex', flexDirection: 'row'}}>
+                <View style={{backgroundColor: '#FFEB3B', width: 3}}></View>
+                <View>
+                  <Text
+                    style={{
+                      fontFamily: 'Poppins-Light',
+                      fontSize: 12,
+                      color: '#869486',
+                      marginStart: 10,
+                    }}>
+                    Please omit any comments and begin / end markers in your
+                    Public key. Just paste the key itself.
+                  </Text>
+                  <Pressable
+                    onPress={() =>
+                      handleClick(
+                        'https://webdock.io/en/docs/webdock-control-panel/shell-users-and-sudo/set-up-an-ssh-key',
+                      )
+                    }>
+                    <Text
+                      style={{
+                        fontFamily: 'Raleway-Regular',
+                        fontSize: 12,
+                        color: '#039BE5',
+                        marginStart: 10,
+                      }}>
+                      Click here to see how a proper key is formatted
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+              <View
+                style={{
+                  justifyContent: 'flex-end',
+                }}>
+                {/* add public key button */}
+                <Button
+                  mode="contained"
+                  textColor={theme.colors.text}
+                  compact
+                  style={{
+                    borderRadius: 4,
+                    minWidth: 0,
+                    paddingHorizontal: 8,
+                  }}
+                  labelStyle={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontSize: 12,
+                    lineHeight: 12 * 1.2,
+                    fontWeight: '600',
+                  }}
+                  onPress={validate}>
+                  Add public key
+                </Button>
+                {/* <Pressable onPress={validate}>
+                  <GradientButton
+                    text="Add public key"
+                    submitting={submitting}
+                  />
+                </Pressable> */}
+              </View>
             </View>
-          )}
-          keyExtractor={item => item.id}
-          ListEmptyComponent={
-            isFetching ? publicKeys.length > 0 ? <EmptyList /> : null : null
-          }
-        />
-        <TouchableOpacity
-          onPress={() => navigation.navigate('CreatePublicKeys')}
-          style={{
-            backgroundColor: 'white',
-            position: 'absolute',
-            justifyContent: 'center',
-            alignItems: 'center',
-            right: 20,
-            bottom: 20,
-            width: 50,
-            height: 50,
-            borderRadius: 50 / 2,
-          }}>
-          <PlusIcon height={50} width={50} />
-        </TouchableOpacity>
-      </View>
-      <Modal
+          </AccordionItem>
+          <View>
+            <View
+              style={{
+                height: 44,
+                borderTopLeftRadius: 4,
+                borderTopRightRadius: 4,
+                backgroundColor: theme.colors.accent,
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Medium',
+                  fontWeight: '500',
+                  color: 'white',
+                  fontSize: 16,
+                  includeFontPadding: false,
+                }}>
+                Public keys
+              </Text>
+            </View>
+            <FlatList
+              style={{}}
+              data={publicKeys}
+              showsVerticalScrollIndicator={false}
+              onRefresh={() => onRefresh()}
+              refreshing={isFetching}
+              renderItem={({item}) => (
+                <>
+                  <PublicKeysItem
+                    item={item}
+                    onRequestDelete={handleRequestDelete}
+                  />
+                  <View
+                    style={{
+                      height: 1,
+                    }}></View>
+                </>
+              )}
+              keyExtractor={item => item.id}
+              ListEmptyComponent={
+                publicKeys ? (
+                  publicKeys.length == 0 ? (
+                    <View
+                      style={{
+                        borderBottomLeftRadius: 4,
+                        borderBottomRightRadius: 4,
+                        padding: 14,
+                        backgroundColor: theme.colors.surface,
+                      }}>
+                      <Text
+                        style={{
+                          color: theme.colors.text,
+                          fontFamily: 'Poppins',
+                          fontSize: 14,
+                        }}>
+                        You do not have any saved Public Keys yet.
+                      </Text>
+                    </View>
+                  ) : null
+                ) : null
+              }
+            />
+          </View>
+        </View>
+      </BottomSheetWrapper>
+      <ReactNativeModal
         testID={'modal'}
         isVisible={isDeleteModalVisible}
         swipeDirection={['up', 'left', 'right', 'down']}
@@ -214,36 +459,38 @@ export default function AccountPublicKeys({navigation}) {
         <View
           style={{
             backgroundColor: 'white',
-            padding: 30,
-            borderTopStartRadius: 10,
-            borderTopEndRadius: 10,
+            padding: 24,
+            borderTopStartRadius: 20,
+            borderTopEndRadius: 20,
+            gap: 12,
           }}>
           <Text
             style={{
-              fontFamily: 'Raleway-Medium',
+              fontFamily: 'Poppins-SemiBold',
               fontSize: 18,
-              color: '#00a1a1',
-              marginVertical: 10,
+              color: theme.colors.accent,
             }}>
-            Remove {selectedPublicKey ? selectedPublicKey.name : null}
+            Are you sure you want to remove the public key “
+            {selectedPublicKey ? selectedPublicKey.name : null}” from your
+            account?
           </Text>
           <Text
             style={{
-              fontFamily: 'Raleway-Regular',
+              fontFamily: 'Poppins-Light',
               fontSize: 12,
-              color: '#000000',
-              marginVertical: 10,
+              color: theme.colors.text,
             }}>
             Please confirm you want to remove this public key
           </Text>
           <View
             style={{display: 'flex', flexDirection: 'row', marginVertical: 10}}>
-            <View style={{backgroundColor: '#03A84E', width: 1}}></View>
+            <View
+              style={{backgroundColor: theme.colors.primary, width: 1}}></View>
             <Text
               style={{
                 fontFamily: 'Raleway-Regular',
                 fontSize: 12,
-                color: '#000000',
+                color: theme.colors.text,
                 marginStart: 10,
               }}>
               This will not remove any keys from any of your servers. You are
@@ -253,66 +500,55 @@ export default function AccountPublicKeys({navigation}) {
           </View>
           <View
             style={{
-              width: '100%',
-              marginVertical: 15,
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'space-between',
+              gap: 10,
             }}>
-            <TouchableOpacity
-              onPress={() => setIsDeleteModalVisible(false)}
+            <Button
+              mode="outlined"
+              textColor={theme.colors.text}
+              compact
               style={{
-                width: '45%',
-                height: 40,
                 borderColor: '#00956c',
-                borderWidth: 1,
-                backgroundColor: '#FFFFFF',
                 borderRadius: 4,
-                justifyContent: 'center',
-              }}>
-              <Text
-                style={{
-                  fontFamily: 'Raleway-Bold',
-                  fontSize: 16,
-                  color: '#00956c',
-                  textAlign: 'center',
-                  includeFontPadding: false,
-                }}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => deletePublicKeyAlert(selectedPublicKey.id)}
+                width: '50%',
+                paddingHorizontal: 8,
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                fontWeight: '600',
+                includeFontPadding: false,
+              }}
+              onPress={() => setIsDeleteModalVisible(false)}>
+              Cancel
+            </Button>
+            <Button
+              mode="contained"
+              textColor={'white'}
+              compact
               style={{
-                width: '45%',
-                height: 40,
-                backgroundColor: '#D94B4B',
+                width: '50%',
                 borderRadius: 4,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              <Text
-                style={{
-                  fontFamily: 'Raleway-Bold',
-                  fontSize: 16,
-                  color: '#FFFFFF',
-                  includeFontPadding: false,
-                }}>
-                Delete
-              </Text>
-            </TouchableOpacity>
+                minWidth: 0,
+                backgroundColor: '#D34646',
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                fontWeight: '600',
+              }}
+              onPress={() => deletePublicKeyAlert(selectedPublicKey.id)}>
+              Delete Key
+            </Button>
           </View>
         </View>
-      </Modal>
+      </ReactNativeModal>
     </>
   );
 }
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    marginTop: StatusBar.currentHeight || 0,
-  },
   item: {
     flex: 1,
     flexDirection: 'row',

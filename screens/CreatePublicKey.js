@@ -30,7 +30,7 @@ import {
   HelperText,
 } from 'react-native-paper';
 import BackIcon from '../assets/back-icon.svg';
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {postAccountPublicKeys} from '../service/accountPublicKeys';
 import Toast from 'react-native-toast-message';
 import LinearGradient from 'react-native-linear-gradient';
