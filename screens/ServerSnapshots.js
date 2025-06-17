@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   Alert,
   Dimensions,
+  Keyboard,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {
@@ -25,8 +26,10 @@ import {
   Snackbar,
   IconButton,
   TextInput,
+  useTheme,
+  HelperText,
 } from 'react-native-paper';
-import Modal from 'react-native-modal';
+import Modal, {ReactNativeModal} from 'react-native-modal';
 import Toast from 'react-native-toast-message';
 import {
   deleteServerSnapshot,
@@ -40,6 +43,9 @@ import BackIcon from '../assets/back-icon.svg';
 import PlusIcon from '../assets/plus-icon.svg';
 import DeleteIcon from '../assets/delete-icon.svg';
 import EmptyList from '../components/EmptyList';
+import BottomSheetWrapper from '../components/BottomSheetWrapper';
+import ServerSnapshotItem from '../components/ServerSnapshotItem';
+import AccordionItem from '../components/AccordionItem';
 export default function ServerSnapshots({route, navigation}) {
   const [serverSnapshots, setSnapshots] = useState();
   useEffect(() => {
@@ -61,91 +67,6 @@ export default function ServerSnapshots({route, navigation}) {
     return unsubscribe;
   }, [route]);
 
-  const Item = ({item}) => (
-    <>
-      <View
-        style={{backgroundColor: 'white', borderRadius: 10, marginBottom: 10}}>
-        <View
-          style={{
-            display: 'flex',
-            padding: 15,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-          <View>
-            <Text style={{fontFamily: 'Raleway-Regular', fontSize: 14}}>
-              {item.name == 'user' ? item.name : item.date}
-            </Text>
-            <View style={{display: 'flex', flexDirection: 'row'}}>
-              <Text
-                style={{
-                  width: 100,
-                  fontFamily: 'Raleway-Light',
-                  fontSize: 12,
-                  includeFontPadding: false,
-                  color: '#8F8F8F',
-                }}>
-                {item.type} snapshot
-              </Text>
-            </View>
-          </View>
-          <View
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}>
-            {item.completed ? (
-              <TouchableOpacity
-                style={{marginHorizontal: 2}}
-                onPress={() => modalOpen(item)}>
-                <View
-                  style={{
-                    width: 25,
-                    height: 25,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: 'rgba(3,155,229,0.26)',
-                    borderRadius: 25 / 2,
-                  }}>
-                  <Icon name="history" size={15} color="#449ADF" />
-                </View>
-              </TouchableOpacity>
-            ) : null}
-            {/* {item.completed?<TouchableOpacity onPress={()=>{
-            setSelectedSnapshot(item);
-            setIsDeleteModalVisible(true)}}>
-              <View style={{width:30,height:23,justifyContent:'center',alignItems:'center'}}>
-            <View style={{width:23,height:23,justifyContent:'center',alignItems:'center',backgroundColor:'rgba(3,155,229,0.26)',borderRadius:23/2}}>
-            <Icon
-              name="history"
-              size={15}
-              color="#449ADF"
-              onPress={() => setStartModal(true)}
-            />
-            </View>
-            </View></TouchableOpacity>:null} */}
-            {item.deletable ? (
-              <TouchableOpacity
-                style={{
-                  width: 25,
-                  marginHorizontal: 2,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-                onPress={() => {
-                  setSelectedSnapshot(item);
-                  setIsDeleteModalVisible(true);
-                }}>
-                <DeleteIcon fill="#D94B4B" width={25} height={25} />
-              </TouchableOpacity>
-            ) : null}
-          </View>
-        </View>
-      </View>
-    </>
-  );
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
     setIsFetching(true);
@@ -276,68 +197,228 @@ export default function ServerSnapshots({route, navigation}) {
       }
     }
   };
+  const theme = useTheme();
+
+  const [inputs, setInputs] = React.useState({
+    name: '',
+    filename: '',
+    content: '',
+  });
+  const [errors, setErrors] = React.useState({});
+  const sendRequest = async () => {
+    let userToken = null;
+    userToken = await AsyncStorage.getItem('userToken');
+    let result = await createSnapshotForServer(
+      userToken,
+      route.params.slug,
+      inputs.name,
+    );
+    if (result.status == 202) {
+      try {
+        setCallbackId(result.headers.get('X-Callback-ID'));
+        setVisibleSnack(true);
+      } catch (e) {
+        alert(e);
+      }
+      navigation.goBack();
+    } else if (result.status == 400) {
+      try {
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: result.response.message,
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () => navigation.navigate('Events'),
+        });
+      } catch (e) {
+        alert(e);
+      }
+    }
+  };
+
+  const validate = () => {
+    Keyboard.dismiss();
+    setSubmitting(true);
+    let isValid = true;
+
+    if (!inputs.name) {
+      handleError('Snapshot name is required', 'name');
+      isValid = false;
+    }
+
+    if (isValid) {
+      sendRequest();
+    } else {
+      setSubmitting(false);
+    }
+  };
+  const handleOnchange = (text, input) => {
+    setInputs(prevState => ({...prevState, [input]: text}));
+  };
+  const handleError = (error, input) => {
+    setErrors(prevState => ({...prevState, [input]: error}));
+  };
+  const [submitting, setSubmitting] = useState(false);
   return (
     <>
-      <View
-        width="100%"
-        height="100%"
-        style={{backgroundColor: '#F4F8F8', padding: '8%'}}>
+      <BottomSheetWrapper title="Snapshots" onClose={() => navigation.goBack()}>
         <View
+          width="100%"
+          height="100%"
           style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            backgroundColor: theme.colors.background,
+            paddingHorizontal: 20,
+            gap: 24,
           }}>
-          <TouchableOpacity onPress={navigation.goBack}>
-            <BackIcon height={45} width={50} />
-          </TouchableOpacity>
-          <Text
-            style={{
-              color: '#00A1A1',
-              fontFamily: 'Raleway-Medium',
-              fontSize: 20,
-              textAlign: 'center',
-            }}>
-            {route.params.slug}
-          </Text>
-          <View style={{width: 50}}></View>
+          <AccordionItem
+            title="Create new snapshot"
+            viewKey="AddServerScriptAccordion">
+            <View style={{padding: 16, gap: 12}}>
+              <View style={{gap: 4}}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontSize: 14,
+                    color: theme.colors.text,
+                  }}>
+                  Snapshot name
+                </Text>
+                <TextInput
+                  mode="flat"
+                  value={inputs['name']}
+                  dense={true}
+                  onChangeText={text => handleOnchange(text, 'name')}
+                  underlineColorAndroid="transparent"
+                  activeUnderlineColor="transparent"
+                  underlineColor="transparent"
+                  cursorColor="#fff"
+                  theme={{
+                    colors: {
+                      background: '#fff',
+                      surface: '#fff',
+                      text: '#000',
+                      primary: '#000',
+                      placeholder: '#999',
+                    },
+                  }}
+                  style={{
+                    backgroundColor: theme.colors.surface,
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: '#D9D9D9',
+                    fontFamily: 'Poppins-Light',
+                    fontSize: 14,
+                  }}
+                  onFocus={() => handleError(null, 'name')}
+                  error={errors.name}
+                />
+                {errors.name ? (
+                  <HelperText type="error" padding="none" visible={errors.name}>
+                    {errors.name}
+                  </HelperText>
+                ) : null}
+              </View>
+              <View
+                style={{
+                  justifyContent: 'flex-end',
+                }}>
+                {/* add public key button */}
+                <Button
+                  mode="contained"
+                  textColor="black"
+                  compact
+                  style={{
+                    borderRadius: 4,
+                    minWidth: 0,
+                    paddingHorizontal: 8,
+                  }}
+                  labelStyle={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontSize: 14,
+                    lineHeight: 14 * 1.2,
+                    fontWeight: '600',
+                  }}
+                  onPress={validate}>
+                  Create new snapshot
+                </Button>
+              </View>
+            </View>
+          </AccordionItem>
+          <View>
+            <View
+              style={{
+                height: 44,
+                borderTopLeftRadius: 4,
+                borderTopRightRadius: 4,
+                backgroundColor: theme.colors.accent,
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Medium',
+                  fontWeight: '500',
+                  color: 'white',
+                  fontSize: 16,
+                  includeFontPadding: false,
+                }}>
+                Server Snapshots
+              </Text>
+            </View>
+            <FlatList
+              data={serverSnapshots}
+              onRefresh={() => onRefresh()}
+              refreshing={isFetching}
+              showsVerticalScrollIndicator={false}
+              ListFooterComponent={<View style={{height: 60}}></View>}
+              renderItem={({item}) => (
+                <>
+                  <ServerSnapshotItem
+                    item={item}
+                    onRequestDelete={() => {
+                      setSelectedSnapshot(item);
+                      setIsDeleteModalVisible(true);
+                    }}
+                    onRequestEdit={() => modalOpen(item)}
+                  />
+                  <View
+                    style={{
+                      height: 1,
+                    }}></View>
+                </>
+              )}
+              keyExtractor={item => item.id}
+              ListEmptyComponent={
+                serverSnapshots ? (
+                  serverSnapshots.length == 0 ? (
+                    <View
+                      style={{
+                        borderBottomLeftRadius: 4,
+                        borderBottomRightRadius: 4,
+                        padding: 14,
+                        backgroundColor: theme.colors.surface,
+                      }}>
+                      <Text
+                        style={{
+                          color: theme.colors.text,
+                          fontFamily: 'Poppins',
+                          fontSize: 14,
+                        }}>
+                        This server doesn't have any snapshot yet.
+                      </Text>
+                    </View>
+                  ) : null
+                ) : null
+              }
+            />
+          </View>
         </View>
-        <FlatList
-          style={{marginTop: 20}}
-          data={serverSnapshots}
-          onRefresh={() => onRefresh()}
-          refreshing={isFetching}
-          showsVerticalScrollIndicator={false}
-          ListFooterComponent={<View style={{height: 60}}></View>}
-          renderItem={({item}) => (
-            <>
-              <TouchableOpacity onPress={() => modalOpen(item)}>
-                <View>
-                  <Item item={item} />
-                </View>
-              </TouchableOpacity>
-            </>
-          )}
-          keyExtractor={item => item.id}
-          ListEmptyComponent={<EmptyList />}
-        />
-        <TouchableOpacity
-          onPress={() => navigation.navigate('CreateServerSnapshot')}
-          style={{
-            backgroundColor: 'white',
-            position: 'absolute',
-            justifyContent: 'center',
-            alignItems: 'center',
-            right: 20,
-            bottom: 20,
-            width: 50,
-            height: 50,
-            borderRadius: 50 / 2,
-          }}>
-          <PlusIcon height={50} width={50} />
-        </TouchableOpacity>
-      </View>
+      </BottomSheetWrapper>
       {/* Delete Snapshot Modal */}
       <Modal
         testID={'modal'}
@@ -348,35 +429,36 @@ export default function ServerSnapshots({route, navigation}) {
         <View
           style={{
             backgroundColor: 'white',
-            padding: 30,
-            borderTopStartRadius: 10,
-            borderTopEndRadius: 10,
+            padding: 24,
+            borderTopStartRadius: 20,
+            borderTopEndRadius: 20,
+            gap: 12,
+            backgroundColor: theme.colors.surface,
           }}>
           <Text
             style={{
-              fontFamily: 'Raleway-Medium',
+              fontFamily: 'Poppins-SemiBold',
               fontSize: 18,
-              color: '#00a1a1',
-              marginVertical: 10,
+              color: theme.colors.accent,
             }}>
-            Delete snapshot {selectedSnapshot ? selectedSnapshot.name : null}
+            Are you sure you want to remove snapshot “
+            {selectedSnapshot ? selectedSnapshot.name : null}” from this server?
           </Text>
           <Text
             style={{
-              fontFamily: 'Raleway-Regular',
-              fontSize: 14,
-              includeFontPadding: false,
-              color: '#000000',
-              marginVertical: 10,
+              fontFamily: 'Poppins-Light',
+              fontSize: 12,
+              color: theme.colors.text,
             }}>
             Please confirm you want to delete this snapshot
           </Text>
           <View
             style={{display: 'flex', flexDirection: 'row', marginVertical: 10}}>
-            <View style={{backgroundColor: '#03A84E', width: 1}}></View>
+            <View
+              style={{backgroundColor: theme.colors.primary, width: 3}}></View>
             <Text
               style={{
-                fontFamily: 'Raleway-Regular',
+                fontFamily: 'Poppins-Regular',
                 fontSize: 14,
                 includeFontPadding: false,
                 color: '#000000',
@@ -388,55 +470,48 @@ export default function ServerSnapshots({route, navigation}) {
           </View>
           <View
             style={{
-              width: '100%',
-              marginVertical: 15,
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'space-between',
+              gap: 10,
             }}>
-            <TouchableOpacity
-              onPress={() => setIsDeleteModalVisible(false)}
+            <Button
+              mode="outlined"
+              textColor={theme.colors.text}
+              compact
               style={{
-                width: '45%',
-                height: 40,
                 borderColor: '#00956c',
-                borderWidth: 1,
-                backgroundColor: '#FFFFFF',
                 borderRadius: 4,
-                justifyContent: 'center',
-              }}>
-              <Text
-                style={{
-                  fontFamily: 'Raleway-Bold',
-                  fontSize: 16,
-                  color: '#00956c',
-                  textAlign: 'center',
-                  includeFontPadding: false,
-                }}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => deleteSnapshotsAlert(selectedSnapshot.id)}
+                width: '50%',
+                paddingHorizontal: 8,
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                fontWeight: '600',
+                includeFontPadding: false,
+              }}
+              onPress={() => setIsDeleteModalVisible(false)}>
+              Cancel
+            </Button>
+            <Button
+              mode="contained"
+              textColor={'white'}
+              compact
               style={{
-                width: '45%',
-                height: 40,
-                backgroundColor: '#D94B4B',
+                width: '50%',
                 borderRadius: 4,
-                justifyContent: 'center',
-              }}>
-              <Text
-                style={{
-                  fontFamily: 'Raleway-Bold',
-                  fontSize: 16,
-                  color: '#FFFFFF',
-                  textAlign: 'center',
-                  includeFontPadding: false,
-                }}>
-                Delete
-              </Text>
-            </TouchableOpacity>
+                minWidth: 0,
+                backgroundColor: '#D34646',
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                fontWeight: '600',
+              }}
+              onPress={() => deleteSnapshotsAlert(selectedSnapshot.id)}>
+              Delete snapshot
+            </Button>
           </View>
         </View>
       </Modal>
@@ -458,7 +533,7 @@ export default function ServerSnapshots({route, navigation}) {
         }}>
         You have running jobs ...
       </Snackbar>
-      <Modal
+      <ReactNativeModal
         testID={'modal'}
         isVisible={isModalVisible}
         swipeDirection={['up', 'left', 'right', 'down']}
@@ -467,16 +542,17 @@ export default function ServerSnapshots({route, navigation}) {
         <View
           style={{
             backgroundColor: 'white',
-            padding: 30,
-            borderTopStartRadius: 10,
-            borderTopEndRadius: 10,
+            padding: 24,
+            borderTopStartRadius: 20,
+            borderTopEndRadius: 20,
+            gap: 12,
+            backgroundColor: theme.colors.surface,
           }}>
           <Text
             style={{
-              fontFamily: 'Raleway-Medium',
+              fontFamily: 'Poppins-SemiBold',
               fontSize: 18,
-              color: '#00a1a1',
-              marginVertical: 10,
+              color: theme.colors.text,
             }}>
             Restore {route.params.slug} from a snapshot
           </Text>
@@ -498,15 +574,13 @@ export default function ServerSnapshots({route, navigation}) {
               Date: {selectedSnapshot ? selectedSnapshot.date : null}
             </Text>
           </View>
-          <View
-            style={{display: 'flex', flexDirection: 'row', marginVertical: 10}}>
+          <View style={{display: 'flex', flexDirection: 'row'}}>
             <View style={{backgroundColor: '#03A84E', width: 1}}></View>
             <Text
               style={{
-                fontFamily: 'Raleway-Regular',
-                fontSize: 14,
-                includeFontPadding: false,
-                color: '#000000',
+                fontFamily: 'Poppins-Light',
+                fontSize: 12,
+                color: theme.colors.text,
                 marginStart: 10,
               }}>
               Here you initiate the restore procedure. This will in effect
@@ -514,18 +588,16 @@ export default function ServerSnapshots({route, navigation}) {
               keep its current IP addresses, profile and alias.
             </Text>
           </View>
-          <View
-            style={{display: 'flex', flexDirection: 'row', marginVertical: 10}}>
+          <View style={{display: 'flex', flexDirection: 'row'}}>
             <View style={{backgroundColor: '#f44336', width: 1}}></View>
             <Text
               style={{
-                fontFamily: 'Raleway-Regular',
-                fontSize: 14,
-                includeFontPadding: false,
-                color: '#000000',
+                fontFamily: 'Poppins-Light',
+                fontSize: 12,
+                color: theme.colors.text,
                 marginStart: 10,
               }}>
-              <Text style={{fontFamily: 'Raleway-Bold'}}>
+              <Text style={{fontFamily: 'Poppins-Bold'}}>
                 To be sure you know what is happening:
               </Text>{' '}
               Any data not backed up or already snapshot on this server will be
@@ -534,58 +606,53 @@ export default function ServerSnapshots({route, navigation}) {
           </View>
           <View
             style={{
-              width: '100%',
-              marginVertical: 15,
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'space-between',
+              gap: 10,
             }}>
-            <TouchableOpacity
-              onPress={() => setModalVisible(false)}
+            <Button
+              mode="outlined"
+              textColor={theme.colors.text}
+              compact
               style={{
-                width: '45%',
-                height: 40,
+                backgroundColor: 'white',
                 borderColor: '#00956c',
-                borderWidth: 1,
-                backgroundColor: '#FFFFFF',
                 borderRadius: 4,
-                justifyContent: 'center',
-              }}>
-              <Text
-                style={{
-                  fontFamily: 'Raleway-Bold',
-                  fontSize: 16,
-                  color: '#00956c',
-                  textAlign: 'center',
-                  includeFontPadding: false,
-                }}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => restoreThisSnapshot(selectedSnapshot.id)}
+                width: '50%',
+                paddingHorizontal: 8,
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                fontWeight: '600',
+                includeFontPadding: false,
+                color: 'black',
+              }}
+              onPress={() => setModalVisible(false)}>
+              Cancel
+            </Button>
+            <Button
+              mode="contained"
+              textColor={'white'}
+              compact
               style={{
-                width: '45%',
-                height: 40,
-                backgroundColor: '#449ADF',
+                width: '50%',
                 borderRadius: 4,
-                justifyContent: 'center',
-              }}>
-              <Text
-                style={{
-                  fontFamily: 'Raleway-Bold',
-                  fontSize: 16,
-                  color: '#FFFFFF',
-                  textAlign: 'center',
-                  includeFontPadding: false,
-                }}>
-                Restore
-              </Text>
-            </TouchableOpacity>
+                minWidth: 0,
+                backgroundColor: '#449ADF',
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                fontWeight: '600',
+              }}
+              onPress={() => restoreThisSnapshot(selectedSnapshot.id)}>
+              Restore
+            </Button>
           </View>
         </View>
-      </Modal>
+      </ReactNativeModal>
       {/* <Modal isVisible={isModalVisible2}>
         <View style={styles.content}>
           <View style={{width: '100%'}}>

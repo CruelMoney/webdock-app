@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   Alert,
   Dimensions,
+  Keyboard,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -27,6 +28,8 @@ import {
   IconButton,
   Checkbox,
   TextInput,
+  useTheme,
+  HelperText,
 } from 'react-native-paper';
 import {Avatar, Divider} from 'react-native-paper';
 import Toast from 'react-native-toast-message';
@@ -37,15 +40,27 @@ import {
   getServerScripts,
 } from '../service/serverScripts';
 import {getAccountScripts} from '../service/accountScripts';
-import Modal from 'react-native-modal';
+import Modal, {ReactNativeModal} from 'react-native-modal';
 import DeleteIcon from '../assets/delete-icon.svg';
 import EditIcon from '../assets/edit-icon.svg';
 import BackIcon from '../assets/back-icon.svg';
 import PlusIcon from '../assets/plus-icon.svg';
 import PlayIcon from '../assets/play-icon.svg';
 import EmptyList from '../components/EmptyList';
+import BottomSheetWrapper from '../components/BottomSheetWrapper';
+import AccordionItem from '../components/AccordionItem';
+import {Picker} from '@react-native-picker/picker';
+import ScriptItem from '../components/ScriptItem';
+import ServerScriptItem from '../components/ServerScriptItem';
 export default function ServerScripts({route, navigation}) {
   const [serverScripts, setScripts] = useState();
+  const [inputs, setInputs] = React.useState({
+    selectedScript: '',
+    path: '',
+  });
+  const [modifiedScripts, setModifiedScripts] = useState([]);
+  const [errors, setErrors] = React.useState({});
+
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       onBackgroundRefresh();
@@ -56,7 +71,20 @@ export default function ServerScripts({route, navigation}) {
       try {
         userToken = await AsyncStorage.getItem('userToken');
         getServerScripts(userToken, route.params.slug).then(data => {
+          console.log(data);
           setScripts(data);
+        });
+        getAccountScripts(userToken).then(data => {
+          var array = [];
+          data.map(item => {
+            array.push({
+              label: item.name,
+              value: item.id,
+              key: item.id,
+              filename: item.filename,
+            });
+          });
+          setModifiedScripts(array);
         });
       } catch (e) {
         alert(e);
@@ -110,63 +138,7 @@ export default function ServerScripts({route, navigation}) {
       }
     }
   };
-  const Item = ({item}) => (
-    <View
-      style={{backgroundColor: 'white', borderRadius: 10, marginBottom: 10}}>
-      <View
-        style={{
-          display: 'flex',
-          padding: 15,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-        <View style={{width: '80%'}}>
-          <Text style={{fontFamily: 'Raleway-Regular', fontSize: 14}}>
-            {item.name}
-          </Text>
-          <View style={{display: 'flex', flexDirection: 'row'}}>
-            <Text
-              style={{
-                width: 100,
-                fontFamily: 'Raleway-Light',
-                fontSize: 12,
-                includeFontPadding: false,
-                color: '#8F8F8F',
-              }}>
-              {item.path}
-            </Text>
-          </View>
-        </View>
-        <View
-          style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
-          <View style={{display: 'flex', flexDirection: 'row', width: '20%'}}>
-            <View
-              style={{
-                width: 25,
-                height: 25,
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: 'rgba(76,159,90,0.26)',
-                borderRadius: 25 / 2,
-              }}>
-              <TouchableOpacity onPress={() => setIsExecuteModalVisible(true)}>
-                <Icon name="play-arrow" size={20} color="#4C9F5A" />
-              </TouchableOpacity>
-            </View>
-            <View style={{width: 10}}></View>
-            <TouchableOpacity
-              onPress={() => {
-                setIsDeleteModalVisible(true);
-                setSelectedScript(item);
-              }}>
-              <DeleteIcon fill="#D94B4B" width={25} height={25} />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </View>
-  );
+
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
     setIsFetching(true);
@@ -187,6 +159,18 @@ export default function ServerScripts({route, navigation}) {
       userToken = await AsyncStorage.getItem('userToken');
       getServerScripts(userToken, route.params.slug).then(data => {
         setScripts(data);
+      });
+      getAccountScripts(userToken).then(data => {
+        var array = [];
+        data.map(item => {
+          array.push({
+            label: item.name,
+            value: item.id,
+            key: item.id,
+            filename: item.filename,
+          });
+        });
+        setModifiedScripts(array);
       });
     } catch (e) {
       alert(e);
@@ -244,67 +228,348 @@ export default function ServerScripts({route, navigation}) {
   const [isDeleteModalVisible, setIsDeleteModalVisible] = React.useState(false);
   const [isExecuteModalVisible, setIsExecuteModalVisible] =
     React.useState(false);
+
+  const validate = () => {
+    Keyboard.dismiss();
+    setSubmitting(true);
+    let isValid = true;
+
+    if (!inputs.path) {
+      handleError('Script path is required', 'path');
+      isValid = false;
+    }
+    if (!inputs.selectedScript) {
+      handleError('You need to select one script!', 'selectedScript');
+      isValid = false;
+    }
+
+    if (isValid) {
+      sendRequest();
+    } else {
+      setSubmitting(false);
+    }
+  };
+  const handleOnchange = (text, input, filename) => {
+    setInputs(prevState => ({...prevState, ['path']: '/root/' + filename}));
+    setInputs(prevState => ({...prevState, [input]: text}));
+  };
+  const handleError = (error, input) => {
+    setErrors(prevState => ({...prevState, [input]: error}));
+  };
+  const [checkedExecutable, setCheckedExecutable] = React.useState(false);
+  const [checkedRunThisNow, setCheckedRunThisNow] = React.useState(false);
+
+  const theme = useTheme();
+
+  const sendRequest = async () => {
+    let userToken = null;
+    userToken = await AsyncStorage.getItem('userToken');
+    let result = await createServerScript(
+      userToken,
+      route.params.slug,
+      inputs.selectedScript,
+      inputs.path,
+    );
+    if (result.status == 202) {
+      try {
+        setSubmitting(false);
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Script deployed',
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () => navigation.navigate('Events'),
+        });
+      } catch (e) {
+        alert(e);
+      }
+      navigation.goBack();
+    } else if (result.status == 400) {
+      try {
+        setSubmitting(false);
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: result.response.message,
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () => navigation.navigate('Events'),
+        });
+      } catch (e) {
+        alert(e);
+      }
+    } else if (result.status == 404) {
+      try {
+        setSubmitting(false);
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: result.response.message,
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () => navigation.navigate('Events'),
+        });
+      } catch (e) {
+        alert(e);
+      }
+    }
+  };
+  const [submitting, setSubmitting] = useState(false);
+  const handleRequestDelete = key => {
+    setSelectedScript(key);
+    setIsDeleteModalVisible(true);
+  };
+  const handleRequestExecute = key => {
+    setSelectedScript(key);
+    setIsExecuteModalVisible(true);
+  };
   return (
     <>
-      <View
-        width="100%"
-        height="100%"
-        style={{backgroundColor: '#F4F8F8', padding: '8%'}}>
+      <BottomSheetWrapper
+        title="Server scripts"
+        onClose={() => navigation.goBack()}>
         <View
+          width="100%"
+          height="100%"
           style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            backgroundColor: theme.colors.background,
+            paddingHorizontal: 20,
+            gap: 24,
           }}>
-          <TouchableOpacity onPress={navigation.goBack}>
-            <BackIcon height={45} width={50} />
-          </TouchableOpacity>
-          <Text
-            style={{
-              color: '#00A1A1',
-              fontFamily: 'Raleway-Medium',
-              fontSize: 20,
-              textAlign: 'center',
-            }}>
-            {route.params.slug}
-          </Text>
-          <View style={{width: 50}}></View>
-        </View>
-        <FlatList
-          data={serverScripts}
-          style={{marginTop: 20}}
-          showsVerticalScrollIndicator={false}
-          onRefresh={() => onRefresh()}
-          refreshing={isFetching}
-          ListFooterComponent={<View style={{height: 60}}></View>}
-          renderItem={({item}) => (
-            <TouchableOpacity>
-              <View>
-                <Item item={item} />
+          <AccordionItem
+            title="Deploy new script"
+            viewKey="AddServerScriptAccordion">
+            <View style={{padding: 16, gap: 12}}>
+              <View style={{gap: 4}}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontSize: 14,
+                    color: theme.colors.text,
+                  }}>
+                  Choose a file or script
+                </Text>
+                <View
+                  style={{
+                    backgroundColor: theme.colors.surface,
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: '#D9D9D9',
+                    height: 45,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <Picker
+                    selectedValue={inputs['selectedScript']}
+                    style={{
+                      width: '100%',
+                      paddingHorizontal: 0,
+                      paddingVertical: 0,
+                      color: theme.colors.text,
+                      includeFontPadding: false,
+                    }}
+                    useNativeAndroidPickerStyle={false}
+                    textInputProps={{underlineColorAndroid: 'cyan'}}
+                    dropdownIconColor={theme.colors.text}
+                    onValueChange={(itemValue, itemIndex) => {
+                      handleOnchange(
+                        itemValue,
+                        'selectedScript',
+                        modifiedScripts[itemIndex].filename,
+                      );
+                    }}>
+                    {modifiedScripts.map(item => (
+                      <Picker.Item
+                        label={item.label}
+                        value={item.value}
+                        key={item.key}
+                      />
+                    ))}
+                  </Picker>
+                </View>
+                {errors.selectedScript ? (
+                  <HelperText
+                    type="error"
+                    padding="none"
+                    visible={errors.selectedScript}>
+                    {errors.selectedScript}
+                  </HelperText>
+                ) : null}
               </View>
-            </TouchableOpacity>
-          )}
-          keyExtractor={item => item.id}
-          ListEmptyComponent={<EmptyList />}
-        />
-
-        <TouchableOpacity
-          onPress={() => navigation.navigate('CreateServerScript')}
-          style={{
-            backgroundColor: 'white',
-            position: 'absolute',
-            justifyContent: 'center',
-            alignItems: 'center',
-            right: 20,
-            bottom: 20,
-            width: 50,
-            height: 50,
-            borderRadius: 50 / 2,
-          }}>
-          <PlusIcon height={50} width={50} />
-        </TouchableOpacity>
-      </View>
+              <View style={{gap: 4}}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontSize: 14,
+                    color: theme.colors.text,
+                  }}>
+                  Absolute path and filename on server
+                </Text>
+                <TextInput
+                  mode="flat"
+                  value={inputs['path']}
+                  dense={true}
+                  onChangeText={text => handleOnchange(text, 'path')}
+                  underlineColorAndroid="transparent"
+                  activeUnderlineColor="transparent"
+                  underlineColor="transparent"
+                  cursorColor="#fff"
+                  theme={{
+                    colors: {
+                      background: '#fff',
+                      surface: '#fff',
+                      text: '#000',
+                      primary: '#000',
+                      placeholder: '#999',
+                    },
+                  }}
+                  style={{
+                    backgroundColor: theme.colors.surface,
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: '#D9D9D9',
+                    fontFamily: 'Poppins-Light',
+                    fontSize: 14,
+                  }}
+                  onFocus={() => handleError(null, 'path')}
+                  error={errors.path}
+                />
+                {errors.path ? (
+                  <HelperText type="error" padding="none" visible={errors.path}>
+                    {errors.path}
+                  </HelperText>
+                ) : null}
+              </View>
+              <View style={{gap: 16, flexDirection: 'row'}}>
+                <Checkbox.Item
+                  labelStyle={{
+                    fontFamily: 'Poppins-Light',
+                    fontSize: 12,
+                    color: theme.colors.text,
+                  }}
+                  position="leading"
+                  style={{paddingHorizontal: 0}}
+                  status={checkedExecutable ? 'checked' : 'unchecked'}
+                  onPress={() => {
+                    setCheckedExecutable(!checkedExecutable);
+                  }}
+                  color={theme.colors.primary}
+                  label="Make file executable"
+                />
+                <Checkbox.Item
+                  labelStyle={{
+                    fontFamily: 'Poppins-Light',
+                    fontSize: 12,
+                    color: theme.colors.text,
+                  }}
+                  position="leading"
+                  style={{paddingHorizontal: 0}}
+                  status={checkedRunThisNow ? 'checked' : 'unchecked'}
+                  onPress={() => {
+                    setCheckedRunThisNow(!checkedRunThisNow);
+                  }}
+                  color={theme.colors.primary}
+                  label="Run script now"
+                />
+              </View>
+              <View
+                style={{
+                  justifyContent: 'flex-end',
+                }}>
+                {/* add public key button */}
+                <Button
+                  mode="contained"
+                  textColor="black"
+                  compact
+                  style={{
+                    borderRadius: 4,
+                    minWidth: 0,
+                    paddingHorizontal: 8,
+                  }}
+                  labelStyle={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontSize: 14,
+                    lineHeight: 14 * 1.2,
+                    fontWeight: '600',
+                  }}
+                  onPress={validate}>
+                  Deploy this script
+                </Button>
+              </View>
+            </View>
+          </AccordionItem>
+          <View>
+            <View
+              style={{
+                height: 44,
+                borderTopLeftRadius: 4,
+                borderTopRightRadius: 4,
+                backgroundColor: theme.colors.accent,
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Medium',
+                  fontWeight: '500',
+                  color: 'white',
+                  fontSize: 16,
+                  includeFontPadding: false,
+                }}>
+                Added scripts
+              </Text>
+            </View>
+            <FlatList
+              style={{}}
+              data={serverScripts}
+              showsVerticalScrollIndicator={false}
+              onRefresh={() => onRefresh()}
+              refreshing={isFetching}
+              renderItem={({item}) => (
+                <>
+                  <ServerScriptItem
+                    item={item}
+                    onRequestEdit={handleRequestExecute}
+                    onRequestDelete={handleRequestDelete}
+                  />
+                  <View
+                    style={{
+                      height: 1,
+                    }}></View>
+                </>
+              )}
+              keyExtractor={item => item.id}
+              ListEmptyComponent={
+                serverScripts ? (
+                  serverScripts.length == 0 ? (
+                    <View
+                      style={{
+                        borderBottomLeftRadius: 4,
+                        borderBottomRightRadius: 4,
+                        padding: 14,
+                        backgroundColor: theme.colors.surface,
+                      }}>
+                      <Text
+                        style={{
+                          color: theme.colors.text,
+                          fontFamily: 'Poppins',
+                          fontSize: 14,
+                        }}>
+                        You do not have any deployed script yet.
+                      </Text>
+                    </View>
+                  ) : null
+                ) : null
+              }
+            />
+          </View>
+        </View>
+      </BottomSheetWrapper>
       {/* Snackbar for event log */}
       <Snackbar
         visible={visibleSnack}
@@ -324,7 +589,7 @@ export default function ServerScripts({route, navigation}) {
         You have running jobs ...
       </Snackbar>
       {/* Delete Server Script Modal */}
-      <Modal
+      <ReactNativeModal
         testID={'modal'}
         isVisible={isDeleteModalVisible}
         swipeDirection={['up', 'left', 'right', 'down']}
@@ -333,85 +598,80 @@ export default function ServerScripts({route, navigation}) {
         <View
           style={{
             backgroundColor: 'white',
-            padding: 30,
-            borderTopStartRadius: 10,
-            borderTopEndRadius: 10,
+            padding: 24,
+            borderTopStartRadius: 20,
+            borderTopEndRadius: 20,
+            gap: 12,
+            backgroundColor: theme.colors.surface,
           }}>
           <Text
             style={{
-              fontFamily: 'Raleway-Medium',
+              fontFamily: 'Poppins-SemiBold',
               fontSize: 18,
-              color: '#00a1a1',
-              marginVertical: 10,
+              color: theme.colors.text,
             }}>
-            Remove script {selectedScript ? selectedScript.name : null}
+            Are you sure you want to remove script “
+            {selectedScript ? selectedScript.name : null}” from your account?
           </Text>
           <Text
             style={{
-              fontFamily: 'Raleway-Regular',
+              fontFamily: 'Poppins-Light',
               fontSize: 12,
-              color: '#000000',
-              marginVertical: 10,
+              color: theme.colors.text,
             }}>
             Please confirm you want to remove this script
           </Text>
-
           <View
             style={{
-              width: '100%',
-              marginVertical: 15,
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'space-between',
+              gap: 10,
             }}>
-            <TouchableOpacity
-              onPress={() => setIsDeleteModalVisible(false)}
+            <Button
+              mode="outlined"
+              textColor={theme.colors.text}
+              compact
               style={{
-                width: '45%',
-                height: 40,
+                backgroundColor: 'white',
                 borderColor: '#00956c',
-                borderWidth: 1,
-                backgroundColor: '#FFFFFF',
                 borderRadius: 4,
-                justifyContent: 'center',
-              }}>
-              <Text
-                style={{
-                  fontFamily: 'Raleway-Bold',
-                  fontSize: 16,
-                  color: '#00956c',
-                  textAlign: 'center',
-                  includeFontPadding: false,
-                }}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => deleteScriptAlert(selectedScript.id)}
+                width: '50%',
+                paddingHorizontal: 8,
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                fontWeight: '600',
+                includeFontPadding: false,
+                color: 'black',
+              }}
+              onPress={() => setIsDeleteModalVisible(false)}>
+              Cancel
+            </Button>
+            <Button
+              mode="contained"
+              textColor={'white'}
+              compact
               style={{
-                width: '45%',
-                height: 40,
-                backgroundColor: '#D94B4B',
+                width: '50%',
                 borderRadius: 4,
-                justifyContent: 'center',
-              }}>
-              <Text
-                style={{
-                  includeFontPadding: false,
-                  fontFamily: 'Raleway-Bold',
-                  fontSize: 16,
-                  color: '#FFFFFF',
-                  textAlign: 'center',
-                }}>
-                Remove
-              </Text>
-            </TouchableOpacity>
+                minWidth: 0,
+                backgroundColor: '#D34646',
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                fontWeight: '600',
+              }}
+              onPress={() => deleteScriptAlert(selectedScript.id)}>
+              Delete script
+            </Button>
           </View>
         </View>
-      </Modal>
+      </ReactNativeModal>
       {/* Execute Server Script Modal */}
-      <Modal
+      <ReactNativeModal
         testID={'modal'}
         isVisible={isExecuteModalVisible}
         swipeDirection={['up', 'left', 'right', 'down']}
@@ -420,83 +680,77 @@ export default function ServerScripts({route, navigation}) {
         <View
           style={{
             backgroundColor: 'white',
-            padding: 30,
-            borderTopStartRadius: 10,
-            borderTopEndRadius: 10,
+            padding: 24,
+            borderTopStartRadius: 20,
+            borderTopEndRadius: 20,
+            gap: 12,
+            backgroundColor: theme.colors.surface,
           }}>
           <Text
             style={{
-              fontFamily: 'Raleway-Medium',
+              fontFamily: 'Poppins-SemiBold',
               fontSize: 18,
-              color: '#00a1a1',
-              marginVertical: 10,
+              color: theme.colors.text,
             }}>
             Execute script {selectedScript ? selectedScript.name : null}
           </Text>
           <Text
             style={{
-              fontFamily: 'Raleway-Regular',
+              fontFamily: 'Poppins-Light',
               fontSize: 12,
-              color: '#000000',
-              marginVertical: 10,
+              color: theme.colors.text,
             }}>
             Please confirm you want to execute this script
           </Text>
-
           <View
             style={{
-              width: '100%',
-              marginVertical: 15,
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'space-between',
+              gap: 10,
             }}>
-            <TouchableOpacity
-              onPress={() => setIsExecuteModalVisible(false)}
+            <Button
+              mode="outlined"
+              textColor={theme.colors.text}
+              compact
               style={{
-                width: '45%',
-                height: 40,
-                borderColor: '#00956c',
-                borderWidth: 1,
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'white',
+                borderColor: '#022213',
                 borderRadius: 4,
-                justifyContent: 'center',
-              }}>
-              <Text
-                style={{
-                  fontFamily: 'Raleway-Bold',
-                  fontSize: 16,
-                  color: '#00956c',
-                  textAlign: 'center',
-                  includeFontPadding: false,
-                }}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => runScript(selectedScript.id)}
+                width: '50%',
+                paddingHorizontal: 8,
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                fontWeight: '600',
+                includeFontPadding: false,
+                color: 'black',
+              }}
+              onPress={() => setIsExecuteModalVisible(false)}>
+              Cancel
+            </Button>
+            <Button
+              mode="contained"
+              textColor={'white'}
+              compact
               style={{
-                width: '45%',
-                height: 40,
+                width: '50%',
+                borderRadius: 4,
+                minWidth: 0,
                 backgroundColor: '#449ADF',
-                borderRadius: 4,
-                justifyContent: 'center',
-              }}>
-              <Text
-                style={{
-                  fontFamily: 'Raleway-Bold',
-                  fontSize: 16,
-                  color: '#FFFFFF',
-                  textAlign: 'center',
-                  includeFontPadding: false,
-                }}>
-                Execute
-              </Text>
-            </TouchableOpacity>
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                fontWeight: '600',
+              }}
+              onPress={() => runScript(selectedScript.id)}>
+              Execute
+            </Button>
           </View>
         </View>
-      </Modal>
+      </ReactNativeModal>
       <Modal isVisible={isModalVisible}>
         <View style={styles.content}>
           <View style={{width: '100%'}}>

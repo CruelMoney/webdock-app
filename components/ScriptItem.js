@@ -14,13 +14,19 @@ const ScriptItem = ({item, onRequestDelete, onRequestEdit}) => {
     <View style={{backgroundColor: theme.colors.surface}}>
       <View
         style={{
-          display: 'flex',
-          padding: 14,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
+          padding: 14,
         }}>
-        <View style={{flexDirection: 'row', gap: 12, alignItems: 'center'}}>
+        {/* Content Section */}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            flex: 1,
+            gap: 12,
+          }}>
           <View
             style={{
               width: 42,
@@ -32,40 +38,38 @@ const ScriptItem = ({item, onRequestDelete, onRequestEdit}) => {
             }}>
             <Icon source="code-tags" size={24} color="#B9B9B9" />
           </View>
-          <View>
+          <View style={{flex: 1}}>
             <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
               style={{
                 fontFamily: 'Poppins-Medium',
                 fontSize: 16,
-                includeFontPadding: false,
                 color: theme.colors.text,
+                includeFontPadding: false,
               }}>
               {item.name}
             </Text>
-            <View style={{display: 'flex', flexDirection: 'row'}}>
-              <Text
-                style={{
-                  fontFamily: 'Poppins-Light',
-                  fontSize: 12,
-                  color: '#8F8F8F',
-                  includeFontPadding: false,
-                }}>
-                {item.filename}
-              </Text>
-            </View>
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={{
+                fontFamily: 'Poppins-Light',
+                fontSize: 12,
+                color: '#8F8F8F',
+                includeFontPadding: false,
+              }}>
+              {item.filename}
+            </Text>
           </View>
         </View>
-        <View style={{flexDirection: 'row', gap: 8}}>
-          <Pressable
-            onPress={() => {
-              onRequestEdit(item);
-            }}>
+
+        {/* Action Icons */}
+        <View style={{flexDirection: 'row', gap: 8, marginLeft: 8}}>
+          <Pressable onPress={() => onRequestEdit(item)}>
             <EditIcon color={theme.dark ? '#FFE6E61A' : '#FFE6E6'} />
           </Pressable>
-          <Pressable
-            onPress={() => {
-              onRequestDelete(item);
-            }}>
+          <Pressable onPress={() => onRequestDelete(item)}>
             <DeleteIcon color={theme.dark ? '#FFE6E61A' : '#FFE6E6'} />
           </Pressable>
         </View>

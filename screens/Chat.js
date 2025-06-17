@@ -1,9 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useContext, useEffect, useState} from 'react';
 import {ActivityIndicator, Image, Switch, Text, View} from 'react-native';
-import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
+import {
+  FlatList,
+  Pressable,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native-gesture-handler';
 import MenuIcon from '../assets/menu-icon.svg';
 import PubicKeyIcon from '../assets/public-key-icon.svg';
+import AIBotIcon from '../assets/ai-bot.svg';
+import ChatIcon from '../assets/chat-icon.svg';
 import ScriptsIcon from '../assets/scripts-icon.svg';
 import {getAccountInformations} from '../service/accountInformations';
 import {Button, useTheme} from 'react-native-paper';
@@ -38,7 +45,7 @@ export default function Chat({navigation}) {
       ),
       description:
         'You should be able to find out easily how everything is put together and why',
-      navigate: 'Edit profile',
+      navigate: 'https://webdock.io/en/docs',
     },
     {
       label: 'Webdock FAQ',
@@ -47,7 +54,8 @@ export default function Chat({navigation}) {
       icon: (
         <ScriptsIcon width={12} height={12} color={theme.colors.background} />
       ),
-      navigate: 'Team',
+      navigate:
+        'https://webdock.io/en/docs/webdock-control-panel/frequently-asked-questions-faq',
     },
     {
       label: 'Contact us',
@@ -55,7 +63,7 @@ export default function Chat({navigation}) {
         <PubicKeyIcon width={12} height={12} color={theme.colors.background} />
       ),
       description: 'Be in touch with Webdock Support',
-      navigate: 'Notification settings',
+      navigate: 'https://webdock.io/en/support/contact',
     },
     {
       label: 'App guide',
@@ -63,12 +71,13 @@ export default function Chat({navigation}) {
         <PubicKeyIcon width={12} height={12} color={theme.colors.background} />
       ),
       description: 'how to get started with our Mobile App for iOS and Android',
-      navigate: 'PublicKeys',
+      navigate:
+        'https://webdock.io/en/docs/webdock-control-panel/mobile-app-guides',
     },
   ];
 
   return account ? (
-    <View
+    <ScrollView
       width="100%"
       height="100%"
       style={{
@@ -112,16 +121,7 @@ export default function Chat({navigation}) {
               flexDirection: 'row',
               alignItems: 'flex-start',
             }}>
-            <Image
-              source={{
-                uri: !account.userAvatar
-                  ? 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
-                  : account.userAvatar.startsWith('https://')
-                  ? account.userAvatar
-                  : 'https:' + account.userAvatar,
-              }}
-              style={{width: 35, height: 35}}
-            />
+            <AIBotIcon color={theme.colors.text} />
             <Spacer size={20} horizontal />
             <View style={{flex: 1, alignSelf: 'flex-start'}}>
               <Text
@@ -166,7 +166,7 @@ export default function Chat({navigation}) {
                     lineHeight: 12 * 1.2,
                     fontWeight: '600',
                   }}
-                  onPress={() => console.log('Pressed')}>
+                  onPress={() => navigation.navigate('WebViewWebdockAI')}>
                   Start Chatting with Webdock AI
                 </Button>
               </View>
@@ -187,16 +187,7 @@ export default function Chat({navigation}) {
               flexDirection: 'row',
               alignItems: 'flex-start',
             }}>
-            <Image
-              source={{
-                uri: !account.userAvatar
-                  ? 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
-                  : account.userAvatar.startsWith('https://')
-                  ? account.userAvatar
-                  : 'https:' + account.userAvatar,
-              }}
-              style={{width: 35, height: 35}}
-            />
+            <ChatIcon color={theme.colors.text} />
             <Spacer size={20} horizontal />
             <View style={{flex: 1, alignSelf: 'flex-start'}}>
               <Text
@@ -272,9 +263,14 @@ export default function Chat({navigation}) {
               backgroundColor: '#022213',
               borderRadius: 10,
             }}>
-            <TouchableOpacity
+            <Pressable
               key={item.label}
-              onPress={() => navigation.navigate(item.navigate)}>
+              onPress={() =>
+                navigation.navigate('WebViewScreen', {
+                  uri: item.navigate,
+                  token: 'abc123',
+                })
+              }>
               <View style={{height: 132, padding: 12}}>
                 <View style={{display: 'flex'}}>
                   <View
@@ -310,11 +306,12 @@ export default function Chat({navigation}) {
                   </Text>
                 </View>
               </View>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         ))}
       </View>
-    </View>
+      <Spacer size={20} />
+    </ScrollView>
   ) : (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <ActivityIndicator size="large" color="#008570" />

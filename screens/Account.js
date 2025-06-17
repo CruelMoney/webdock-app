@@ -1,6 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {useContext, useEffect, useState} from 'react';
-import {ActivityIndicator, Image, Switch, Text, View} from 'react-native';
+import React, {useContext, useEffect, useRef, useState} from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  LayoutAnimation,
+  Linking,
+  Switch,
+  Text,
+  View,
+} from 'react-native';
 import {
   FlatList,
   Pressable,
@@ -36,7 +44,16 @@ export default function Account({navigation}) {
       }
     }, 0);
   }, []);
+  const [itemHeight, setItemHeight] = useState(0);
+  const measuredCount = useRef(0);
 
+  const onLayout = (event, index) => {
+    const {height} = event.nativeEvent.layout;
+    if (height > itemHeight) {
+      setItemHeight(height);
+    }
+    measuredCount.current += 1;
+  };
   const theme = useTheme();
   const tabs = [
     // {"label":"General","icon":<UserIcon width={30} height={30} color="#00a1a1" />,"navigate":"AccountInfo"},
@@ -45,23 +62,19 @@ export default function Account({navigation}) {
       icon: <CogsIcon width={20} height={20} color={theme.colors.background} />,
       description:
         'See current and past network, disk, memory and CPU activity for your server',
-      navigate: 'Edit profile',
+      navigate: 'https://webdock.io/en/dash/editprofile',
     },
     {
       label: 'Team',
       description:
-        'See current and past network, disk, memory and CPU activity for your server',
+        'See current and past network, disk, memory and CPU activity for your server asd asdasdasdasdasdasdasd asdsa das saassa',
       icon: <TeamIcon width={20} height={20} color={theme.colors.background} />,
-      navigate: 'Team',
+      navigate: 'https://webdock.io/en/dash/manageteam',
     },
     {
       label: 'Notification settings',
       icon: (
-        <NotificationIcon
-          width={20}
-          height={20}
-          color={theme.colors.background}
-        />
+        <NotificationIcon width={20} height={20} color={theme.colors.text} />
       ),
       description:
         'See current and past network, disk, memory and CPU activity for your server',
@@ -92,11 +105,22 @@ export default function Account({navigation}) {
       icon: (
         <LegalDocsIcon width={20} height={20} color={theme.colors.background} />
       ),
-      navigate: 'Legal documents',
+      navigate: 'https://webdock.io/en/dash/profile',
     },
   ];
   const {isDark, toggleTheme} = useContext(ThemeContext);
-
+  const handlePress = url => {
+    if (!url.includes('https://') && !url.includes('http://')) {
+      url = 'https://' + url;
+    }
+    Linking.canOpenURL(url).then(supported => {
+      if (supported) {
+        Linking.openURL(url);
+      } else {
+        console.log("Don't know how to open URI: " + url);
+      }
+    });
+  };
   return account ? (
     <ScrollView
       width="100%"
@@ -191,19 +215,28 @@ export default function Account({navigation}) {
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-        {tabs.map(item => (
+        {tabs.map((item, index) => (
           <Pressable
             key={item.label}
-            onPress={() => navigation.navigate(item.navigate)}
+            onPress={() =>
+              item?.navigate?.includes('https://')
+                ? handlePress(item.navigate)
+                : navigation.navigate(item.navigate)
+            }
+            onLayout={e => onLayout(e, index)}
             style={{
               width: '48%',
               marginBottom: 10,
-              borderRightWidth: 4,
-              borderRightColor: theme.colors.primary,
-              backgroundColor: '#022213',
-              borderRadius: 10,
+              height: itemHeight || undefined,
             }}>
-            <View style={{height: 132, padding: 12}}>
+            <View
+              style={{
+                padding: 12,
+                borderRightWidth: 4,
+                borderRightColor: theme.colors.primary,
+                backgroundColor: '#022213',
+                borderRadius: 10,
+              }}>
               <View style={{display: 'flex'}}>
                 <View
                   style={{
@@ -214,7 +247,7 @@ export default function Account({navigation}) {
                   }}>
                   {item.icon}
                 </View>
-                <Spacer size={8} />
+                <View style={{height: 8}} />
                 <Text
                   style={{
                     fontFamily: 'Poppins-SemiBold',
@@ -225,8 +258,9 @@ export default function Account({navigation}) {
                   }}>
                   {item.label}
                 </Text>
-                <Spacer size={8} />
+                <View style={{height: 8}} />
                 <Text
+                  numberOfLines={4}
                   style={{
                     fontFamily: 'Poppins-Light',
                     fontWeight: '300',

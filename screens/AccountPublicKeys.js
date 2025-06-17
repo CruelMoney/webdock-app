@@ -488,7 +488,7 @@ export default function AccountPublicKeys({navigation}) {
               style={{backgroundColor: theme.colors.primary, width: 1}}></View>
             <Text
               style={{
-                fontFamily: 'Raleway-Regular',
+                fontFamily: 'Poppins-Regular',
                 fontSize: 12,
                 color: theme.colors.text,
                 marginStart: 10,

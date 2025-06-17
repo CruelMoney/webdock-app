@@ -12,7 +12,86 @@ import ArrowIcon from '../assets/arrow-icon.svg';
 
 const ServerItem = ({title, alias, dc, profile, ipv4, status}) => {
   const theme = useTheme();
-
+  const renderStatusIcon = icon => {
+    if (icon == 'running') {
+      return (
+        <>
+          <Text
+            style={{
+              fontFamily: 'Poppins-Light',
+              fontSize: 14,
+              includeFontPadding: false,
+              color: '#4C9F5A',
+            }}>
+            {icon.charAt(0).toUpperCase() + icon.slice(1)}
+          </Text>
+        </>
+      );
+    } else if (icon == 'stopped') {
+      return (
+        <>
+          <Text
+            style={{
+              fontFamily: 'Poppins-Light',
+              fontSize: 14,
+              includeFontPadding: false,
+              color: '#E15241',
+            }}>
+            {icon.charAt(0).toUpperCase() + icon.slice(1)}
+          </Text>
+        </>
+      );
+    } else if (icon == 'waiting') {
+      return (
+        <>
+          <Text
+            style={{
+              fontFamily: 'Poppins-Light',
+              fontSize: 14,
+              includeFontPadding: false,
+              color: '#4C9F5A',
+            }}>
+            {icon.charAt(0).toUpperCase() + icon.slice(1)}
+          </Text>
+        </>
+      );
+    } else if (icon == 'working') {
+      return (
+        <>
+          <Text
+            style={{
+              fontFamily: 'Poppins-Light',
+              fontSize: 14,
+              includeFontPadding: false,
+              color: '#4C9F5A',
+            }}>
+            {icon.charAt(0).toUpperCase() + icon.slice(1)}
+          </Text>
+        </>
+      );
+    } else if (
+      icon == 'provisioning' ||
+      icon == 'rebooting' ||
+      icon == 'starting' ||
+      icon == 'stopping' ||
+      icon == 'reinstalling'
+    ) {
+      return (
+        <>
+          <Text
+            style={{
+              fontFamily: 'Poppins-Light',
+              fontSize: 14,
+              includeFontPadding: false,
+              color: '#4C9F5A',
+            }}>
+            {icon.charAt(0).toUpperCase() + icon.slice(1)}
+          </Text>
+        </>
+      );
+    }
+    return null;
+  };
   return (
     <>
       <View style={{backgroundColor: theme.colors.surface}}>
@@ -56,8 +135,7 @@ const ServerItem = ({title, alias, dc, profile, ipv4, status}) => {
                 fontWeight: '300',
                 color: '#8F8F8F',
               }}>
-              {status.charAt(0).toUpperCase() + status.slice(1)} · {profile} ·{' '}
-              {ipv4}
+              {renderStatusIcon(status)} · {ipv4}
             </Text>
           </View>
           <ArrowIcon width={15} height={15} color={theme.colors.primaryText} />

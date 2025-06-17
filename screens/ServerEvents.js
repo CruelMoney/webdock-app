@@ -42,6 +42,7 @@ import Modal from 'react-native-modal';
 import LinearGradient from 'react-native-linear-gradient';
 import GradientButton from '../components/GradientButton';
 import EmptyList from '../components/EmptyList';
+import BottomSheetWrapper from '../components/BottomSheetWrapper';
 
 let stopFetchMore = true;
 const ListFooterComponent = () => (
@@ -264,31 +265,7 @@ export default function ServerEvents({route, navigation}) {
   const [eventDetails, setEventDetails] = useState(false);
   return (
     <SafeAreaView>
-      <View
-        width="100%"
-        height="100%"
-        style={{backgroundColor: '#F4F8F8', padding: '8%'}}>
-        <View
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-          <TouchableOpacity onPress={navigation.goBack}>
-            <BackIcon height={45} width={50} />
-          </TouchableOpacity>
-          <Text
-            style={{
-              color: '#00A1A1',
-              fontFamily: 'Raleway-Medium',
-              fontSize: 20,
-              textAlign: 'center',
-            }}>
-            {route.params.slug}
-          </Text>
-          <View style={{width: 50}}></View>
-        </View>
+      <BottomSheetWrapper title="Events" onClose={() => navigation.goBack()}>
         <FlatList
           showsVerticalScrollIndicator={false}
           data={serverEvents}
@@ -344,7 +321,7 @@ export default function ServerEvents({route, navigation}) {
           // }}
           // ListFooterComponent={() => loadingMore && <ListFooterComponent />}
         />
-      </View>
+      </BottomSheetWrapper>
       <Modal
         testID={'modal'}
         isVisible={eventDetailsModal}

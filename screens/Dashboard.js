@@ -69,6 +69,8 @@ import Spacer from '../components/Spacer';
 import NewsItem from '../components/NewsItem';
 import ServerItem from '../components/ServerItem';
 import {CopilotStep, useCopilot, walkthroughable} from 'react-native-copilot';
+import BootSplash from 'react-native-bootsplash';
+
 const ONBOARDING_KEY = 'hasShownCopilot';
 
 export function Dashboard({navigation}) {
@@ -104,9 +106,16 @@ export function Dashboard({navigation}) {
     const listener = () => {
       // Copilot tutorial finished!
     };
+    start();
 
     copilotEvents.on('stop', listener);
-
+    const init = async () => {
+      // …do multiple sync or async tasks
+    };
+    init().finally(async () => {
+      await BootSplash.hide({fade: true});
+      console.log('BootSplash has been hidden successfully');
+    });
     const unsubscribe = navigation.addListener('focus', () => {
       onBackgroundRefresh();
     });
@@ -319,12 +328,7 @@ export function Dashboard({navigation}) {
               </Text>
             </WalkthroughableView>
           </CopilotStep>
-          <CopilotStep
-            text="Choose your display mode|Pick the color scheme that suits you best. You can change this anytime in your account Settings."
-            order={4}
-            name="chooseYourDisplayMode">
-            <WalkthroughableView style={styles.fakeAnchor} />
-          </CopilotStep>
+
           <View>
             <View
               style={{
@@ -422,33 +426,81 @@ export function Dashboard({navigation}) {
                     : {}
                 }
                 ListEmptyComponent={
-                  servers ? servers.length > 0 ? <EmptyList /> : null : null
+                  servers ? (
+                    servers.length === 0 ? (
+                      <View
+                        style={{
+                          padding: 14,
+                          gap: 16,
+                          backgroundColor: theme.colors.surface,
+                          borderBottomLeftRadius: 4,
+                          borderBottomRightRadius: 4,
+                        }}>
+                        <Text
+                          style={{
+                            fontFamily: 'Poppins',
+                            fontSize: 14,
+                            color: theme.colors.text,
+                          }}>
+                          Start running websites and apps on our fast VPS
+                          Servers.
+                          <Text style={{color: theme.colors.primary}}>
+                            Create a server
+                          </Text>
+                          and it will be listed here.
+                        </Text>
+                        <Button
+                          mode="contained"
+                          textColor={theme.colors.text}
+                          compact
+                          style={{
+                            borderRadius: 4,
+                            minWidth: 0,
+                            paddingHorizontal: 8,
+                          }}
+                          labelStyle={{
+                            fontFamily: 'Poppins-SemiBold',
+                            fontSize: 12,
+                            lineHeight: 12 * 1.2,
+                            fontWeight: '600',
+                          }}
+                          onPress={() => {}}>
+                          Create a Server
+                        </Button>
+                      </View>
+                    ) : null
+                  ) : null
                 }
                 keyExtractor={item => item.slug}
               />
             )}
-            <View
-              style={{
-                height: 42,
-                backgroundColor: theme.colors.surface,
-                borderBottomLeftRadius: 4,
-                borderBottomRightRadius: 4,
-                padding: 12,
-                alignItems: 'flex-end',
-              }}>
-              <TouchableOpacity onPress={() => navigation.navigate('Servers')}>
-                <Text
+            {servers ? (
+              servers.length > 0 ? (
+                <View
                   style={{
-                    fontFamily: 'Poppins-Regular',
-                    fontWeight: '400',
-                    fontSize: 12,
-                    includeFontPadding: false,
-                    color: theme.colors.primaryText,
+                    height: 42,
+                    backgroundColor: theme.colors.surface,
+                    borderBottomLeftRadius: 4,
+                    borderBottomRightRadius: 4,
+                    padding: 12,
+                    alignItems: 'flex-end',
                   }}>
-                  All Servers →
-                </Text>
-              </TouchableOpacity>
-            </View>
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('HomeScreen')}>
+                    <Text
+                      style={{
+                        fontFamily: 'Poppins-Regular',
+                        fontWeight: '400',
+                        fontSize: 12,
+                        includeFontPadding: false,
+                        color: theme.colors.primaryText,
+                      }}>
+                      All Servers →
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : null
+            ) : null}
           </View>
           <View>
             <View
@@ -627,6 +679,12 @@ export function Dashboard({navigation}) {
             </View>
           </View>
         </ScrollView>
+        <CopilotStep
+          text="Choose your display mode|Pick the color scheme that suits you best. You can change this anytime in your account Settings."
+          order={4}
+          name="chooseYourDisplayMode">
+          <WalkthroughableView style={styles.fakeAnchor} />
+        </CopilotStep>
       </SafeAreaView>
     </>
   );
@@ -664,8 +722,8 @@ const styles = StyleSheet.create({
   },
   fakeAnchor: {
     position: 'absolute',
-    top: '50vh',
-    left: '50vw',
+    top: '50%',
+    left: '100%',
     width: 1,
     height: 1,
     marginLeft: -0.5,

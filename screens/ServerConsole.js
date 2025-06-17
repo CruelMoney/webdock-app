@@ -13,6 +13,7 @@ import {AuthContext} from '../components/context';
 import {getPing} from '../service/ping';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import BackIcon from '../assets/back-icon.svg';
+import BottomSheetWrapper from '../components/BottomSheetWrapper';
 
 // ...
 export function ServerConsole({navigation, route}) {
@@ -70,7 +71,7 @@ export function ServerConsole({navigation, route}) {
     setLoading(false);
   };
   return (
-    <>
+    <BottomSheetWrapper title="Web SSH" onClose={() => navigation.goBack()}>
       <View width="100%" height="100%" style={{backgroundColor: '#F4F8F8'}}>
         <View
           style={{
@@ -126,6 +127,6 @@ export function ServerConsole({navigation, route}) {
       {loading && (
         <ActivityIndicator style={{position: 'absolute'}} size="large" />
       )}
-    </>
+    </BottomSheetWrapper>
   );
 }

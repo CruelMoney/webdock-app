@@ -17,6 +17,7 @@ import {ThemeProvider} from './components/ThemeContext';
 import WebdockApp from './WebdockApp';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import BootSplash from 'react-native-bootsplash';
 
 // const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -103,18 +104,24 @@ export default function App() {
 
   useEffect(() => {
     if (loginState.isLoading == false) {
-      // SplashScreen.hide();
+      const init = async () => {
+        // …do multiple sync or async tasks
+      };
+      init().finally(async () => {
+        await BootSplash.hide({fade: true});
+        console.log('BootSplash has been hidden successfully');
+      });
     }
   }, [loginState]);
 
   return (
-    <ThemeProvider>
-      <GestureHandlerRootView style={{flex: 1}}>
+    <GestureHandlerRootView style={{flex: 1}}>
+      <ThemeProvider>
         <SafeAreaProvider>
           <WebdockApp />
         </SafeAreaProvider>
-      </GestureHandlerRootView>
-    </ThemeProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }
 

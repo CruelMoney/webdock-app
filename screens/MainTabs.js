@@ -42,6 +42,7 @@ import Animated, {
 import {CopilotStep, walkthroughable} from 'react-native-copilot';
 import {ServerManagement} from './ServerManagement';
 import Account from './Account';
+import ServerOverview from './ServerOverview';
 const Tab = createBottomTabNavigator();
 
 function RotatingTabIcon({isOpen, onPress}) {
@@ -61,8 +62,6 @@ function RotatingTabIcon({isOpen, onPress}) {
       <Animated.View style={animatedStyle}>
         <PlusIcon
           style={{
-            width: 54,
-            height: 54,
             marginBottom: 9,
             tintColor: 'white',
           }}
@@ -103,7 +102,7 @@ export default function MainTabs({navigation}) {
         screenOptions={({route, navigation}) => ({
           tabBarInactiveTintColor: theme.colors.text,
           tabBarLabelStyle: {
-            paddingTop: 3,
+            paddingTop: 4,
             fontSize: 12,
             lineHeight: 16,
             fontFamily: 'Poppins-Regular',
@@ -111,6 +110,10 @@ export default function MainTabs({navigation}) {
           },
           tabBarActiveTintColor: theme.colors.primary,
           tabBarStyle: {
+            paddingTop: 7,
+            borderTopWidth: 0, // remove line
+            elevation: 0, // Android shadow
+            shadowOpacity: 0,
             backgroundColor: theme.colors.surface,
             height: 65 + insets.bottom,
             zIndex: 100,
@@ -140,7 +143,8 @@ export default function MainTabs({navigation}) {
                 text="Notification center|Click the notification icon to open up your Server Alerts and Event log to keep up with important information about your servers."
                 order={2}
                 name="openNotificationCenter">
-                <WalkthroughablePressable onPress={() => console.log('Btn1')}>
+                <WalkthroughablePressable
+                  onPress={() => navigation.navigate('NotificationCenter')}>
                   <NotificationIcon
                     height={28}
                     width={28}
@@ -197,14 +201,7 @@ export default function MainTabs({navigation}) {
                 text="Action button|Use the “+” button to quickly create a server, refer a friend or start a feature request."
                 order={1}
                 name="openActionButton">
-                <WalkthroughableView
-                  style={{
-                    width: 78,
-                    height: 72,
-                    borderRadius: 30,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
+                <WalkthroughableView>
                   <RotatingTabIcon isOpen={sheetOpen} onPress={toggleSheet} />
                 </WalkthroughableView>
               </CopilotStep>
@@ -238,7 +235,7 @@ export default function MainTabs({navigation}) {
         />
         <Tab.Screen
           name="ServerManagement"
-          component={ServerManagement}
+          component={ServerOverview}
           options={{
             tabBarItemStyle: {display: 'none'},
           }}

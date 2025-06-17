@@ -8,6 +8,7 @@ import BottomSheet, {
 import {Icon, IconButton, useTheme} from 'react-native-paper';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Pressable} from 'react-native-gesture-handler';
+import {ErrorBoundary} from './ErrorBoundary';
 
 export default function BottomSheetWrapper({
   children,
@@ -18,10 +19,12 @@ export default function BottomSheetWrapper({
   const bottomSheetRef = useRef(null);
 
   useEffect(() => {
-    requestAnimationFrame(() => {
-      bottomSheetRef.current?.snapToIndex(0);
-    });
-  }, []);
+    if (children) {
+      requestAnimationFrame(() => {
+        bottomSheetRef.current?.snapToIndex(0);
+      });
+    }
+  }, [children]);
 
   const handleChange = index => {
     if (index === -1 && onClose) {
@@ -33,7 +36,7 @@ export default function BottomSheetWrapper({
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={StyleSheet.absoluteFill}>
+    <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       <BottomSheet
         ref={bottomSheetRef}
         index={-1}
@@ -57,9 +60,11 @@ export default function BottomSheetWrapper({
             pressBehavior="close"
           />
         )}>
-        <BottomSheetView contentContainerStyle={[styles.sheetContent]}>
+        <BottomSheetView
+          style={{flex: 1, flexDirection: 'column', padding: 0, margin: 0}}>
           <View
             style={{
+              width: '100%',
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -89,13 +94,11 @@ export default function BottomSheetWrapper({
             </Text>
             <View style={{width: 30, height: 30}}></View>
           </View>
-          {children}
+          <View style={{flex: 1}}>
+            <ErrorBoundary onError={onClose}>{children}</ErrorBoundary>
+          </View>
         </BottomSheetView>
       </BottomSheet>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  sheetContent: {},
-});

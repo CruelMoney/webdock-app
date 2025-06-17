@@ -78,6 +78,7 @@ import {Picker} from '@react-native-picker/picker';
 import AccordionItem from '../components/AccordionItem';
 import EmptyList from '../components/EmptyList';
 import EventItem from '../components/EventItem';
+import {getInstantMetrics} from '../service/serverMetrics';
 
 export default function ServerOverview({route, navigation}) {
   const [loading, setLoading] = React.useState(false);
@@ -85,6 +86,12 @@ export default function ServerOverview({route, navigation}) {
   const [dryRun, setDryRun] = React.useState();
   const [server, setServer] = React.useState();
   const [events, setEvents] = React.useState([]);
+  const [metrics, setMetrics] = React.useState([]);
+  React.useLayoutEffect(() => {
+    if (route.params?.slug) {
+      navigation.setOptions({title: route.params.slug});
+    }
+  }, [navigation, route.params?.slug]);
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       onBackgroundRefresh();
@@ -100,6 +107,9 @@ export default function ServerOverview({route, navigation}) {
         });
         getAllLocations();
         getAllImages();
+        getInstantMetrics(userToken, route.params.slug).then(data => {
+          setMetrics(data);
+        });
       } catch (e) {
         alert(e);
       }
@@ -613,7 +623,7 @@ export default function ServerOverview({route, navigation}) {
     setProfiles(array);
   };
   if (Platform.OS === 'android') {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
+    //UIManager.setLayoutAnimationEnabledExperimental(true);
   }
   const [itemsCharge, setItemsCharge] = useState();
   useEffect(() => {
@@ -893,6 +903,16 @@ export default function ServerOverview({route, navigation}) {
     setSelectedImageForReinstall(itemValue);
   };
   const theme = useTheme();
+
+  function getPercentage(allowed, usage) {
+    const a = Number(allowed);
+    const u = Number(usage);
+
+    if (!a || isNaN(a) || isNaN(u)) return 0;
+    const fraction = u / a;
+    return Math.max(0, Math.min(1, parseFloat(fraction.toFixed(2))));
+  }
+
   return server ? (
     <>
       <ScrollView
@@ -922,6 +942,7 @@ export default function ServerOverview({route, navigation}) {
                   }}>
                   <Text
                     style={{
+                      width: '15%',
                       fontFamily: 'Poppins-Medium',
                       fontWeight: '500',
                       fontSize: 14,
@@ -1087,6 +1108,7 @@ export default function ServerOverview({route, navigation}) {
               }}>
               <Text
                 style={{
+                  width: '15%',
                   fontFamily: 'Poppins-Medium',
                   fontWeight: '500',
                   fontSize: 14,
@@ -1096,36 +1118,35 @@ export default function ServerOverview({route, navigation}) {
               </Text>
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 {server.aliases.length == 1 ? (
-                  <>
-                    <TouchableOpacity
+                  <TouchableOpacity
+                    key={server.aliases[0]}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}
+                    onPress={() => handleClick(server.aliases[0])}>
+                    <View
                       style={{
-                        flexDirection: 'row',
+                        width: 12,
+                        height: 12,
+                        justifyContent: 'center',
                         alignItems: 'center',
-                      }}
-                      onPress={() => handleClick(server.aliases[0])}>
-                      <View
-                        style={{
-                          width: 12,
-                          height: 12,
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          backgroundColor: 'rgba(0,161,161,0.26)',
-                          borderRadius: 15 / 2,
-                        }}>
-                        <LinkIcon width={8} height={8} />
-                      </View>
-                      <Text
-                        style={{
-                          fontFamily: 'Poppins-Light',
-                          fontSize: 14,
-                          marginStart: 5,
-                          includeFontPadding: false,
-                          color: theme.colors.text,
-                        }}>
-                        {server.aliases[0]}
-                      </Text>
-                    </TouchableOpacity>
-                  </>
+                        backgroundColor: 'rgba(0,161,161,0.26)',
+                        borderRadius: 15 / 2,
+                      }}>
+                      <LinkIcon width={8} height={8} />
+                    </View>
+                    <Text
+                      style={{
+                        fontFamily: 'Poppins-Light',
+                        fontSize: 14,
+                        marginStart: 5,
+                        includeFontPadding: false,
+                        color: theme.colors.text,
+                      }}>
+                      {server.aliases[0]}
+                    </Text>
+                  </TouchableOpacity>
                 ) : (
                   <Text
                     style={{
@@ -1167,6 +1188,7 @@ export default function ServerOverview({route, navigation}) {
               }}>
               <Text
                 style={{
+                  width: '15%',
                   fontFamily: 'Poppins-Medium',
                   fontWeight: '500',
                   fontSize: 14,
@@ -1184,13 +1206,13 @@ export default function ServerOverview({route, navigation}) {
                 {'[' +
                   (server.virtualization === 'container' ? 'LXD' : 'KVM') +
                   '] '}
-                {profiles
+                {/* {profiles
                   ? profiles
                       .filter(item => server.profile === item.slug)
                       .map(item => {
                         return item.name;
                       })
-                  : null}
+                  : null} */}
               </Text>
               <View
                 style={{display: 'flex', flexDirection: 'row', width: '10%'}}>
@@ -1231,6 +1253,8 @@ export default function ServerOverview({route, navigation}) {
               }}>
               <Text
                 style={{
+                  width: '15%',
+
                   fontFamily: 'Poppins-Medium',
                   fontWeight: '500',
                   fontSize: 14,
@@ -1274,6 +1298,8 @@ export default function ServerOverview({route, navigation}) {
               }}>
               <Text
                 style={{
+                  width: '15%',
+
                   fontFamily: 'Poppins-Medium',
                   fontWeight: '500',
                   fontSize: 14,
@@ -1356,7 +1382,7 @@ export default function ServerOverview({route, navigation}) {
                     fontSize: 10,
                     color: theme.colors.text,
                   }}>
-                  Used (5501 MiB)
+                  Used ({metrics?.disk?.lastSamplings?.amount} MiB)
                 </Text>
               </View>
 
@@ -1379,12 +1405,14 @@ export default function ServerOverview({route, navigation}) {
                     fontSize: 10,
                     color: theme.colors.text,
                   }}>
-                  Allowed (95367 MiB)
+                  Allowed ({metrics?.disk?.allowed} MiB)
                 </Text>
               </View>
-
               <ProgressBar
-                progress={0.3}
+                progress={getPercentage(
+                  metrics?.disk?.allowed,
+                  metrics?.disk?.lastSamplings?.amount,
+                )}
                 color={'#01AF35'}
                 style={{
                   height: 20,
@@ -1431,7 +1459,7 @@ export default function ServerOverview({route, navigation}) {
                     fontSize: 10,
                     color: theme.colors.text,
                   }}>
-                  Used (5501 MiB)
+                  Used ({metrics?.network?.total} MiB)
                 </Text>
               </View>
 
@@ -1454,12 +1482,15 @@ export default function ServerOverview({route, navigation}) {
                     fontSize: 10,
                     color: theme.colors.text,
                   }}>
-                  Allowed (95367 MiB)
+                  Allowed ({metrics?.network?.allowed} MiB)
                 </Text>
               </View>
 
               <ProgressBar
-                progress={0.3}
+                progress={getPercentage(
+                  metrics?.network?.allowed,
+                  metrics?.network?.total,
+                )}
                 color={'#01AF35'}
                 style={{
                   height: 20,
@@ -1581,7 +1612,12 @@ export default function ServerOverview({route, navigation}) {
               }}>
               <TouchableOpacity
                 key={item.label}
-                onPress={() => open('AccountPublicKeys', {})}>
+                onPress={() =>
+                  navigation.navigate(item.navigate, {
+                    slug: route.params.slug,
+                    name: route.params.name,
+                  })
+                }>
                 <View style={{height: 132, padding: 12}}>
                   <View style={{display: 'flex', gap: 8}}>
                     <View

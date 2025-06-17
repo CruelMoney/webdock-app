@@ -6,452 +6,343 @@ import {getMetrics} from '../service/serverMetrics';
 import {BarChart, LineChart} from 'react-native-chart-kit';
 import {ScrollView} from 'react-native-gesture-handler';
 import BackIcon from '../assets/back-icon.svg';
-import {Card, Title} from 'react-native-paper';
+import {Card, Title, useTheme} from 'react-native-paper';
+import BottomSheetWrapper from '../components/BottomSheetWrapper';
 export default function ServerActivity({route, navigation}) {
   const [metrics, setMetrics] = useState();
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       //onBackgroundRefresh();
     });
-
     setTimeout(async () => {
-      let userToken = null;
       try {
-        userToken = await AsyncStorage.getItem('userToken');
-        getMetrics(userToken, route.params.slug).then(data => {
-          setMetrics(data);
-          console.log(data.cpu.usageSamplings);
-        });
+        const userToken = await AsyncStorage.getItem('userToken');
+        const data = await getMetrics(userToken, route.params.slug);
+        setMetrics(data);
       } catch (e) {
         alert(e);
       }
     }, 0);
-    return unsubscribe;
-  }, [route]);
+    return () => {
+      unsubscribe(); // ✅ Proper cleanup of event listener
+    };
+  }, [route, navigation]);
+  const formatDate = timestamp => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp.replace(/ /g, 'T'));
+    return `${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+      date.getDate(),
+    ).padStart(2, '0')}-${date.getFullYear()}`;
+  };
+
+  const formatTime = timestamp => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp.replace(/ /g, 'T'));
+    return `${String(date.getHours()).padStart(2, '0')}:${String(
+      date.getMinutes(),
+    ).padStart(2, '0')}`;
+  };
+  const theme = useTheme();
+  const width = Dimensions.get('window').width * 0.9;
+
   return (
-    <View width="100%" height="100%" style={{backgroundColor: '#F4F8F8'}}>
-      <View
-        style={{
-          paddingHorizontal: '8%',
-          paddingTop: '8%',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-        <TouchableOpacity onPress={navigation.goBack}>
-          <BackIcon height={45} width={50} />
-        </TouchableOpacity>
-        <Text
+    <BottomSheetWrapper
+      title="Server activity"
+      onClose={() => navigation.goBack()}>
+      {metrics ? (
+        <View
+          width="100%"
+          height="100%"
           style={{
-            color: '#00A1A1',
-            fontFamily: 'Raleway-Medium',
-            fontSize: 20,
-            textAlign: 'center',
+            width: '100%',
+            height: '100%',
+            flex: 1,
+            backgroundColor: theme.colors.background,
+            paddingHorizontal: 20,
+            gap: 24,
           }}>
-          {route.params.name}
-        </Text>
-        <View style={{width: 50}}></View>
-      </View>
-      <ScrollView
-        style={{marginHorizontal: '3%', marginTop: '2%'}}
-        showsVerticalScrollIndicator={false}>
-        <Card
-          mode="elevated"
-          style={{
-            alignItems: 'center',
-            backgroundColor: 'white',
-            borderRadius: 10,
-          }}>
-          <Card.Title
-            titleStyle={{fontFamily: 'Raleway-Regular', marginStart: 10}}
-            title={'Network'}
-            right={() => (
-              <Title
-                style={{
-                  fontFamily: 'Raleway-Medium',
-                  marginRight: 20,
-                  color: '#bdbdbd',
-                  includeFontPadding: false,
-                }}>
-                {metrics
-                  ? metrics.cpu.usageSamplings.slice(-1).map(item => {
-                      const dateString = item.timestamp.replace(/ /g, 'T');
-                      var date = new Date(dateString);
-                      const day = String(date.getDate()).padStart(2, '0');
-                      const month = String(date.getMonth() + 1).padStart(
-                        2,
-                        '0',
-                      );
-                      const year = String(date.getFullYear()).padStart(4, '0');
-                      return month + '-' + day + '-' + year;
-                    })
-                  : ''}
-              </Title>
-            )}
-          />
-          <Card.Content
+          {/* NETWORK CARD */}
+          <Card
+            mode="elevated"
             style={{
-              display: 'flex',
-              justifyContent: 'center',
               alignItems: 'center',
+              backgroundColor: 'white',
+              borderRadius: 10,
             }}>
-            <LineChart
-              width={Dimensions.get('window').width * 0.9}
-              height={220}
-              // verticalLabelRotation={125}
-              data={{
-                datasets: [
-                  {
-                    data: metrics
-                      ? metrics.cpu.usageSamplings.slice(-8).map(item => {
-                          return item.amount;
-                        })
-                      : [0],
-                    color: (opacity = 1) => `rgba(0, 161, 161, ${opacity})`,
-                  },
-                  {
-                    data: metrics
-                      ? metrics.network.ingressSamplings.slice(-8).map(item => {
-                          return item.amount + 10;
-                        })
-                      : [0],
-                    color: (opacity = 1) => `rgba(158, 158, 158, ${opacity})`,
-                  },
-                ],
-                labels: metrics
-                  ? metrics.cpu.usageSamplings.slice(-8).map(item => {
-                      const dateString = item.timestamp.replace(/ /g, 'T');
-                      var date = new Date(dateString);
-                      const hours = String(date.getHours()).padStart(2, '0');
-                      const minutes = String(date.getMinutes()).padStart(
-                        2,
-                        '0',
-                      );
-                      return hours + ':' + minutes;
-                    })
-                  : [null],
-                legend: ['Network out (MiB)', 'Network in (MiB)'],
-              }}
-              // height={400}
-              yAxisInterval={1} // optional, defaults to 1
-              chartConfig={{
-                backgroundGradientFrom: '#ffffff',
-                backgroundGradientTo: '#ffffff',
-                decimalPlaces: 0, // optional, defaults to 2dp
-                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                style: {
-                  borderRadius: 16,
-                },
-                propsForDots: {
-                  r: '6',
-                  strokeWidth: '2',
-                  stroke: 'white',
-                },
-              }}
-              style={{
-                borderRadius: 16,
-              }}
-              label
+            <Card.Title
+              titleStyle={{fontFamily: 'Raleway-Regular', marginStart: 10}}
+              title={'Network'}
+              right={() => (
+                <Title
+                  style={{
+                    fontFamily: 'Raleway-Medium',
+                    marginRight: 20,
+                    color: '#bdbdbd',
+                    includeFontPadding: false,
+                  }}>
+                  {formatDate(metrics?.cpu?.usageSamplings?.at(-1)?.timestamp)}
+                </Title>
+              )}
             />
-          </Card.Content>
-        </Card>
-        <Card
-          mode="elevated"
-          style={{
-            alignItems: 'center',
-            backgroundColor: 'white',
-            borderRadius: 10,
-            marginTop: 10,
-          }}>
-          <Card.Title
-            titleStyle={{fontFamily: 'Raleway-Regular', marginStart: 10}}
-            title={'Disk'}
-            right={() => (
-              <Title
-                style={{
-                  fontFamily: 'Raleway-Medium',
-                  marginRight: 20,
-                  color: '#bdbdbd',
-                  includeFontPadding: false,
-                }}>
-                {metrics
-                  ? metrics.disk.samplings.slice(-1).map(item => {
-                      const dateString = item.timestamp.replace(/ /g, 'T');
-                      var date = new Date(dateString);
-                      const day = String(date.getDate()).padStart(2, '0');
-                      const month = String(date.getMonth() + 1).padStart(
-                        2,
-                        '0',
-                      );
-                      const year = String(date.getFullYear()).padStart(4, '0');
-                      return month + '-' + day + '-' + year;
-                    })
-                  : ''}
-              </Title>
-            )}
-          />
-          <Card.Content
+            <Card.Content
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <LineChart
+                width={width}
+                height={220}
+                data={{
+                  datasets: [
+                    {
+                      data: metrics?.cpu?.usageSamplings
+                        ?.slice(-8)
+                        ?.map(item => item.amount) ?? [0],
+                      color: (opacity = 1) => `rgba(0, 161, 161, ${opacity})`,
+                    },
+                    {
+                      data: metrics?.network?.ingressSamplings
+                        ?.slice(-8)
+                        ?.map(item => item.amount + 10) ?? [0],
+                      color: (opacity = 1) => `rgba(158, 158, 158, ${opacity})`,
+                    },
+                  ],
+                  labels: metrics?.cpu?.usageSamplings
+                    ?.slice(-8)
+                    ?.map(item => formatTime(item.timestamp)) ?? [null],
+                  legend: ['Network out (MiB)', 'Network in (MiB)'],
+                }}
+                yAxisInterval={1}
+                chartConfig={{
+                  backgroundGradientFrom: '#ffffff',
+                  backgroundGradientTo: '#ffffff',
+                  decimalPlaces: 0,
+                  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                  labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                  style: {borderRadius: 16},
+                  propsForDots: {r: '6', strokeWidth: '2', stroke: 'white'},
+                }}
+                style={{borderRadius: 16}}
+              />
+            </Card.Content>
+          </Card>
+
+          {/* DISK CARD */}
+          <Card
+            mode="elevated"
             style={{
-              display: 'flex',
-              justifyContent: 'center',
               alignItems: 'center',
+              backgroundColor: 'white',
+              borderRadius: 10,
+              marginTop: 10,
             }}>
-            <BarChart
-              width={Dimensions.get('window').width * 0.9}
-              height={220}
-              data={{
-                datasets: [
-                  {
-                    data: metrics
-                      ? metrics.disk.samplings.slice(-8).map(item => {
-                          return item.amount;
-                        })
-                      : [0],
-                    color: (opacity = 1) => `rgba(0, 161, 161, ${opacity})`,
-                  },
-                ],
-                labels: metrics
-                  ? metrics.disk.samplings.slice(-8).map(item => {
-                      const dateString = item.timestamp.replace(/ /g, 'T');
-                      var date = new Date(dateString);
-                      const hours = String(date.getHours()).padStart(2, '0');
-                      const minutes = String(date.getMinutes()).padStart(
-                        2,
-                        '0',
-                      );
-                      return hours + ':' + minutes;
-                    })
-                  : [null],
-              }}
-              segments={5}
-              // height={400}
-              yAxisInterval={1} // optional, defaults to 1
-              chartConfig={{
-                backgroundGradientFrom: '#ffffff',
-                backgroundGradientTo: '#ffffff',
-                decimalPlaces: 0, // optional, defaults to 2dp
-                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                style: {
-                  borderRadius: 16,
-                },
-                fillShadowGradient: `rgba(0, 161, 161, 1)`,
-                fillShadowGradientOpacity: 1,
-                propsForBackgroundLines: {
-                  strokeWidth: 1,
-                  stroke: '#e3e3e3',
-                  strokeDasharray: '0',
-                },
-              }}
-              style={{
-                borderRadius: 16,
-              }}
-              showBarTops
+            <Card.Title
+              titleStyle={{fontFamily: 'Raleway-Regular', marginStart: 10}}
+              title={'Disk'}
+              right={() => (
+                <Title
+                  style={{
+                    fontFamily: 'Raleway-Medium',
+                    marginRight: 20,
+                    color: '#bdbdbd',
+                    includeFontPadding: false,
+                  }}>
+                  {formatDate(metrics?.disk?.samplings?.at(-1)?.timestamp)}
+                </Title>
+              )}
             />
-          </Card.Content>
-        </Card>
-        <Card
-          mode="elevated"
-          style={{
-            alignItems: 'center',
-            backgroundColor: 'white',
-            borderRadius: 10,
-            marginTop: 10,
-          }}>
-          <Card.Title
-            titleStyle={{fontFamily: 'Raleway-Regular', marginStart: 10}}
-            title={'Memory'}
-            right={() => (
-              <Title
-                style={{
-                  fontFamily: 'Raleway-Medium',
-                  marginRight: 20,
-                  color: '#bdbdbd',
-                  includeFontPadding: false,
-                }}>
-                {metrics
-                  ? metrics.memory.usageSamplings.slice(-1).map(item => {
-                      const dateString = item.timestamp.replace(/ /g, 'T');
-                      var date = new Date(dateString);
-                      const day = String(date.getDate()).padStart(2, '0');
-                      const month = String(date.getMonth() + 1).padStart(
-                        2,
-                        '0',
-                      );
-                      const year = String(date.getFullYear()).padStart(4, '0');
-                      return month + '-' + day + '-' + year;
-                    })
-                  : ''}
-              </Title>
-            )}
-          />
-          <Card.Content
+            <Card.Content
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <BarChart
+                width={width}
+                height={220}
+                data={{
+                  datasets: [
+                    {
+                      data: metrics?.disk?.samplings
+                        ?.slice(-8)
+                        ?.map(item => item.amount) ?? [0],
+                      color: (opacity = 1) => `rgba(0, 161, 161, ${opacity})`,
+                    },
+                  ],
+                  labels: metrics?.disk?.samplings
+                    ?.slice(-8)
+                    ?.map(item => formatTime(item.timestamp)) ?? [null],
+                }}
+                segments={5}
+                yAxisInterval={1}
+                chartConfig={{
+                  backgroundGradientFrom: '#ffffff',
+                  backgroundGradientTo: '#ffffff',
+                  decimalPlaces: 0,
+                  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                  labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                  style: {borderRadius: 16},
+                  fillShadowGradient: `rgba(0, 161, 161, 1)`,
+                  fillShadowGradientOpacity: 1,
+                  propsForBackgroundLines: {
+                    strokeWidth: 1,
+                    stroke: '#e3e3e3',
+                    strokeDasharray: '0',
+                  },
+                }}
+                style={{borderRadius: 16}}
+                showBarTops
+              />
+            </Card.Content>
+          </Card>
+
+          {/* MEMORY CARD */}
+          <Card
+            mode="elevated"
             style={{
-              display: 'flex',
-              justifyContent: 'center',
               alignItems: 'center',
+              backgroundColor: 'white',
+              borderRadius: 10,
+              marginTop: 10,
             }}>
-            <LineChart
-              width={Dimensions.get('window').width * 0.9}
-              height={220}
-              data={{
-                datasets: [
-                  {
-                    data: metrics
-                      ? metrics.memory.usageSamplings.slice(-8).map(item => {
-                          return item.amount;
-                        })
-                      : [0],
-                    color: (opacity = 1) => `rgba(0, 161, 161, ${opacity})`,
-                  },
-                ],
-                labels: metrics
-                  ? metrics.memory.usageSamplings.slice(-8).map(item => {
-                      const dateString = item.timestamp.replace(/ /g, 'T');
-                      var date = new Date(dateString);
-                      const hours = String(date.getHours()).padStart(2, '0');
-                      const minutes = String(date.getMinutes()).padStart(
-                        2,
-                        '0',
-                      );
-                      return hours + ':' + minutes;
-                    })
-                  : [null],
-                legend: ['Memory use (MiB)'],
-              }}
-              // height={400}
-              yAxisInterval={4000}
-              chartConfig={{
-                backgroundGradientFrom: '#ffffff',
-                backgroundGradientTo: '#ffffff',
-                decimalPlaces: 0, // optional, defaults to 2dp
-                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                style: {
-                  borderRadius: 16,
-                },
-                propsForDots: {
-                  r: '6',
-                  strokeWidth: '2',
-                  stroke: 'white',
-                },
-              }}
-              style={{
-                borderRadius: 16,
-              }}
-              label
-              fromZero
+            <Card.Title
+              titleStyle={{fontFamily: 'Raleway-Regular', marginStart: 10}}
+              title={'Memory'}
+              right={() => (
+                <Title
+                  style={{
+                    fontFamily: 'Raleway-Medium',
+                    marginRight: 20,
+                    color: '#bdbdbd',
+                    includeFontPadding: false,
+                  }}>
+                  {formatDate(
+                    metrics?.memory?.usageSamplings?.at(-1)?.timestamp,
+                  )}
+                </Title>
+              )}
             />
-          </Card.Content>
-        </Card>
-        <Card
-          mode="elevated"
-          style={{
-            alignItems: 'center',
-            backgroundColor: 'white',
-            borderRadius: 10,
-            marginTop: 10,
-          }}>
-          <Card.Title
-            titleStyle={{fontFamily: 'Raleway-Regular', marginStart: 10}}
-            title={'CPU'}
-            right={() => (
-              <Title
-                style={{
-                  fontFamily: 'Raleway-Medium',
-                  marginRight: 20,
-                  color: '#bdbdbd',
-                  includeFontPadding: false,
-                }}>
-                {metrics
-                  ? metrics.network.egressSamplings.slice(-1).map(item => {
-                      const dateString = item.timestamp.replace(/ /g, 'T');
-                      var date = new Date(dateString);
-                      const day = String(date.getDate()).padStart(2, '0');
-                      const month = String(date.getMonth() + 1).padStart(
-                        2,
-                        '0',
-                      );
-                      const year = String(date.getFullYear()).padStart(4, '0');
-                      return month + '-' + day + '-' + year;
-                    })
-                  : ''}
-              </Title>
-            )}
-          />
-          <Card.Content
+            <Card.Content
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <LineChart
+                width={width}
+                height={220}
+                data={{
+                  datasets: [
+                    {
+                      data: metrics?.memory?.usageSamplings
+                        ?.slice(-8)
+                        ?.map(item => item.amount) ?? [0],
+                      color: (opacity = 1) => `rgba(0, 161, 161, ${opacity})`,
+                    },
+                  ],
+                  labels: metrics?.memory?.usageSamplings
+                    ?.slice(-8)
+                    ?.map(item => formatTime(item.timestamp)) ?? [null],
+                  legend: ['Memory use (MiB)'],
+                }}
+                yAxisInterval={4000}
+                chartConfig={{
+                  backgroundGradientFrom: '#ffffff',
+                  backgroundGradientTo: '#ffffff',
+                  decimalPlaces: 0,
+                  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                  labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                  style: {borderRadius: 16},
+                  propsForDots: {r: '6', strokeWidth: '2', stroke: 'white'},
+                }}
+                style={{borderRadius: 16}}
+                fromZero
+              />
+            </Card.Content>
+          </Card>
+
+          {/* CPU CARD */}
+          <Card
+            mode="elevated"
             style={{
-              display: 'flex',
-              justifyContent: 'center',
               alignItems: 'center',
+              backgroundColor: 'white',
+              borderRadius: 10,
+              marginTop: 10,
             }}>
-            <LineChart
-              width={Dimensions.get('window').width * 0.9}
-              height={220}
-              data={{
-                datasets: [
-                  {
-                    data: metrics
-                      ? metrics.network.egressSamplings.slice(-8).map(item => {
-                          return item.amount;
-                        })
-                      : [0],
-                    color: (opacity = 1) => `rgba(0, 161, 161, ${opacity})`,
-                  },
-                  {
-                    data: metrics
-                      ? metrics.processes.processesSamplings
-                          .slice(-8)
-                          .map(item => {
-                            return item.amount + 10;
-                          })
-                      : [0],
-                    color: (opacity = 1) => `rgba(158, 158, 158, ${opacity})`,
-                  },
-                ],
-                labels: metrics
-                  ? metrics.network.ingressSamplings.slice(-8).map(item => {
-                      const dateString = item.timestamp.replace(/ /g, 'T');
-                      var date = new Date(dateString);
-                      const hours = String(date.getHours()).padStart(2, '0');
-                      const minutes = String(date.getMinutes()).padStart(
-                        2,
-                        '0',
-                      );
-                      return hours + ':' + minutes;
-                    })
-                  : [null],
-                legend: ['CPU use (seconds)', 'Processes (count)'],
-              }}
-              // height={400}
-              yAxisInterval={1} // optional, defaults to 1
-              chartConfig={{
-                backgroundGradientFrom: '#ffffff',
-                backgroundGradientTo: '#ffffff',
-                decimalPlaces: 0, // optional, defaults to 2dp
-                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                style: {
-                  borderRadius: 16,
-                },
-                propsForDots: {
-                  r: '6',
-                  strokeWidth: '2',
-                  stroke: 'white',
-                },
-              }}
-              style={{
-                borderRadius: 16,
-              }}
-              label
-              fromZero
+            <Card.Title
+              titleStyle={{fontFamily: 'Raleway-Regular', marginStart: 10}}
+              title={'CPU'}
+              right={() => (
+                <Title
+                  style={{
+                    fontFamily: 'Raleway-Medium',
+                    marginRight: 20,
+                    color: '#bdbdbd',
+                    includeFontPadding: false,
+                  }}>
+                  {formatDate(
+                    metrics?.network?.egressSamplings?.at(-1)?.timestamp,
+                  )}
+                </Title>
+              )}
             />
-          </Card.Content>
-        </Card>
-        <View style={{height: 10}}></View>
-      </ScrollView>
-    </View>
+            <Card.Content
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <LineChart
+                width={width}
+                height={220}
+                data={{
+                  datasets: [
+                    {
+                      data: metrics?.network?.egressSamplings
+                        ?.slice(-8)
+                        ?.map(item => item.amount) ?? [0],
+                      color: (opacity = 1) => `rgba(0, 161, 161, ${opacity})`,
+                    },
+                    {
+                      data: metrics?.processes?.processesSamplings
+                        ?.slice(-8)
+                        ?.map(item => item.amount + 10) ?? [0],
+                      color: (opacity = 1) => `rgba(158, 158, 158, ${opacity})`,
+                    },
+                  ],
+                  labels: metrics?.network?.ingressSamplings
+                    ?.slice(-8)
+                    ?.map(item => formatTime(item.timestamp)) ?? [null],
+                  legend: ['CPU use (seconds)', 'Processes (count)'],
+                }}
+                yAxisInterval={1}
+                chartConfig={{
+                  backgroundGradientFrom: '#ffffff',
+                  backgroundGradientTo: '#ffffff',
+                  decimalPlaces: 0,
+                  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                  labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                  style: {borderRadius: 16},
+                  propsForDots: {r: '6', strokeWidth: '2', stroke: 'white'},
+                }}
+                style={{borderRadius: 16}}
+                fromZero
+              />
+            </Card.Content>
+          </Card>
+
+          <View style={{height: 10}} />
+        </View>
+      ) : (
+        <View
+          style={{
+            backgroundColor: theme.colors.background,
+            paddingHorizontal: 20,
+            gap: 24,
+          }}></View>
+      )}
+    </BottomSheetWrapper>
   );
 }

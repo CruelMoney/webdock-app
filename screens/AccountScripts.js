@@ -219,9 +219,9 @@ export default function AccountScripts({navigation}) {
     <>
       <BottomSheetWrapper title="Scripts" onClose={() => navigation.goBack()}>
         <View
-          width="100%"
-          height="100%"
           style={{
+            width: '100%',
+            height: '100%',
             backgroundColor: theme.colors.background,
             paddingHorizontal: 20,
             gap: 24,
@@ -423,6 +423,7 @@ export default function AccountScripts({navigation}) {
             <FlatList
               style={{}}
               data={scripts}
+              scrollEnabled={false}
               showsVerticalScrollIndicator={false}
               onRefresh={() => onRefresh()}
               refreshing={isFetching}
@@ -482,6 +483,7 @@ export default function AccountScripts({navigation}) {
             borderTopStartRadius: 20,
             borderTopEndRadius: 20,
             gap: 12,
+            backgroundColor: theme.colors.surface,
           }}>
           <Text
             style={{

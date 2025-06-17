@@ -15,6 +15,7 @@ import {
   TextInput,
   Menu,
   useTheme,
+  Button,
 } from 'react-native-paper';
 import {getServers} from '../service/servers';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -27,11 +28,11 @@ import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
 const initialLayout = {width: Dimensions.get('window').width};
 
 export function HomeScreen({navigation}) {
-  const [servers, setServers] = useState();
+  const [servers, setServers] = useState([]);
   const [locations, setLocations] = useState();
   const [profiles, setProfiles] = useState();
   const [images, setImages] = useState();
-  const [snapshots, setSnapshots] = useState();
+  const [snapshots, setSnapshots] = useState([]);
   useEffect(() => {
     setAPIBusy(true);
     const unsubscribe = navigation.addListener('focus', () => {
@@ -201,10 +202,51 @@ export function HomeScreen({navigation}) {
         showsHorizontalScrollIndicator={false}
         onRefresh={() => onRefresh()}
         ListEmptyComponent={
-          servers ? servers.length > 0 ? <EmptyList /> : null : null
+          servers ? (
+            servers.length === 0 ? (
+              <View
+                style={{
+                  padding: 14,
+                  gap: 16,
+                  backgroundColor: theme.colors.surface,
+                  borderBottomLeftRadius: 4,
+                  borderBottomRightRadius: 4,
+                }}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins',
+                    fontSize: 14,
+                    color: theme.colors.text,
+                  }}>
+                  Start running websites and apps on our fast VPS Servers.
+                  <Text style={{color: theme.colors.primary}}>
+                    Create a server
+                  </Text>{' '}
+                  and it will be listed here.
+                </Text>
+                <Button
+                  mode="contained"
+                  textColor={theme.colors.text}
+                  compact
+                  style={{
+                    borderRadius: 4,
+                    minWidth: 0,
+                    paddingHorizontal: 8,
+                  }}
+                  labelStyle={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontSize: 12,
+                    lineHeight: 12 * 1.2,
+                    fontWeight: '600',
+                  }}
+                  onPress={() => {}}>
+                  Create a Server
+                </Button>
+              </View>
+            ) : null
+          ) : null
         }
         refreshing={isFetching}
-        ListFooterComponent={<View style={{height: 60}}></View>}
         renderItem={({item}) => (
           <>
             <TouchableOpacity
@@ -247,15 +289,37 @@ export function HomeScreen({navigation}) {
         data={
           searchQuery
             ? searchQuery.length == 0
-              ? servers
+              ? snapshots
               : filteredServers
-            : servers
+            : snapshots
         }
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
         onRefresh={() => onRefresh()}
         ListEmptyComponent={
-          servers ? servers.length > 0 ? <EmptyList /> : null : null
+          snapshots ? (
+            snapshots.length == 0 ? (
+              <View
+                style={{
+                  padding: 14,
+                  gap: 16,
+                  backgroundColor: theme.colors.surface,
+                  borderBottomLeftRadius: 4,
+                  borderBottomRightRadius: 4,
+                }}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins',
+                    fontSize: 14,
+                    color: theme.colors.text,
+                  }}>
+                  You do not have any manual snapshots for your servers yet.
+                  Create a manual snapshot for a server and it will show up
+                  here.
+                </Text>
+              </View>
+            ) : null
+          ) : null
         }
         refreshing={isFetching}
         renderItem={({item}) => (

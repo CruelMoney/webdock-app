@@ -110,10 +110,13 @@ export default function AccordionItem({
           style={styles.measuringView}
           onLayout={e => {
             const h = e.nativeEvent.layout.height;
-            runOnUI(() => {
-              contentHeight.value = h;
-            })();
-            setIsMeasuring(false);
+            if (h > 0) {
+              runOnUI(() => {
+                'worklet';
+                contentHeight.value = h;
+              })();
+              setIsMeasuring(false);
+            }
           }}>
           <View>{children}</View>
         </View>
@@ -132,5 +135,6 @@ const styles = StyleSheet.create({
     zIndex: -1,
     left: 0,
     right: 0,
+    pointerEvents: 'none',
   },
 });

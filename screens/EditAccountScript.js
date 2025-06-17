@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
-import {HelperText, TextInput} from 'react-native-paper';
+import {Button, HelperText, TextInput, useTheme} from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 import BackIcon from '../assets/back-icon.svg';
 import GradientButton from '../components/GradientButton';
@@ -24,11 +24,15 @@ export default function EditAccountScript({navigation, route}) {
   });
   const [errors, setErrors] = React.useState({});
   useEffect(() => {
-    handleOnchange(route.params.id, 'id');
-    handleOnchange(route.params.name, 'name');
-    handleOnchange(route.params.filename, 'filename');
-    handleOnchange(route.params.content, 'content');
-  }, [route]);
+    if (route.params) {
+      setInputs({
+        id: route.params.id ?? 0,
+        name: route.params.name ?? '',
+        filename: route.params.filename ?? '',
+        content: route.params.content ?? '',
+      });
+    }
+  }, [route.params]);
   const sendRequest = async () => {
     let userToken = null;
     userToken = await AsyncStorage.getItem('userToken');
@@ -116,163 +120,206 @@ export default function EditAccountScript({navigation, route}) {
     setErrors(prevState => ({...prevState, [input]: error}));
   };
   const [submitting, setSubmitting] = useState(false);
-
+  const theme = useTheme();
   return (
-    <BottomSheetWrapper title="Edit script">
+    <BottomSheetWrapper title="Edit script" onClose={() => navigation.goBack()}>
       <View
-        width="100%"
-        height="100%"
-        style={{backgroundColor: '#F4F8F8', padding: '8%'}}>
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: 'space-between',
-            flexDirection: 'column',
+        style={{
+          width: '100%',
+          height: '100%',
+          backgroundColor: theme.colors.background,
+          paddingHorizontal: 20,
+          gap: 24,
+        }}>
+        <View
+          style={{
+            padding: 16,
+            gap: 12,
+            backgroundColor: theme.colors.surface,
+            borderRadius: 4,
           }}>
-          {route ? (
-            <>
-              <View style={{flex: 1, justifyContent: 'flex-start'}}>
-                <View style={{marginTop: 25}}>
-                  <TextInput
-                    mode="outlined"
-                    label="Descriptive name"
-                    value={inputs.name}
-                    onChangeText={text => handleOnchange(text, 'name')}
-                    selectionColor="#00A1A1"
-                    dense={true}
-                    outlineColor="#00A1A1"
-                    activeOutlineColor="#00A1A1"
-                    underlineColorAndroid="transparent"
-                    underlineColor="transparent"
-                    activeUnderlineColor="transparent"
-                    theme={{
-                      colors: {
-                        primary: '#00a1a1',
-                        accent: '#00a1a1',
-                        placeholder: '#00A1A1',
-                      },
-                    }}
-                    onFocus={() => handleError(null, 'name')}
-                    error={errors.name}
-                  />
-                  <HelperText type="error" visible={errors.name}>
-                    {errors.name}
-                  </HelperText>
-                  <TextInput
-                    mode="outlined"
-                    label="Filename"
-                    value={inputs.filename}
-                    onChangeText={text => handleOnchange(text, 'filename')}
-                    selectionColor="#00A1A1"
-                    dense={true}
-                    outlineColor="#00A1A1"
-                    activeOutlineColor="#00A1A1"
-                    underlineColorAndroid="transparent"
-                    underlineColor="transparent"
-                    activeUnderlineColor="transparent"
-                    theme={{
-                      colors: {
-                        primary: '#00a1a1',
-                        accent: '#00a1a1',
-                        placeholder: '#00A1A1',
-                      },
-                    }}
-                    onFocus={() => handleError(null, 'filename')}
-                    error={errors.filename}
-                  />
-                  <HelperText type="error" visible={errors.filename}>
-                    {errors.filename}
-                  </HelperText>
-                  <TextInput
-                    mode="outlined"
-                    label="File contents"
-                    multiline
-                    numberOfLines={10}
-                    value={inputs.content}
-                    onChangeText={text => handleOnchange(text, 'content')}
-                    selectionColor="#00A1A1"
-                    dense={true}
-                    outlineColor="#00A1A1"
-                    activeOutlineColor="#00A1A1"
-                    underlineColorAndroid="transparent"
-                    underlineColor="transparent"
-                    activeUnderlineColor="transparent"
-                    theme={{
-                      colors: {
-                        primary: '#00a1a1',
-                        accent: '#00a1a1',
-                        placeholder: '#00A1A1',
-                      },
-                    }}
-                    onFocus={() => handleError(null, 'content')}
-                    error={errors.content}
-                  />
-                  <HelperText type="error" visible={errors.content}>
-                    {errors.content}
-                  </HelperText>
-                </View>
-                <View
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    marginTop: 20,
-                  }}>
-                  <View style={{backgroundColor: '#03A84E', width: 1}}></View>
-                  <Text
-                    style={{
-                      fontFamily: 'Raleway-Regular',
-                      fontSize: 12,
-                      color: '#5F5F5F',
-                      marginStart: 10,
-                    }}>
-                    This will add a globally available File or Script to your
-                    account which you can deploy to any server.
-                  </Text>
-                </View>
-              </View>
+          <View style={{gap: 4}}>
+            <Text
+              style={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                color: theme.colors.text,
+              }}>
+              Descriptive name
+            </Text>
+            <TextInput
+              mode="flat"
+              value={inputs['name']}
+              dense={true}
+              onChangeText={text => handleOnchange(text, 'name')}
+              underlineColorAndroid="transparent"
+              activeUnderlineColor="transparent"
+              underlineColor="transparent"
+              cursorColor="#fff"
+              theme={{
+                colors: {
+                  background: '#fff',
+                  surface: '#fff',
+                  text: '#000',
+                  primary: '#000',
+                  placeholder: '#999',
+                },
+              }}
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderRadius: 4,
+                borderWidth: 1,
+                borderColor: '#D9D9D9',
+                fontFamily: 'Poppins-Light',
+                fontSize: 14,
+              }}
+              onFocus={() => handleError(null, 'name')}
+              error={errors.name}
+            />
+            {errors.name ? (
+              <HelperText type="error" padding="none" visible={errors.name}>
+                {errors.name}
+              </HelperText>
+            ) : null}
+          </View>
+          <View style={{gap: 4}}>
+            <Text
+              style={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                color: theme.colors.text,
+              }}>
+              Filename
+            </Text>
+            <TextInput
+              mode="flat"
+              value={inputs['filename']}
+              dense={true}
+              onChangeText={text => handleOnchange(text, 'filename')}
+              underlineColorAndroid="transparent"
+              activeUnderlineColor="transparent"
+              underlineColor="transparent"
+              cursorColor="#fff"
+              theme={{
+                colors: {
+                  background: '#fff',
+                  surface: '#fff',
+                  text: '#000',
+                  primary: '#000',
+                  placeholder: '#999',
+                },
+              }}
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderRadius: 4,
+                borderWidth: 1,
+                borderColor: '#D9D9D9',
+                fontFamily: 'Poppins-Light',
+                fontSize: 14,
+              }}
+              onFocus={() => handleError(null, 'filename')}
+              error={errors.filename}
+            />
+            {errors.filename ? (
+              <HelperText type="error" padding="none" visible={errors.filename}>
+                {errors.filename}
+              </HelperText>
+            ) : null}
+          </View>
+          <View style={{gap: 4}}>
+            <Text
+              style={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                color: theme.colors.text,
+              }}>
+              File contents
+            </Text>
+            <TextInput
+              mode="flat"
+              value={inputs['content']}
+              onChangeText={text => handleOnchange(text, 'content')}
+              dense={true}
+              multiline
+              underlineColorAndroid="transparent"
+              activeUnderlineColor="transparent"
+              underlineColor="transparent"
+              cursorColor="#fff"
+              theme={{
+                colors: {
+                  background: '#fff',
+                  surface: '#fff',
+                  text: '#000',
+                  primary: '#000',
+                  placeholder: '#999',
+                },
+              }}
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderRadius: 4,
+                borderWidth: 1,
+                borderColor: '#D9D9D9',
+                fontFamily: 'Poppins-Light',
+                fontSize: 14,
+              }}
+              onFocus={() => handleError(null, 'content')}
+              error={errors.content}
+            />
+            {errors.content ? (
+              <HelperText type="error" padding="none" visible={errors.content}>
+                {errors.content}
+              </HelperText>
+            ) : null}
+          </View>
+          <View style={{flex: 1, justifyContent: 'flex-start'}}>
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                marginTop: 20,
+              }}>
               <View
                 style={{
-                  flex: 1,
-                  justifyContent: 'flex-end',
+                  backgroundColor: theme.colors.primary,
+                  width: 3,
+                }}></View>
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Light',
+                  fontSize: 12,
+                  color: theme.colors.text,
+                  marginStart: 10,
                 }}>
-                <TouchableOpacity onPress={validate} disabled={submitting}>
-                  <GradientButton
-                    text="Update script"
-                    submitting={submitting}
-                  />
-                  {/* <LinearGradient
-                  locations={[0.29, 0.8]}
-                  start={{x: 0, y: 0}}
-                  end={{x: 1, y: 0}}
-                  colors={['#00A1A1', '#03A84E']}
-                  style={{borderRadius: 5}}>
-                  {!submitting ? (
-                    <Text
-                      style={{
-                        includeFontPadding: false,
-                        padding: 15,
-                        fontFamily: 'Raleway-Bold',
-                        fontSize: 18,
-                        color: 'white',
-                        textAlign: 'center',
-                      }}>
-                      Update script
-                    </Text>
-                  ) : (
-                    <ActivityIndicator
-                      size="large"
-                      color="#ffffff"
-                      style={{padding: 10}}
-                    />
-                  )}
-                </LinearGradient> */}
-                </TouchableOpacity>
-              </View>
-            </>
-          ) : (
-            <ActivityIndicator />
-          )}
-        </ScrollView>
+                This will add a globally available File or Script to your
+                account which you can deploy to any server.
+              </Text>
+            </View>
+          </View>
+          <View
+            style={{
+              justifyContent: 'flex-end',
+            }}>
+            {/* add public key button */}
+            <Button
+              mode="contained"
+              textColor={theme.colors.text}
+              compact
+              style={{
+                borderRadius: 4,
+                minWidth: 0,
+                paddingHorizontal: 8,
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 12,
+                lineHeight: 12 * 1.2,
+                fontWeight: '600',
+              }}
+              onPress={validate}>
+              Update script
+            </Button>
+          </View>
+        </View>
       </View>
     </BottomSheetWrapper>
   );

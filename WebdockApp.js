@@ -26,6 +26,15 @@ import AccountPublicKeys from './screens/AccountPublicKeys';
 import WebViewScreen from './screens/WebViewScreen';
 import AccountScripts from './screens/AccountScripts';
 import EditAccountScript from './screens/EditAccountScript';
+import {WebViewWebdockAI} from './screens/WebViewWebdockAI';
+import ServerScripts from './screens/ServerScripts';
+import ServerShellUsers from './screens/ServerShellUsers';
+import ServerSnapshots from './screens/ServerSnapshots';
+import ServerEvents from './screens/ServerEvents';
+import ServerActivity from './screens/ServerActivity';
+import NotificationCenter from './screens/NotificationCenter';
+import {ServerConsole} from './screens/ServerConsole';
+import ThemeSwitch from './components/ThemeSwitch';
 export default function WebdockApp() {
   //const [isLoading, setIsLoading] = React.useState(true);
   const [userToken, setUserToken] = React.useState(null);
@@ -120,7 +129,8 @@ export default function WebdockApp() {
     }
   }, [loginState]);
 
-  const {theme} = useContext(ThemeContext);
+  const {theme, isDark, toggleTheme} = useContext(ThemeContext);
+
   const TooltipComponent = () => {
     const {
       isFirstStep,
@@ -143,6 +153,22 @@ export default function WebdockApp() {
             {currentStep?.text.split('|')[1]}
           </Text>
         </View>
+        {currentStep?.name === 'chooseYourDisplayMode' ? (
+          <View>
+            <ThemeSwitch
+              options={[
+                {
+                  key: 'light',
+                  label: 'Light mode',
+                  icon: 'white-balance-sunny',
+                },
+                {key: 'dark', label: 'Dark mode', icon: 'weather-night'},
+              ]}
+              onToggle={value => toggleTheme(value)}
+              selectedOption={theme.dark ? 1 : 0}
+            />
+          </View>
+        ) : null}
         {/* <Pagination currentStep={currentStep} /> */}
         <View style={styles.buttons}>
           <View style={styles.container}>
@@ -153,9 +179,7 @@ export default function WebdockApp() {
                   key={index}
                   style={[
                     styles.dot,
-                    isFilled
-                      ? {backgroundColor: theme.colors.surface}
-                      : styles.dotEmpty,
+                    isFilled ? {backgroundColor: 'black'} : styles.dotEmpty,
                   ]}
                 />
               );
@@ -208,14 +232,54 @@ export default function WebdockApp() {
       </View>
     );
   };
+
+  const customSvgPath = args => {
+    if (
+      args.step?.name === 'openActionButton' ||
+      args.step?.name === 'openNotificationCenter'
+    ) {
+      const padding = 5;
+      const baseRadius = Math.min(args.size.x._value, args.size.y._value) / 2;
+      const radius = baseRadius + padding;
+
+      const cx = args.position.x._value + args.size.x._value / 2;
+      const cy = args.position.y._value + args.size.y._value / 2;
+
+      return `M0,0H${args.canvasSize.x}V${args.canvasSize.y}H0V0Z
+          M${cx - radius},${cy}
+          A${radius} ${radius} 0 1 0 ${cx + radius},${cy}
+          A${radius} ${radius} 0 1 0 ${cx - radius},${cy}`;
+    } else if (args.step?.name === 'chooseYourDisplayMode') {
+      const padding = 0;
+
+      const x = args.position.x._value - padding;
+      const y = args.position.y._value - padding;
+      const width = args.size.x._value + 2 * padding;
+      const height = args.size.y._value + 2 * padding;
+
+      return `M0,0H${args.canvasSize.x}V${args.canvasSize.y}H0V0Z
+          M${x},${y}H${x + width}V${y + height}H${x}V${y}Z`;
+    } else {
+      const padding = 5;
+
+      const x = args.position.x._value - padding;
+      const y = args.position.y._value - padding;
+      const width = args.size.x._value + 2 * padding;
+      const height = args.size.y._value + 2 * padding;
+
+      return `M0,0H${args.canvasSize.x}V${args.canvasSize.y}H0V0Z
+          M${x},${y}H${x + width}V${y + height}H${x}V${y}Z`;
+    }
+  };
   return (
     <Provider theme={theme}>
       <CopilotProvider
         tooltipComponent={TooltipComponent}
         stepNumberComponent={() => null}
         animated
+        svgMaskPath={customSvgPath}
         style={{height: '100%'}}
-        overlay="view">
+        overlay="svg">
         <BottomSheetModalProvider>
           <AuthContext.Provider value={authContext}>
             <NavigationContainer>
@@ -256,6 +320,74 @@ export default function WebdockApp() {
                   <Stack.Screen
                     name="EditAccountScript"
                     component={EditAccountScript}
+                    options={{
+                      presentation: 'transparentModal',
+                      animation: 'fade',
+                      headerShown: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="WebViewWebdockAI"
+                    component={WebViewWebdockAI}
+                    options={{}}
+                  />
+                  <Stack.Screen
+                    name="ServerConsole"
+                    component={ServerConsole}
+                    options={{
+                      presentation: 'transparentModal',
+                      animation: 'fade',
+                      headerShown: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="Activity"
+                    component={ServerActivity}
+                    options={{
+                      presentation: 'transparentModal',
+                      animation: 'fade',
+                      headerShown: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="Events"
+                    component={ServerEvents}
+                    options={{
+                      presentation: 'transparentModal',
+                      animation: 'fade',
+                      headerShown: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="Snapshots"
+                    component={ServerSnapshots}
+                    options={{
+                      presentation: 'transparentModal',
+                      animation: 'fade',
+                      headerShown: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="Shell Users"
+                    component={ServerShellUsers}
+                    options={{
+                      presentation: 'transparentModal',
+                      animation: 'fade',
+                      headerShown: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="Scripts"
+                    component={ServerScripts}
+                    options={{
+                      presentation: 'transparentModal',
+                      animation: 'fade',
+                      headerShown: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="NotificationCenter"
+                    component={NotificationCenter}
                     options={{
                       presentation: 'transparentModal',
                       animation: 'fade',
