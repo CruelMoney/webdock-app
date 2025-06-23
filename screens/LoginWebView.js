@@ -5,6 +5,13 @@ import DeviceInfo from 'react-native-device-info';
 import {AuthContext} from '../components/context';
 import {getPing} from '../service/ping';
 import {WebView} from 'react-native-webview';
+import {getAccountInformations} from '../service/accountInformations';
+import {
+  setTokenId,
+  setUserEmail,
+  setUserNickname,
+} from 'react-native-crisp-chat-sdk';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ...
 export function LoginWebView() {
@@ -13,9 +20,15 @@ export function LoginWebView() {
   const [token, setToken] = useState('');
   const loginHandle = usertoken => {
     getPing(usertoken).then(data => {
-      console.log(data);
       if (data.webdock === 'rocks') {
         console.log('logged in');
+        getAccountInformations(usertoken).then(data => {
+          AsyncStorage.setItem('accountInfo', JSON.stringify(data));
+          const accountInfo = JSON.parse(JSON.stringify(data) || '{}');
+          setTokenId(accountInfo.userId);
+          setUserEmail(accountInfo.userEmail);
+          setUserNickname(accountInfo.userName);
+        });
         signIn(usertoken);
       } else {
         Alert.alert('Error', 'Something went wrong!');

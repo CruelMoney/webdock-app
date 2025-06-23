@@ -8,6 +8,7 @@ import {
   ScrollView,
   Keyboard,
   SectionList,
+  InteractionManager,
 } from 'react-native';
 import {
   IconButton,
@@ -19,6 +20,7 @@ import {
   Menu,
   TextInput,
   useTheme,
+  ActivityIndicator,
 } from 'react-native-paper';
 import {SceneMap, TabBar, TabView} from 'react-native-tab-view';
 import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
@@ -39,7 +41,7 @@ export default function NotificationCenter({navigation}) {
   const [servers, setServers] = useState([]);
   const [events, setEvents] = useState([]);
   const [news, setNews] = useState([]);
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(1);
   const [routes] = useState([
     {key: 'alerts', title: 'Alerts'},
     {key: 'events', title: 'Events'},
@@ -70,10 +72,15 @@ export default function NotificationCenter({navigation}) {
     const unsubscribe = navigation.addListener('focus', () => {
       onBackgroundRefresh();
     });
-    setTimeout(async () => {
+
+    const task = InteractionManager.runAfterInteractions(() => {
       onBackgroundRefresh();
-    }, 0);
-    return unsubscribe;
+    });
+
+    return () => {
+      task.cancel();
+      unsubscribe();
+    };
   }, [navigation]);
   const onBackgroundRefresh = async () => {
     let userToken = null;
@@ -129,142 +136,157 @@ export default function NotificationCenter({navigation}) {
 
   const renderScene = SceneMap({
     alerts: () => (
-      <BottomSheetFlatList
-        data={
-          searchQuery
-            ? searchQuery.length === 0
-              ? servers
-              : filteredServers
-            : servers
-        }
-        keyExtractor={(item, index) => `${item.slug || 'item'}-${index}`}
-        refreshing={isFetching}
-        onRefresh={onBackgroundRefresh}
-        style={{flex: 1}}
-        contentContainerStyle={{paddingBottom: 20}}
-        ListEmptyComponent={
-          <View
-            style={{
-              paddingVertical: 24,
-              backgroundColor: theme.colors.surface,
-              gap: 11,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <Text style={{textAlign: 'center', color: theme.colors.text}}>
-              Nice Job!
-            </Text>
-            <Text style={{textAlign: 'center', color: theme.colors.text}}>
-              You have no notifications.
-            </Text>
-            <ThumbsUp color={theme.colors.text} />
-          </View>
-        }
-        renderItem={({item}) => (
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate('ServerManagement', {
-                slug: item.slug,
-                name: item.name,
-                description: item.description,
-                notes: item.notes,
-                nextActionDate: item.nextActionDate,
-              })
-            }>
-            <View>
-              <ServerItem
-                title={item.name}
-                alias={item.aliases[0]}
-                dc={item.location}
-                virtualization={item.virtualization}
-                profile={item.profile}
-                ipv4={item.ipv4}
-                status={item.status}
-              />
-              <View style={{height: 10}} />
-            </View>
-          </TouchableOpacity>
-        )}
-        extraData={rerenderFlatList}
-        showsVerticalScrollIndicator={false}
-      />
+      // <BottomSheetFlatList
+      //   data={
+      //     searchQuery
+      //       ? searchQuery.length === 0
+      //         ? servers
+      //         : filteredServers
+      //       : servers
+      //   }
+      //   keyExtractor={(item, index) => `${item.slug || 'item'}-${index}`}
+      //   refreshing={isFetching}
+      //   onRefresh={onBackgroundRefresh}
+      //   style={{flex: 1}}
+      //   contentContainerStyle={{paddingBottom: 20}}
+      //   ListEmptyComponent={
+      //     <View
+      //       style={{
+      //         paddingVertical: 24,
+      //         backgroundColor: theme.colors.surface,
+      //         gap: 11,
+      //         justifyContent: 'center',
+      //         alignItems: 'center',
+      //       }}>
+      //       <Text style={{textAlign: 'center', color: theme.colors.text}}>
+      //         Nice Job!
+      //       </Text>
+      //       <Text style={{textAlign: 'center', color: theme.colors.text}}>
+      //         You have no notifications.
+      //       </Text>
+      //       <ThumbsUp color={theme.colors.text} />
+      //     </View>
+      //   }
+      //   renderItem={({item}) => (
+      //     <TouchableOpacity
+      //       onPress={() =>
+      //         navigation.navigate('ServerManagement', {
+      //           slug: item.slug,
+      //           name: item.name,
+      //           description: item.description,
+      //           notes: item.notes,
+      //           nextActionDate: item.nextActionDate,
+      //         })
+      //       }>
+      //       <View>
+      //         <ServerItem
+      //           title={item.name}
+      //           alias={item.aliases[0]}
+      //           dc={item.location}
+      //           virtualization={item.virtualization}
+      //           profile={item.profile}
+      //           ipv4={item.ipv4}
+      //           status={item.status}
+      //         />
+      //         <View style={{height: 10}} />
+      //       </View>
+      //     </TouchableOpacity>
+      //   )}
+      //   extraData={rerenderFlatList}
+      //   showsVerticalScrollIndicator={false}
+      // />
+      <View
+        style={{
+          padding: 14,
+          gap: 16,
+          backgroundColor: theme.colors.surface,
+          borderBottomLeftRadius: 4,
+          borderBottomRightRadius: 4,
+        }}>
+        <Text
+          style={{
+            fontFamily: 'Poppins',
+            fontSize: 14,
+            color: theme.colors.text,
+          }}>
+          Coming soon.
+        </Text>
+      </View>
     ),
 
-    events: () => (
-      <BottomSheetSectionList
-        sections={groupByFormattedDate(searchQuery?.length ? events : events)}
-        keyExtractor={(item, index) => `${item.slug || 'item'}-${index}`}
-        refreshing={isFetching}
-        onRefresh={onBackgroundRefresh}
-        style={{flex: 1}}
-        stickySectionHeadersEnabled={false}
-        contentContainerStyle={{paddingBottom: 20}}
-        ListEmptyComponent={
-          events && events.length === 0 ? (
-            <View
-              style={{
-                padding: 14,
-                gap: 16,
-                backgroundColor: theme.colors.surface,
-                borderBottomLeftRadius: 4,
-                borderBottomRightRadius: 4,
-              }}>
+    events: () =>
+      events.length ? (
+        <BottomSheetSectionList
+          sections={groupByFormattedDate(searchQuery?.length ? events : events)}
+          keyExtractor={(item, index) => `${item.slug || 'item'}-${index}`}
+          refreshing={isFetching}
+          onRefresh={onBackgroundRefresh}
+          style={{flex: 1}}
+          // scrollEnabled={false}
+          stickySectionHeadersEnabled={false}
+          contentContainerStyle={{paddingBottom: 20}}
+          ListEmptyComponent={
+            events && events.length === 0 ? (
+              <View
+                style={{
+                  padding: 14,
+                  gap: 16,
+                  backgroundColor: theme.colors.surface,
+                  borderBottomLeftRadius: 4,
+                  borderBottomRightRadius: 4,
+                }}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins',
+                    fontSize: 14,
+                    color: theme.colors.text,
+                  }}>
+                  You do not have any manual snapshots for your servers yet.
+                  Create a manual snapshot for a server and it will show up
+                  here.
+                </Text>
+              </View>
+            ) : null
+          }
+          renderSectionHeader={({section: {title}}) => (
+            <>
               <Text
                 style={{
-                  fontFamily: 'Poppins',
-                  fontSize: 14,
+                  fontFamily: 'Poppins-Medium',
+                  fontSize: 10,
+                  paddingTop: 14,
+                  paddingBottom: 4,
+                  paddingHorizontal: 14,
                   color: theme.colors.text,
+                  backgroundColor: theme.colors.surface,
                 }}>
-                You do not have any manual snapshots for your servers yet.
-                Create a manual snapshot for a server and it will show up here.
+                {title}
               </Text>
-            </View>
-          ) : null
-        }
-        renderSectionHeader={({section: {title}}) => (
-          <>
-            <Text
-              style={{
-                fontFamily: 'Poppins-Medium',
-                fontSize: 10,
-                paddingTop: 14,
-                paddingBottom: 4,
-                paddingHorizontal: 14,
-                color: '#02221380',
-                backgroundColor: theme.colors.surface,
-              }}>
-              {title}
-            </Text>
-            <View style={{height: 1}} />
-          </>
-        )}
-        renderItem={({item}) => (
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate('ServerManagement', {
-                slug: item.slug,
-                name: item.name,
-                description: item.description,
-                notes: item.notes,
-                nextActionDate: item.nextActionDate,
-              })
-            }>
-            <EventItem
-              key={item.id}
-              action={item.action}
-              actionData={item.actionData}
-              startTime={item.startTime}
-              status={item.status}
-              message={item.message}
-            />
-            <View style={{height: 1}} />
-          </TouchableOpacity>
-        )}
-      />
-    ),
+              <View style={{height: 1}} />
+            </>
+          )}
+          renderItem={({item}) => (
+            <>
+              <EventItem
+                key={item.id}
+                action={item.action}
+                actionData={item.actionData}
+                startTime={item.startTime}
+                status={item.status}
+                message={item.message}
+              />
+              <View style={{height: 1}} />
+            </>
+          )}
+        />
+      ) : (
+        <View style={{padding: 40}}>
+          <ActivityIndicator />
+        </View>
+      ),
 
     news: () => (
-      <BottomSheetFlatList
+      <FlatList
         style={{
           backgroundColor: theme.colors.surface,
           borderBottomLeftRadius: 4,
@@ -272,11 +294,21 @@ export default function NotificationCenter({navigation}) {
           padding: 12,
           flex: 1,
         }}
+        scrollEnabled={false}
         data={news}
         keyExtractor={(item, index) => `${item.slug || 'item'}-${index}`}
         renderItem={({item}) => (
           <TouchableOpacity onPress={() => navigation.navigate('News', {})}>
-            <NewsItem key={item.id} item={item} />
+            <NewsItem
+              key={item.id}
+              item={item}
+              onPress={() =>
+                navigation.navigate('WebViewScreen', {
+                  uri: 'https://webdock.io/en/docs/webdock-news/' + item.slug,
+                  token: 'abc123',
+                })
+              }
+            />
             <View style={{height: 12}} />
           </TouchableOpacity>
         )}
@@ -324,6 +356,7 @@ export default function NotificationCenter({navigation}) {
         <View
           style={{
             flex: 1,
+            minHeight: '100%',
             width: '100%',
             gap: 24,
             paddingHorizontal: 20,
@@ -431,6 +464,8 @@ export default function NotificationCenter({navigation}) {
               renderScene={renderScene}
               onIndexChange={setIndex}
               initialLayout={initialLayout}
+              lazy
+              lazyPreloadDistance={0}
               renderTabBar={props => (
                 <TabBar
                   {...props}

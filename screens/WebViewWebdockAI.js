@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {ActivityIndicator, View} from 'react-native';
-import {WebView} from 'react-native-webview';
 import DeviceInfo from 'react-native-device-info';
+import {WebView} from 'react-native-webview';
 
 export function WebViewWebdockAI() {
   const [deviceName, setDeviceName] = useState('');

@@ -14,6 +14,7 @@ import {
   Alert,
   Dimensions,
   Keyboard,
+  InteractionManager,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {
@@ -53,18 +54,22 @@ export default function ServerSnapshots({route, navigation}) {
       onBackgroundRefresh();
     });
 
-    setTimeout(async () => {
-      let userToken = null;
-      try {
-        userToken = await AsyncStorage.getItem('userToken');
-        getServerSnapshots(userToken, route.params.slug).then(data => {
+    const task = InteractionManager.runAfterInteractions(() => {
+      (async () => {
+        try {
+          const userToken = await AsyncStorage.getItem('userToken');
+          const data = await getServerSnapshots(userToken, route.params.slug);
           setSnapshots(data);
-        });
-      } catch (e) {
-        alert(e);
-      }
-    }, 0);
-    return unsubscribe;
+        } catch (e) {
+          alert(e);
+        }
+      })();
+    });
+
+    return () => {
+      task.cancel(); // Cancel deferred task if component unmounts
+      unsubscribe(); // Clean up the focus listener
+    };
   }, [route]);
 
   const [isFetching, setIsFetching] = useState(false);
@@ -267,6 +272,7 @@ export default function ServerSnapshots({route, navigation}) {
           width="100%"
           height="100%"
           style={{
+            minHeight: '100%',
             backgroundColor: theme.colors.background,
             paddingHorizontal: 20,
             gap: 24,

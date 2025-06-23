@@ -73,32 +73,6 @@ export function ServerConsole({navigation, route}) {
   return (
     <BottomSheetWrapper title="Web SSH" onClose={() => navigation.goBack()}>
       <View width="100%" height="100%" style={{backgroundColor: '#F4F8F8'}}>
-        <View
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingHorizontal: '2%',
-            padding: '2%',
-          }}>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.goBack();
-            }}>
-            <BackIcon height={45} width={50} />
-          </TouchableOpacity>
-          <Text
-            style={{
-              color: '#00A1A1',
-              fontFamily: 'Raleway-Medium',
-              fontSize: 20,
-              textAlign: 'center',
-            }}>
-            Web SSH
-          </Text>
-          <View style={{width: 50}}></View>
-        </View>
         <WebView
           userAgent={'Webdock Mobile App WebView v1.0'}
           source={{

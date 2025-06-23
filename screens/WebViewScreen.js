@@ -1,9 +1,13 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, ActivityIndicator, Text, StyleSheet} from 'react-native';
 import {WebView} from 'react-native-webview';
 import {useRoute} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import BottomSheetWrapper from '../components/BottomSheetWrapper';
+import {ScrollView} from 'react-native-gesture-handler';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-export default function WebViewScreen() {
+export default function WebViewScreen({navigation}) {
   const route = useRoute();
   const {
     uri,
@@ -11,24 +15,52 @@ export default function WebViewScreen() {
     tokenType = 'header', // default: send token in Authorization header
     enablePullToRefresh = false,
   } = route.params;
+  const [source, setSource] = useState(null);
+  const insets = useSafeAreaInsets();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  useEffect(() => {
+    let isActive = true; // Optional safety guard if unmounted before async completes
 
-  const buildSource = () => {
-    if (tokenType === 'query') {
-      const separator = uri.includes('?') ? '&' : '?';
-      return {uri: `${uri}${separator}token=${encodeURIComponent(token)}`};
-    }
+    const buildSource = async () => {
+      try {
+        if (tokenType === 'query') {
+          const separator = uri.includes('?') ? '&' : '?';
+          const accountInfoRaw = await AsyncStorage.getItem('accountInfo');
+          const accountInfo = JSON.parse(accountInfoRaw || '{}');
+          const destination = uri.replace('https://webdock.io', '');
 
-    // Default: send token in header
-    return {
-      uri,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+          if (!isActive) return;
+
+          setSource({
+            uri: `https://webdock.io/en/app_data/appLoginRedirectUser${separator}app_token=${encodeURIComponent(
+              token,
+            )}&destination=${destination}&user_id=${
+              accountInfo.userId
+            }&secret=bf34eaa48c2643bb9bec16e8f46d88d8`,
+          });
+        } else {
+          if (!isActive) return;
+
+          setSource({
+            uri,
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+        }
+      } catch (e) {
+        console.error('Error building source:', e);
+      }
     };
-  };
+
+    buildSource();
+
+    return () => {
+      isActive = false; // Prevent setting state if unmounted
+    };
+  }, [tokenType, token, uri]);
 
   const handleLoadEnd = () => {
     setLoading(false);
@@ -39,9 +71,12 @@ export default function WebViewScreen() {
     setError(nativeEvent.description);
     setLoading(false);
   };
-
+  if (!source) return null;
   return (
-    <View style={styles.container}>
+    <BottomSheetWrapper
+      title=""
+      onClose={() => navigation.goBack()}
+      style={styles.container}>
       {loading && (
         <View style={styles.loader}>
           <ActivityIndicator size="large" color="gray" />
@@ -55,14 +90,22 @@ export default function WebViewScreen() {
       ) : (
         <WebView
           userAgent={'Webdock Mobile App WebView v2.0'}
-          source={buildSource()}
-          style={StyleSheet.absoluteFill}
+          source={source}
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              paddingHorizontal: 20,
+              gap: 24,
+              marginBottom: insets.bottom,
+            },
+          ]}
           onLoadEnd={handleLoadEnd}
           onError={handleError}
+          nestedScrollEnabled={true}
           pullToRefreshEnabled={enablePullToRefresh}
         />
       )}
-    </View>
+    </BottomSheetWrapper>
   );
 }
 

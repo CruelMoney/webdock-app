@@ -18,7 +18,7 @@ import {Pressable, ScrollView} from 'react-native-gesture-handler';
 import {getMainMenu} from '../service/menu';
 import {getReadableVersion, getVersion} from 'react-native-device-info';
 
-export function DrawerContent(props) {
+export function DrawerContent({props, navigation}) {
   const {signOut} = React.useContext(AuthContext);
   const [account, setAccountInfo] = useState();
   const [mainMenu, setMainMenu] = useState();
@@ -232,6 +232,13 @@ export function DrawerContent(props) {
       }
     });
   };
+  const openWebView = async url => {
+    navigation.navigate('WebViewScreen', {
+      uri: url,
+      tokenType: 'query',
+      token: await AsyncStorage.getItem('userToken'),
+    });
+  };
   return account ? (
     <>
       <View
@@ -244,7 +251,10 @@ export function DrawerContent(props) {
         <ScrollView
           showsVerticalScrollIndicator={false}
           style={styles.drawerContent}>
-          <View
+          <Pressable
+            onPress={() =>
+              openWebView('https://webdock.io/en/dash/editprofile')
+            }
             style={{
               padding: 20,
               backgroundColor: theme.colors.menu.surface,
@@ -312,7 +322,7 @@ export function DrawerContent(props) {
                 </Text>
               </View>
             </View>
-          </View>
+          </Pressable>
           <View>
             <MenuLevel0 data={mainMenu} />
           </View>

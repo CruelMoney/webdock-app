@@ -20,7 +20,7 @@ import CrispChat, {
   resetSession,
 } from 'react-native-crisp-chat-sdk';
 import {CopilotProvider, useCopilot} from 'react-native-copilot';
-import {StyleSheet, Text, View} from 'react-native';
+import {StatusBar, StyleSheet, Text, View} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import AccountPublicKeys from './screens/AccountPublicKeys';
 import WebViewScreen from './screens/WebViewScreen';
@@ -40,13 +40,6 @@ export default function WebdockApp() {
   const [userToken, setUserToken] = React.useState(null);
   configure('a3c561be-1f43-4c0e-aa0f-6c88579e55a9');
 
-  // this should be user ID that way app will load previous user chats
-  setTokenId('abcd12345');
-
-  // Set user's info
-  setUserEmail('test@test.com');
-  setUserNickname('John Smith');
-  setUserPhone('+614430231224');
   const initialLoginState = {
     isLoading: true,
     userToken: null,
@@ -273,6 +266,10 @@ export default function WebdockApp() {
   };
   return (
     <Provider theme={theme}>
+      <StatusBar
+        barStyle={theme.dark ? 'light-content' : 'dark-content'}
+        backgroundColor={theme.dark ? '#000000' : '#ffffff'} // for Android
+      />
       <CopilotProvider
         tooltipComponent={TooltipComponent}
         stepNumberComponent={() => null}
@@ -282,7 +279,8 @@ export default function WebdockApp() {
         overlay="svg">
         <BottomSheetModalProvider>
           <AuthContext.Provider value={authContext}>
-            <NavigationContainer>
+            <NavigationContainer
+              style={{backgroundColor: theme.colors.background}}>
               {loginState.userToken !== null ? (
                 <Stack.Navigator>
                   <Stack.Screen
@@ -327,7 +325,7 @@ export default function WebdockApp() {
                     }}
                   />
                   <Stack.Screen
-                    name="WebViewWebdockAI"
+                    name="Webdock AI Assistant"
                     component={WebViewWebdockAI}
                     options={{}}
                   />

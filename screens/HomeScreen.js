@@ -16,6 +16,7 @@ import {
   Menu,
   useTheme,
   Button,
+  ProgressBar,
 } from 'react-native-paper';
 import {getServers} from '../service/servers';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -33,6 +34,7 @@ export function HomeScreen({navigation}) {
   const [profiles, setProfiles] = useState();
   const [images, setImages] = useState();
   const [snapshots, setSnapshots] = useState([]);
+  const [sortOrder, setSortOrder] = useState('desc');
   useEffect(() => {
     setAPIBusy(true);
     const unsubscribe = navigation.addListener('focus', () => {
@@ -129,24 +131,6 @@ export function HomeScreen({navigation}) {
       alert(e);
     }
   };
-  var currency_symbols = {
-    USD: '$', // US Dollar
-    EUR: '€', // Euro
-    CRC: '₡', // Costa Rican Colón
-    GBP: '£', // British Pound Sterling
-    ILS: '₪', // Israeli New Sheqel
-    INR: '₹', // Indian Rupee
-    JPY: '¥', // Japanese Yen
-    KRW: '₩', // South Korean Won
-    NGN: '₦', // Nigerian Naira
-    PHP: '₱', // Philippine Peso
-    PLN: 'zł', // Polish Zloty
-    PYG: '₲', // Paraguayan Guarani
-    THB: '฿', // Thai Baht
-    UAH: '₴', // Ukrainian Hryvnia
-    VND: '₫', // Vietnamese Dong
-  };
-
   const [isModalVisible, setModalVisible] = useState();
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -186,7 +170,13 @@ export function HomeScreen({navigation}) {
     {key: 'first', title: 'All servers'},
     {key: 'second', title: 'Snapshots'},
   ]);
-
+  const openWebView = async url => {
+    navigation.navigate('WebViewScreen', {
+      uri: url,
+      tokenType: 'query',
+      token: await AsyncStorage.getItem('userToken'),
+    });
+  };
   const renderScene = SceneMap({
     first: () => (
       <FlatList
@@ -203,7 +193,7 @@ export function HomeScreen({navigation}) {
         onRefresh={() => onRefresh()}
         ListEmptyComponent={
           servers ? (
-            servers.length === 0 ? (
+            servers.length === 1 ? (
               <View
                 style={{
                   padding: 14,
@@ -218,7 +208,7 @@ export function HomeScreen({navigation}) {
                     fontSize: 14,
                     color: theme.colors.text,
                   }}>
-                  Start running websites and apps on our fast VPS Servers.
+                  You have no servers.{' '}
                   <Text style={{color: theme.colors.primary}}>
                     Create a server
                   </Text>{' '}
@@ -239,7 +229,7 @@ export function HomeScreen({navigation}) {
                     lineHeight: 12 * 1.2,
                     fontWeight: '600',
                   }}
-                  onPress={() => {}}>
+                  onPress={() => openWebView('https://webdock.io/en/pricing')}>
                   Create a Server
                 </Button>
               </View>
@@ -336,6 +326,7 @@ export function HomeScreen({navigation}) {
               }>
               <View>
                 <ServerItem
+                  slug={item.slug}
                   title={item.name}
                   alias={item.aliases[0]}
                   dc={item.location}
@@ -359,6 +350,23 @@ export function HomeScreen({navigation}) {
       />
     ),
   });
+  const sortServers = (data, order) => {
+    const sorted = [...data].sort((a, b) => {
+      if (order === 'desc') {
+        return new Date(a.date) - new Date(b.date); // oldest first
+      }
+      if (order === 'asc') {
+        return new Date(b.date) - new Date(a.date); // newest first
+      }
+      if (order === 'alphabetical') {
+        return a.name.localeCompare(b.name); // A–Z
+      }
+      return 0;
+    });
+
+    setServers(sorted);
+    closeMenu();
+  };
 
   return (
     <>
@@ -371,6 +379,16 @@ export function HomeScreen({navigation}) {
           paddingVertical: 10,
           gap: 15,
         }}>
+        <View style={{width: '100%'}}>
+          <ProgressBar
+            indeterminate
+            color={theme.colors.primary}
+            style={{
+              height: 5,
+              backgroundColor: '#bcbcbc',
+            }}
+          />
+        </View>
         <View
           style={{
             flexDirection: 'row',
@@ -452,18 +470,21 @@ export function HomeScreen({navigation}) {
               />
             }>
             <Menu.Item
+              key="desc"
               title="Oldest first"
-              onPress={() => {}}
+              onPress={() => sortServers(servers, 'desc')}
               titleStyle={{fontSize: 14, fontFamily: 'Poppins'}}
             />
             <Menu.Item
+              key="asc"
               title="Newest first"
-              onPress={() => {}}
+              onPress={() => sortServers(servers, 'asc')}
               titleStyle={{fontSize: 14, fontFamily: 'Poppins'}}
             />
             <Menu.Item
+              key="alphabetical"
               title="Alphabetical"
-              onPress={() => {}}
+              onPress={() => sortServers(servers, 'alphabetical')}
               titleStyle={{fontSize: 14, fontFamily: 'Poppins'}}
             />
           </Menu>

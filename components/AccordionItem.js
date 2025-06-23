@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, View, SafeAreaView, Text} from 'react-native';
 import {Pressable} from 'react-native-gesture-handler';
 import {Icon, useTheme} from 'react-native-paper';
@@ -20,9 +20,9 @@ export default function AccordionItem({
   style,
   duration = 500,
 }) {
-  const [isMeasuring, setIsMeasuring] = useState(true);
   const contentHeight = useSharedValue(0);
   const isExpanded = useSharedValue(false);
+  const [renderKey, setRenderKey] = useState(0); // used to retrigger layout
 
   const progress = useDerivedValue(() =>
     withTiming(isExpanded.value ? 1 : 0, {duration}),
@@ -54,6 +54,11 @@ export default function AccordionItem({
   };
 
   const theme = useTheme();
+
+  // Rerender when children change to remeasure
+  useEffect(() => {
+    setRenderKey(prev => prev + 1);
+  }, [children]);
 
   return (
     <SafeAreaView>
@@ -105,22 +110,20 @@ export default function AccordionItem({
       {bottomContent}
 
       {/* Hidden measurer for collapsible children */}
-      {isMeasuring && (
-        <View
-          style={styles.measuringView}
-          onLayout={e => {
-            const h = e.nativeEvent.layout.height;
-            if (h > 0) {
-              runOnUI(() => {
-                'worklet';
-                contentHeight.value = h;
-              })();
-              setIsMeasuring(false);
-            }
-          }}>
-          <View>{children}</View>
-        </View>
-      )}
+      <View
+        key={`measuring_${renderKey}`}
+        style={styles.measuringView}
+        onLayout={e => {
+          const h = e.nativeEvent.layout.height;
+          if (h > 0) {
+            runOnUI(() => {
+              'worklet';
+              contentHeight.value = h;
+            })();
+          }
+        }}>
+        <View>{children}</View>
+      </View>
     </SafeAreaView>
   );
 }

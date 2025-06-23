@@ -117,3 +117,25 @@ export async function getServerSlugStatus(name) {
     alert(error.message);
   }
 }
+export async function getServerIcon(slug) {
+  try {
+    let request = await fetch(
+      'https://webdock.io/en/app_data/getServerIcon?slug=' +
+        slug +
+        '&secret=bf34eaa48c2643bb9bec16e8f46d88d8',
+      {
+        method: 'GET',
+        headers: {
+          'X-Application': 'Webdock Mobile App v2.00',
+        },
+      },
+    );
+    let result = await request.json();
+    console.log();
+    request = null;
+    return result;
+  } catch (error) {
+    console.log('Api call error');
+    alert(error.message);
+  }
+}

@@ -7,12 +7,13 @@ import React, {
   useImperativeHandle,
   useState,
 } from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, Share} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetScrollView,
+  BottomSheetView,
   CONTENT_HEIGHT,
 } from '@gorhom/bottom-sheet';
 import {Pressable, TouchableOpacity} from 'react-native-gesture-handler';
@@ -39,10 +40,13 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import {CopilotStep, walkthroughable} from 'react-native-copilot';
+import {CopilotStep, useCopilot, walkthroughable} from 'react-native-copilot';
 import {ServerManagement} from './ServerManagement';
 import Account from './Account';
 import ServerOverview from './ServerOverview';
+import {requestUserPermission} from '../service/notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import NotificationBell from '../components/NotificationBell';
 const Tab = createBottomTabNavigator();
 
 function RotatingTabIcon({isOpen, onPress}) {
@@ -77,6 +81,7 @@ const DummyScreen = () => {
 export default function MainTabs({navigation}) {
   const bottomSheetRef = useRef(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const {copilotEvents} = useCopilot();
 
   const toggleSheet = useCallback(() => {
     if (sheetOpen) {
@@ -95,153 +100,216 @@ export default function MainTabs({navigation}) {
   const theme = useTheme();
   const WalkthroughablePressable = walkthroughable(Pressable);
   const WalkthroughableView = walkthroughable(View);
+  useEffect(() => {
+    const handleStepChange = step => {
+      if (step?.name === 'openNotificationCenter') {
+        requestUserPermission();
+      }
+    };
 
+    // Subscribe to step changes
+    copilotEvents.on('stepChange', handleStepChange);
+
+    // Cleanup
+    return () => {
+      copilotEvents.off?.('stepChange', handleStepChange); // use `.off()` if supported
+    };
+  }, []);
+
+  const openWebView = async url => {
+    navigation.navigate('WebViewScreen', {
+      uri: url,
+      tokenType: 'query',
+      token: await AsyncStorage.getItem('userToken'),
+    });
+  };
+  const onShare = async () => {
+    try {
+      const value = await AsyncStorage.getItem('accountInfo');
+      const accountInfo = JSON.parse(value);
+      console.log(accountInfo);
+      const result = await Share.share({
+        message: 'Join Webdock ' + accountInfo.referralURl,
+      });
+
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          console.log('Shared with activity type:', result.activityType);
+        } else {
+          console.log('Shared successfully');
+        }
+      } else if (result.action === Share.dismissedAction) {
+        console.log('Share dismissed');
+      }
+    } catch (error) {
+      console.error('❌ Error sharing:', error.message);
+    }
+  };
   return (
     <>
-      <Tab.Navigator
-        screenOptions={({route, navigation}) => ({
-          tabBarInactiveTintColor: theme.colors.text,
-          tabBarLabelStyle: {
-            paddingTop: 4,
-            fontSize: 12,
-            lineHeight: 16,
-            fontFamily: 'Poppins-Regular',
-            fontWeight: '4600',
-          },
-          tabBarActiveTintColor: theme.colors.primary,
-          tabBarStyle: {
-            paddingTop: 7,
-            borderTopWidth: 0, // remove line
-            elevation: 0, // Android shadow
-            shadowOpacity: 0,
-            backgroundColor: theme.colors.surface,
-            height: 65 + insets.bottom,
-            zIndex: 100,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-          },
-          headerTitleStyle: {
-            fontSize: 28,
-            fontFamily: 'Poppins-SemiBold',
-            fontWeight: '600',
-            color: theme.colors.text,
-          },
-          headerStyle: {
-            backgroundColor: theme.colors.background, // match header to theme
-            elevation: 0, // Android shadow
-            shadowOpacity: 0, // iOS shadow
-            borderBottomWidth: 0, // fallback
-          },
-          headerRightContainerStyle: {
-            paddingRight: 20,
-          },
-          headerShadowVisible: false,
-          headerTintColor: theme.colors.text,
-          headerRight: () => (
-            <View style={{flexDirection: 'row', gap: 10}}>
-              <CopilotStep
-                text="Notification center|Click the notification icon to open up your Server Alerts and Event log to keep up with important information about your servers."
-                order={2}
-                name="openNotificationCenter">
-                <WalkthroughablePressable
-                  onPress={() => navigation.navigate('NotificationCenter')}>
-                  <NotificationIcon
-                    height={28}
-                    width={28}
-                    color={theme.colors.text}
-                  />
-                </WalkthroughablePressable>
-              </CopilotStep>
+      <View style={{flex: 1, backgroundColor: theme.colors.background}}>
+        <Tab.Navigator
+          screenOptions={({route, navigation}) => ({
+            tabBarInactiveTintColor: theme.colors.text,
+            tabBarLabelStyle: {
+              paddingTop: 4,
+              fontSize: 12,
+              lineHeight: 16,
+              fontFamily: 'Poppins-Regular',
+              fontWeight: '4600',
+            },
+            tabBarActiveTintColor: theme.colors.primary,
+            tabBarStyle: {
+              paddingTop: 7,
+              borderTopWidth: 0,
+              backgroundColor: theme.colors.surface,
+              height: 65 + insets.bottom,
+              zIndex: 100,
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              elevation: sheetOpen ? 0 : 10, // Android shadow
+              shadowOpacity: sheetOpen ? 0 : 0.15, // iOS shadow
+              shadowOffset: {height: -2}, // iOS shadow direction
+              shadowRadius: sheetOpen ? 0 : 6,
+            },
+            headerTitleStyle: {
+              fontSize: 28,
+              fontFamily: 'Poppins-SemiBold',
+              fontWeight: '600',
+              color: theme.colors.text,
+            },
+            headerStyle: {
+              backgroundColor: theme.colors.background, // match header to theme
+              elevation: 0, // Android shadow
+              shadowOpacity: 0, // iOS shadow
+              borderBottomWidth: 0, // fallback
+            },
+            headerRightContainerStyle: {
+              paddingRight: 20,
+            },
+            headerShadowVisible: false,
+            headerTintColor: theme.colors.text,
+            headerRight: () => (
+              <View style={{flexDirection: 'row', gap: 10}}>
+                <CopilotStep
+                  text="Notification center|Click the notification icon to open up your Server Alerts and Event log to keep up with important information about your servers."
+                  order={2}
+                  name="openNotificationCenter">
+                  <WalkthroughablePressable
+                    onPress={() => navigation.navigate('NotificationCenter')}>
+                    <NotificationBell
+                      hasNew={true}
+                      height={28}
+                      width={28}
+                      color={theme.colors.text}
+                    />
+                    {/* <NotificationIcon
+                      height={28}
+                      width={28}
+                      color={theme.colors.text}
+                    /> */}
+                  </WalkthroughablePressable>
+                </CopilotStep>
 
-              {route.name === 'Menu' ? (
-                <Pressable onPress={() => navigation.goBack()}>
-                  <CloseIcon height={28} width={28} color={theme.colors.text} />
-                </Pressable>
-              ) : (
-                <Pressable onPress={() => navigation.navigate('Menu')}>
-                  <MenuIcon height={28} width={28} color={theme.colors.text} />
-                </Pressable>
-              )}
-            </View>
-          ),
-        })}
-        screenListeners={{
-          tabPress: e => {
-            if (e.target?.includes('Plus')) {
-              e.preventDefault();
-              toggleSheet();
-            }
-          },
-        }}>
-        <Tab.Screen
-          name="Home"
-          component={Dashboard}
-          options={{
-            tabBarIcon: ({focused, color, size}) => (
-              <HomeIcon color={theme.colors.text} />
+                {route.name === 'Menu' ? (
+                  <Pressable onPress={() => navigation.goBack()}>
+                    <CloseIcon
+                      height={28}
+                      width={28}
+                      color={theme.colors.text}
+                    />
+                  </Pressable>
+                ) : (
+                  <Pressable onPress={() => navigation.navigate('Menu')}>
+                    <MenuIcon
+                      height={28}
+                      width={28}
+                      color={theme.colors.text}
+                    />
+                  </Pressable>
+                )}
+              </View>
             ),
-          }}
-        />
-        <Tab.Screen
-          name="Servers"
-          component={HomeScreen}
-          options={{
-            tabBarIcon: ({focused, color, size}) => (
-              <ServersIcon color={theme.colors.text} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name={'Plus'}
-          component={DummyScreen}
-          options={{
-            tabBarLabel: '',
-            tabBarIcon: ({focused}) => (
-              <CopilotStep
-                text="Action button|Use the “+” button to quickly create a server, refer a friend or start a feature request."
-                order={1}
-                name="openActionButton">
-                <WalkthroughableView>
-                  <RotatingTabIcon isOpen={sheetOpen} onPress={toggleSheet} />
-                </WalkthroughableView>
-              </CopilotStep>
-            ),
-          }}></Tab.Screen>
-        <Tab.Screen
-          name="Chat"
-          component={Chat}
-          options={{
-            tabBarIcon: ({focused, color, size}) => (
-              <ChatIcon color={theme.colors.text} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Account"
-          component={Account}
-          options={{
-            tabBarIcon: ({focused, color, size}) => (
-              <AccountIcon color={theme.colors.text} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Menu"
-          component={DrawerContent}
-          options={{
-            tabBarStyle: {display: 'none'},
-            tabBarItemStyle: {display: 'none'},
-          }}
-        />
-        <Tab.Screen
-          name="ServerManagement"
-          component={ServerOverview}
-          options={{
-            tabBarItemStyle: {display: 'none'},
-          }}
-        />
-      </Tab.Navigator>
-
+          })}
+          screenListeners={{
+            tabPress: e => {
+              if (e.target?.includes('Plus')) {
+                e.preventDefault();
+                toggleSheet();
+              } else {
+                bottomSheetRef.current?.close();
+              }
+            },
+          }}>
+          <Tab.Screen
+            name="Home"
+            component={Dashboard}
+            options={{
+              tabBarIcon: ({focused, color, size}) => (
+                <HomeIcon color={theme.colors.text} />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Servers"
+            component={HomeScreen}
+            options={{
+              tabBarIcon: ({focused, color, size}) => (
+                <ServersIcon color={theme.colors.text} />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name={'Plus'}
+            component={DummyScreen}
+            options={{
+              tabBarLabel: '',
+              tabBarIcon: ({focused}) => (
+                <CopilotStep
+                  text="Action button|Use the “+” button to quickly create a server, refer a friend or start a feature request."
+                  order={1}
+                  name="openActionButton">
+                  <WalkthroughableView>
+                    <RotatingTabIcon isOpen={sheetOpen} onPress={toggleSheet} />
+                  </WalkthroughableView>
+                </CopilotStep>
+              ),
+            }}></Tab.Screen>
+          <Tab.Screen
+            name="Chat"
+            component={Chat}
+            options={{
+              tabBarIcon: ({focused, color, size}) => (
+                <ChatIcon color={theme.colors.text} />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Account"
+            component={Account}
+            options={{
+              tabBarIcon: ({focused, color, size}) => (
+                <AccountIcon color={theme.colors.text} />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Menu"
+            component={DrawerContent}
+            options={{
+              tabBarStyle: {display: 'none'},
+              tabBarItemStyle: {display: 'none'},
+            }}
+          />
+          <Tab.Screen
+            name="ServerManagement"
+            component={ServerOverview}
+            options={{
+              tabBarItemStyle: {display: 'none'},
+            }}
+          />
+        </Tab.Navigator>
+      </View>
       <BottomSheet
         ref={bottomSheetRef}
         index={-1}
@@ -267,8 +335,8 @@ export default function MainTabs({navigation}) {
             pressBehavior="close"
           />
         )}>
-        <BottomSheetScrollView
-          contentContainerStyle={[
+        <BottomSheetView
+          style={[
             styles.sheetContent,
             {
               backgroundColor: theme.colors.surface,
@@ -276,12 +344,7 @@ export default function MainTabs({navigation}) {
             },
           ]}>
           <Pressable
-            onPress={() =>
-              navigation.navigate('WebViewScreen', {
-                uri: 'https://webdock.io/en/pricing',
-                token: 'abc123',
-              })
-            }>
+            onPress={() => openWebView('https://webdock.io/en/pricing')}>
             <View style={{flexDirection: 'row', gap: 16}}>
               <CreateServerIcon
                 width={40}
@@ -357,12 +420,7 @@ export default function MainTabs({navigation}) {
                       fontWeight: '600',
                       color: 'black',
                     }}
-                    onPress={() =>
-                      navigation.navigate('WebViewScreen', {
-                        uri: 'https://webdock.io/en/become-an-affiliate',
-                        token: 'abc123',
-                      })
-                    }>
+                    onPress={onShare}>
                     Share code
                   </Button>
                   <Button
@@ -385,10 +443,7 @@ export default function MainTabs({navigation}) {
                       color: theme.colors.text,
                     }}
                     onPress={() =>
-                      navigation.navigate('WebViewScreen', {
-                        uri: 'https://webdock.io/en/become-an-affiliate',
-                        token: 'abc123',
-                      })
+                      openWebView('https://webdock.io/en/dash/refer-friend')
                     }>
                     Read more
                   </Button>
@@ -401,7 +456,7 @@ export default function MainTabs({navigation}) {
             onPress={() =>
               navigation.navigate('WebViewScreen', {
                 uri: 'https://feedback.webdock.io/',
-                token: 'abc123',
+                token: '',
               })
             }>
             <View style={{flexDirection: 'row', gap: 16}}>
@@ -429,7 +484,7 @@ export default function MainTabs({navigation}) {
             </View>
           </Pressable>
           <Divider />
-        </BottomSheetScrollView>
+        </BottomSheetView>
       </BottomSheet>
     </>
   );

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "328609755226",
+    "project_id": "webdockapp",
+    "storage_bucket": "webdockapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:328609755226:android:c75aca6f3fc9fd754d6863",
+        "android_client_info": {
+          "package_name": "io.webdock"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "328609755226-obv7adgrb2ai33q8eii9hq18k7a022tf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_Im3RbvYIRJJ6lIFzxXsDcQJGwx2WHPo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "328609755226-obv7adgrb2ai33q8eii9hq18k7a022tf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, TouchableOpacity} from 'react-native';
+import {View, Text, TouchableOpacity, InteractionManager} from 'react-native';
 import {Dimensions} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getMetrics} from '../service/serverMetrics';
@@ -12,19 +12,24 @@ export default function ServerActivity({route, navigation}) {
   const [metrics, setMetrics] = useState();
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      //onBackgroundRefresh();
+      // onBackgroundRefresh(); // still preserved if needed
     });
-    setTimeout(async () => {
-      try {
-        const userToken = await AsyncStorage.getItem('userToken');
-        const data = await getMetrics(userToken, route.params.slug);
-        setMetrics(data);
-      } catch (e) {
-        alert(e);
-      }
-    }, 0);
+
+    const task = InteractionManager.runAfterInteractions(() => {
+      (async () => {
+        try {
+          const userToken = await AsyncStorage.getItem('userToken');
+          const data = await getMetrics(userToken, route.params.slug);
+          setMetrics(data);
+        } catch (e) {
+          alert(e);
+        }
+      })();
+    });
+
     return () => {
-      unsubscribe(); // ✅ Proper cleanup of event listener
+      task.cancel(); // ✅ Cancel deferred task if component unmounts
+      unsubscribe(); // ✅ Clean up navigation listener
     };
   }, [route, navigation]);
   const formatDate = timestamp => {

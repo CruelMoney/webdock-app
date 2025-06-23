@@ -942,7 +942,7 @@ export default function ServerOverview({route, navigation}) {
                   }}>
                   <Text
                     style={{
-                      width: '15%',
+                      width: '20%',
                       fontFamily: 'Poppins-Medium',
                       fontWeight: '500',
                       fontSize: 14,
@@ -1108,7 +1108,7 @@ export default function ServerOverview({route, navigation}) {
               }}>
               <Text
                 style={{
-                  width: '15%',
+                  width: '20%',
                   fontFamily: 'Poppins-Medium',
                   fontWeight: '500',
                   fontSize: 14,
@@ -1188,7 +1188,7 @@ export default function ServerOverview({route, navigation}) {
               }}>
               <Text
                 style={{
-                  width: '15%',
+                  width: '20%',
                   fontFamily: 'Poppins-Medium',
                   fontWeight: '500',
                   fontSize: 14,
@@ -1253,7 +1253,7 @@ export default function ServerOverview({route, navigation}) {
               }}>
               <Text
                 style={{
-                  width: '15%',
+                  width: '20%',
 
                   fontFamily: 'Poppins-Medium',
                   fontWeight: '500',
@@ -1298,7 +1298,7 @@ export default function ServerOverview({route, navigation}) {
               }}>
               <Text
                 style={{
-                  width: '15%',
+                  width: '20%',
 
                   fontFamily: 'Poppins-Medium',
                   fontWeight: '500',
@@ -1546,53 +1546,60 @@ export default function ServerOverview({route, navigation}) {
               // onRefresh={() => onRefresh()}
               // refreshing={isFetching}
               renderItem={({item}) => (
-                <>
-                  <TouchableOpacity
-                    key={item.slug}
-                    onPress={() => {
-                      navigation.setParams({
-                        slug: item.slug,
-                        name: item.name,
-                        description: item.description,
-                        notes: item.notes,
-                        nextActionDate: item.nextActionDate,
-                        location: item.location,
-                        profile: item.profile,
-                      });
-                      navigation.navigate('ServerManagement', {
-                        slug: item.slug,
-                        name: item.name,
-                        description: item.description,
-                        notes: item.notes,
-                        nextActionDate: item.nextActionDate,
-                        location: item.location,
-                        profile: item.profile,
-                      });
-                    }}>
-                    <EventItem
-                      key={item.id}
-                      action={item.action}
-                      actionData={item.actionData}
-                      startTime={item.startTime}
-                      status={item.status}
-                      message={item.message}
-                    />
-                  </TouchableOpacity>
+                <View>
+                  <EventItem
+                    action={item.action}
+                    actionData={item.actionData}
+                    startTime={item.startTime}
+                    status={item.status}
+                    message={item.message}
+                  />
                   <View
                     style={{
                       height: 1,
                     }}></View>
-                </>
+                </View>
               )}
               ListEmptyComponent={
                 events ? events.length > 0 ? <EmptyList /> : null : null
               }
-              keyExtractor={item => item.slug}
+              keyExtractor={item => item.id}
+              ListFooterComponent={
+                <View
+                  style={{
+                    height: 42,
+                    backgroundColor: theme.colors.surface,
+                    borderBottomLeftRadius: 4,
+                    borderBottomRightRadius: 4,
+                    padding: 12,
+                    alignItems: 'flex-end',
+                  }}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate('Events', {
+                        slug: route.params.slug,
+                        name: route.params.name,
+                      })
+                    }>
+                    <Text
+                      style={{
+                        fontFamily: 'Poppins-Regular',
+                        fontWeight: '400',
+                        fontSize: 12,
+                        includeFontPadding: false,
+                        color: theme.colors.primaryText,
+                      }}>
+                      All events →
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              }
             />
           )}
         </View>
         <View
           style={{
+            marginBottom: 16,
             display: 'flex',
             flexDirection: 'row',
             flexWrap: 'wrap',

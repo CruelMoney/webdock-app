@@ -24,6 +24,7 @@ import {
   Snackbar,
   ActivityIndicator,
   Colors,
+  useTheme,
 } from 'react-native-paper';
 import {Avatar, Divider} from 'react-native-paper';
 import Toast from 'react-native-toast-message';
@@ -43,6 +44,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import GradientButton from '../components/GradientButton';
 import EmptyList from '../components/EmptyList';
 import BottomSheetWrapper from '../components/BottomSheetWrapper';
+import EventItem from '../components/EventItem';
 
 let stopFetchMore = true;
 const ListFooterComponent = () => (
@@ -64,61 +66,60 @@ export default function ServerEvents({route, navigation}) {
   const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      onBackgroundRefresh();
-    });
+    const callbackId = route.params?.callbackId;
+    const slug = route.params?.slug;
 
-    setTimeout(async () => {
-      let userToken = null;
+    let pollingInterval = null;
+
+    const fetchEvents = async () => {
       try {
-        userToken = await AsyncStorage.getItem('userToken');
-        if (route.params.callbackId) {
-          getEventsByCallbackId(userToken, route.params.callbackId).then(
-            data => {
-              setEvents(data);
-              setIsLoading(false);
-            },
-          );
+        const userToken = await AsyncStorage.getItem('userToken');
+
+        if (callbackId) {
+          const data = await getEventsByCallbackId(userToken, callbackId);
+          setEvents(data);
+          setIsLoading(false);
+
+          // Start polling
+          pollingInterval = setInterval(async () => {
+            try {
+              const token = await AsyncStorage.getItem('userToken');
+              const refreshed = await getEventsByCallbackId(token, callbackId);
+              setEvents(refreshed);
+
+              const stillWaiting = refreshed.some(
+                obj => obj.status === 'waiting' || obj.status === 'working',
+              );
+
+              if (!stillWaiting) {
+                clearInterval(pollingInterval);
+              }
+            } catch (e) {
+              console.error('Polling error:', e);
+            }
+          }, 1500);
         } else {
-          getAllEventsBySlug(userToken, route.params.slug).then(data => {
-            setEvents(data);
-            setIsLoading(false);
-          });
+          const data = await getAllEventsBySlug(userToken, slug);
+          setEvents(data);
+          setIsLoading(false);
         }
       } catch (e) {
-        alert(e);
+        alert('Something went wrong.');
       }
-    }, 0);
+    };
 
-    return unsubscribe;
+    fetchEvents();
+
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchEvents();
+    });
+
+    return () => {
+      unsubscribe();
+      if (pollingInterval) clearInterval(pollingInterval);
+    };
   }, [route]);
-  if (route.params.callbackId) {
-    useEffect(() => {
-      const interval = setInterval(async () => {
-        let userToken = null;
-        try {
-          userToken = await AsyncStorage.getItem('userToken');
-          if (route.params.callbackId) {
-            getEventsByCallbackId(userToken, route.params.callbackId).then(
-              data => {
-                setEvents(data);
-                if (
-                  data.filter(obj => {
-                    return obj.status === 'waiting' || obj.status === 'working';
-                  }).length == 0
-                ) {
-                  clearInterval(interval);
-                }
-              },
-            );
-          }
-        } catch (e) {
-          alert(e);
-        }
-      }, 1500);
-      return () => clearInterval(interval);
-    }, []);
-  }
+
   class Item extends PureComponent {
     render() {
       return (
@@ -211,7 +212,7 @@ export default function ServerEvents({route, navigation}) {
     let userToken = null;
     try {
       userToken = await AsyncStorage.getItem('userToken');
-      if (route.params.callbackId) {
+      if (route.params?.callbackId) {
         getEventsByCallbackId(userToken, route.params.callbackId).then(data => {
           setEvents(data);
           setIsFetching(false);
@@ -226,24 +227,6 @@ export default function ServerEvents({route, navigation}) {
       alert(e);
     }
   };
-  const onBackgroundRefresh = async () => {
-    let userToken = null;
-    try {
-      userToken = await AsyncStorage.getItem('userToken');
-      if (route.params.callbackId) {
-        getEventsByCallbackId(userToken, route.params.callbackId).then(data => {
-          setEvents(data);
-        });
-      } else {
-        getAllEventsBySlug(userToken, route.params.slug).then(data => {
-          setEvents(data);
-        });
-      }
-    } catch (e) {
-      alert(e);
-    }
-  };
-
   const loadMoreItems = async () => {
     setLoadingMore(true);
     if (!stopFetchMore) {
@@ -263,64 +246,91 @@ export default function ServerEvents({route, navigation}) {
   };
   const [eventDetailsModal, setEventDetailsModal] = useState(false);
   const [eventDetails, setEventDetails] = useState(false);
+  const theme = useTheme();
   return (
-    <SafeAreaView>
+    <>
       <BottomSheetWrapper title="Events" onClose={() => navigation.goBack()}>
-        <FlatList
-          showsVerticalScrollIndicator={false}
-          data={serverEvents}
-          style={{marginTop: 10}}
-          onRefresh={() => onRefresh()}
-          refreshing={isFetching}
-          renderItem={({item}) => (
-            <>
-              <TouchableOpacity
-                disabled={
-                  !(
-                    item.status != 'waiting' &&
-                    item.status != 'finished' &&
-                    item.status != 'working'
-                  )
-                }
-                item={item}
-                onPress={() => {
-                  setEventDetailsModal(true);
-                  setEventDetails(item);
-                }}>
-                <View>
-                  <Item item={item} />
-                </View>
-              </TouchableOpacity>
-              <View
-                style={{
-                  height: 10,
-                  width: '100%',
-                }}
-              />
-            </>
-          )}
-          keyExtractor={item => item.id}
-          ListEmptyComponent={
-            <View
+        <View
+          width="100%"
+          height="100%"
+          style={{
+            minHeight: '100%',
+            backgroundColor: theme.colors.background,
+            paddingHorizontal: 20,
+          }}>
+          <View
+            style={{
+              height: 44,
+              borderTopLeftRadius: 4,
+              borderTopRightRadius: 4,
+              backgroundColor: theme.colors.accent,
+              paddingHorizontal: 16,
+              paddingVertical: 10,
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+            <Text
               style={{
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
+                fontFamily: 'Poppins-Medium',
+                fontWeight: '500',
+                color: 'white',
+                fontSize: 16,
+                includeFontPadding: false,
               }}>
-              <Text style={{textAlign: 'center'}}>
-                {'Sorry, nothing to see here yet.'}
-              </Text>
-            </View>
-          }
-          // onEndReached={loadMoreItems}
-          // onEndReachedThreshold={0.5}
-          // onScrollBeginDrag={() => {
-          //   stopFetchMore = false;
-          // }}
-          // ListFooterComponent={() => loadingMore && <ListFooterComponent />}
-        />
+              Server events
+            </Text>
+          </View>
+          <FlatList
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+            data={serverEvents}
+            scrollEnabled={false}
+            removeClippedSubviews={true}
+            onRefresh={() => onRefresh()}
+            refreshing={isFetching}
+            renderItem={({item}) => (
+              <View key={item.id}>
+                <EventItem
+                  key={item.id}
+                  action={item.action}
+                  actionData={item.actionData}
+                  startTime={item.startTime}
+                  status={item.status}
+                  message={item.message}
+                />
+                <View
+                  style={{
+                    height: 1,
+                  }}></View>
+              </View>
+            )}
+            ListEmptyComponent={
+              serverEvents ? (
+                serverEvents.length === 0 ? (
+                  <View
+                    style={{
+                      borderBottomLeftRadius: 4,
+                      borderBottomRightRadius: 4,
+                      padding: 14,
+                      backgroundColor: theme.colors.surface,
+                    }}>
+                    <Text
+                      style={{
+                        color: theme.colors.text,
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
+                      }}>
+                      No events have been triggered yet ...
+                    </Text>
+                  </View>
+                ) : null
+              ) : null
+            }
+            keyExtractor={item => item.slug}
+          />
+        </View>
       </BottomSheetWrapper>
       <Modal
         testID={'modal'}
@@ -385,7 +395,7 @@ export default function ServerEvents({route, navigation}) {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </>
   );
 }
 const styles = StyleSheet.create({

@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import {Image, Text, View} from 'react-native';
 import Spacer from './Spacer';
-import {useTheme} from 'react-native-paper';
+import {Button, useTheme} from 'react-native-paper';
 const NewsItem = ({
   item: {
     title,
@@ -20,6 +20,7 @@ const NewsItem = ({
     changelogCategories,
     slug,
   },
+  onPress,
 }) => {
   const theme = useTheme();
   function formatDate(isoDateStr) {
@@ -126,6 +127,24 @@ const NewsItem = ({
       <Spacer size={12} />
 
       <Text style={{color: theme.colors.text}}>{markdownContent}</Text>
+      <Button
+        mode="contained"
+        textColor="black"
+        compact
+        style={{
+          borderRadius: 4,
+          minWidth: 0,
+          paddingHorizontal: 8,
+        }}
+        labelStyle={{
+          fontFamily: 'Poppins-SemiBold',
+          fontSize: 12,
+          lineHeight: 12 * 1.2,
+          fontWeight: '600',
+        }}
+        onPress={onPress}>
+        Read more
+      </Button>
     </View>
   );
 };

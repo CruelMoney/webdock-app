@@ -59,7 +59,7 @@ export default function Account({navigation}) {
     // {"label":"General","icon":<UserIcon width={30} height={30} color="#00a1a1" />,"navigate":"AccountInfo"},
     {
       label: 'Edit profile',
-      icon: <CogsIcon width={20} height={20} color={theme.colors.background} />,
+      icon: <CogsIcon width={20} height={20} color={'white'} />,
       description:
         'See current and past network, disk, memory and CPU activity for your server',
       navigate: 'https://webdock.io/en/dash/editprofile',
@@ -68,23 +68,19 @@ export default function Account({navigation}) {
       label: 'Team',
       description:
         'See current and past network, disk, memory and CPU activity for your server asd asdasdasdasdasdasdasd asdsa das saassa',
-      icon: <TeamIcon width={20} height={20} color={theme.colors.background} />,
+      icon: <TeamIcon width={20} height={20} color={'white'} />,
       navigate: 'https://webdock.io/en/dash/manageteam',
     },
     {
       label: 'Notification settings',
-      icon: (
-        <NotificationIcon width={20} height={20} color={theme.colors.text} />
-      ),
+      icon: <NotificationIcon width={20} height={20} color={'white'} />,
       description:
         'See current and past network, disk, memory and CPU activity for your server',
       navigate: 'Notification settings',
     },
     {
       label: 'Public keys',
-      icon: (
-        <PubicKeyIcon width={20} height={20} color={theme.colors.background} />
-      ),
+      icon: <PubicKeyIcon width={20} height={20} color={'white'} />,
       description:
         'See current and past network, disk, memory and CPU activity for your server',
       navigate: 'AccountPublicKeys',
@@ -93,18 +89,14 @@ export default function Account({navigation}) {
       label: 'Scripts',
       description:
         'See current and past network, disk, memory and CPU activity for your server',
-      icon: (
-        <ScriptsIcon width={20} height={20} color={theme.colors.background} />
-      ),
+      icon: <ScriptsIcon width={20} height={20} color={'white'} />,
       navigate: 'AccountScripts',
     },
     {
       label: 'Legal documents',
       description:
         'See current and past network, disk, memory and CPU activity for your server',
-      icon: (
-        <LegalDocsIcon width={20} height={20} color={theme.colors.background} />
-      ),
+      icon: <LegalDocsIcon width={20} height={20} color={'white'} />,
       navigate: 'https://webdock.io/en/dash/profile',
     },
   ];
@@ -119,6 +111,13 @@ export default function Account({navigation}) {
       } else {
         console.log("Don't know how to open URI: " + url);
       }
+    });
+  };
+  const openWebView = async url => {
+    navigation.navigate('WebViewScreen', {
+      uri: url,
+      tokenType: 'query',
+      token: await AsyncStorage.getItem('userToken'),
     });
   };
   return account ? (
@@ -136,7 +135,8 @@ export default function Account({navigation}) {
           backgroundColor: theme.colors.surface,
           borderRadius: 4,
         }}>
-        <View
+        <Pressable
+          onPress={() => openWebView('https://webdock.io/en/dash/editprofile')}
           style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
           <View>
             <Image
@@ -193,7 +193,7 @@ export default function Account({navigation}) {
               </Text>
             </Text>
           </View>
-        </View>
+        </Pressable>
       </View>
       <Spacer size={24} />
       <View>
@@ -220,7 +220,7 @@ export default function Account({navigation}) {
             key={item.label}
             onPress={() =>
               item?.navigate?.includes('https://')
-                ? handlePress(item.navigate)
+                ? openWebView(item.navigate)
                 : navigation.navigate(item.navigate)
             }
             onLayout={e => onLayout(e, index)}
@@ -249,6 +249,7 @@ export default function Account({navigation}) {
                 </View>
                 <View style={{height: 8}} />
                 <Text
+                  numberOfLines={1}
                   style={{
                     fontFamily: 'Poppins-SemiBold',
                     fontWeight: '600',
@@ -275,6 +276,7 @@ export default function Account({navigation}) {
           </Pressable>
         ))}
       </View>
+      <Spacer size={30} />
     </ScrollView>
   ) : (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>

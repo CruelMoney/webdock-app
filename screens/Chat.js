@@ -166,7 +166,7 @@ export default function Chat({navigation}) {
                     lineHeight: 12 * 1.2,
                     fontWeight: '600',
                   }}
-                  onPress={() => navigation.navigate('WebViewWebdockAI')}>
+                  onPress={() => navigation.navigate('Webdock AI Assistant')}>
                   Start Chatting with Webdock AI
                 </Button>
               </View>

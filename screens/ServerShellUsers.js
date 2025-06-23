@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   Alert,
   Keyboard,
+  InteractionManager,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {
@@ -27,6 +28,7 @@ import {
   TextInput,
   useTheme,
   HelperText,
+  Checkbox,
 } from 'react-native-paper';
 import {Avatar, Divider} from 'react-native-paper';
 import Toast from 'react-native-toast-message';
@@ -53,6 +55,7 @@ import BottomSheetWrapper from '../components/BottomSheetWrapper';
 import AccordionItem from '../components/AccordionItem';
 import ServerSnapshotItem from '../components/ServerSnapshotItem';
 import ServerShellUsersItem from '../components/ServerShellUsers';
+import {Dropdown, MultiSelect} from 'react-native-element-dropdown';
 export default function ServerShellUsers({route, navigation}) {
   const [K_OPTIONS, setkoptions] = useState([]);
   const [shellUsers, setShellUsers] = useState([]);
@@ -60,6 +63,7 @@ export default function ServerShellUsers({route, navigation}) {
   const [selectedTeams, setSelectedTeams] = useState([]);
   const [selectedKeys, setSelectedKeys] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+
   const [inputs, setInputs] = React.useState({
     username: '',
     password: '',
@@ -68,34 +72,41 @@ export default function ServerShellUsers({route, navigation}) {
     publicKeys: [],
   });
   const [errors, setErrors] = React.useState({});
+
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       onBackgroundRefresh();
     });
 
-    setTimeout(async () => {
-      let userToken = null;
-      try {
-        userToken = await AsyncStorage.getItem('userToken');
-        getServerShellUsers(userToken, route.params.slug).then(data => {
-          setShellUsers(data);
-        });
-        getAccountPublicKeys(userToken).then(data => {
-          setPublicKeys(data);
+    const task = InteractionManager.runAfterInteractions(() => {
+      (async () => {
+        try {
+          const userToken = await AsyncStorage.getItem('userToken');
+
+          const [shellUsers, publicKeys] = await Promise.all([
+            getServerShellUsers(userToken, route.params.slug),
+            getAccountPublicKeys(userToken),
+          ]);
+
+          setShellUsers(shellUsers);
+          setPublicKeys(publicKeys);
+
           setkoptions(
-            data.map(item => {
-              return {
-                id: item.id,
-                item: item.name,
-              };
-            }),
+            publicKeys.map(item => ({
+              value: item.id,
+              label: item.name,
+            })),
           );
-        });
-      } catch (e) {
-        alert(e);
-      }
-    }, 0);
-    return unsubscribe;
+        } catch (e) {
+          alert(e);
+        }
+      })();
+    });
+
+    return () => {
+      task.cancel(); // clean up deferred task
+      unsubscribe(); // clean up focus listener
+    };
   }, [route]);
 
   const updateShellUserPKs = async (pkey, selected) => {
@@ -103,15 +114,11 @@ export default function ServerShellUsers({route, navigation}) {
 
     userToken = await AsyncStorage.getItem('userToken');
 
-    var publicKeysId = selected.map(item => {
-      return item.id;
-    });
-
     var result = await updateShellUserPublicKeys(
       userToken,
       route.params.slug,
       pkey,
-      publicKeysId,
+      selected,
     );
     if (result.status == 202) {
       onBackgroundRefresh();
@@ -216,68 +223,7 @@ export default function ServerShellUsers({route, navigation}) {
       ],
     );
   };
-  const Item = ({item}) => (
-    <>
-      <View
-        style={{
-          backgroundColor: 'white',
-          borderRadius: 10,
-          marginBottom: 10,
-          display: 'flex',
-          padding: 15,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-        <View style={{flex: 1}}>
-          <Text style={{fontFamily: 'Raleway-Regular', fontSize: 14}}>
-            {item.username}
-          </Text>
-          <View style={{display: 'flex', flexDirection: 'row'}}>
-            <Text
-              style={{
-                fontFamily: 'Raleway-Light',
-                fontSize: 12,
-                includeFontPadding: false,
-                color: '#8F8F8F',
-                flexWrap: 'wrap',
-              }}>
-              {item.created}
-            </Text>
-          </View>
-        </View>
-        <View style={{}}>
-          <View
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}>
-            <TouchableOpacity
-              style={{marginHorizontal: 2}}
-              onPress={() => {
-                openConsoleWithUsername(item.username);
-              }}>
-              <ConnectIcon
-                width={25}
-                height={25}
-                style={{marginHorizontal: 2}}
-              />
-            </TouchableOpacity>
-            <EditIcon width={25} height={25} style={{marginHorizontal: 2}} />
-            <TouchableOpacity
-              style={{marginHorizontal: 2}}
-              onPress={() => {
-                setSelectedShellUser(item);
-                setIsDeleteModalVisible(true);
-              }}>
-              <DeleteIcon fill="#D94B4B" width={25} height={25} />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </>
-  );
+
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
     setIsFetching(true);
@@ -313,10 +259,7 @@ export default function ServerShellUsers({route, navigation}) {
     setModalData(item);
     setSelectedTeams(
       item.publicKeys.map(item => {
-        return {
-          id: item.id,
-          item: item.name,
-        };
+        return item.id;
       }),
     );
   };
@@ -465,11 +408,11 @@ export default function ServerShellUsers({route, navigation}) {
     setErrors(prevState => ({...prevState, [input]: error}));
   };
   const sendRequest = async () => {
-    let keys = selectedKeys.map(s => s.id);
-    handleOnchange(keys, 'publicKeys');
-    console.log(inputs);
+    handleOnchange(selectedKeys, 'publicKeys');
+
     let userToken = null;
     userToken = await AsyncStorage.getItem('userToken');
+
     let result = await createShellUser(
       userToken,
       route.params.slug,
@@ -534,6 +477,7 @@ export default function ServerShellUsers({route, navigation}) {
           width="100%"
           height="100%"
           style={{
+            minHeight: '100%',
             backgroundColor: theme.colors.background,
             paddingHorizontal: 20,
             gap: 24,
@@ -601,6 +545,7 @@ export default function ServerShellUsers({route, navigation}) {
                 <TextInput
                   mode="flat"
                   value={inputs['password']}
+                  secureTextEntry={true}
                   dense={true}
                   onChangeText={text => handleOnchange(text, 'password')}
                   underlineColorAndroid="transparent"
@@ -731,36 +676,119 @@ export default function ServerShellUsers({route, navigation}) {
                 ) : null}
               </View>
               <View style={{gap: 4}}>
-                <SelectBox
-                  list
-                  label="Select public keys you want to assign to this user"
-                  options={K_OPTIONS}
-                  multiOptionContainerStyle={{
-                    backgroundColor: '#008570',
+                <MultiSelect
+                  mode="modal"
+                  style={{
+                    height: 44,
+                    backgroundColor: theme.colors.surface,
+                    padding: 12,
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: '#D9D9D9',
                   }}
-                  listOptionProps={{
-                    style: {maxHeight: '100%'},
-                  }}
-                  labelStyle={{
-                    fontFamily: 'Poppins-SemiBold',
-                    fontSize: 12,
+                  placeholderStyle={{
+                    fontFamily: 'Poppins-Light',
+                    fontSize: 14,
                     color: theme.colors.text,
                   }}
-                  selectedItemStyle={{
+                  selectedTextStyle={styles.selectedTextStyle}
+                  inputSearchStyle={{
+                    height: 40,
+                    fontSize: 16,
                     color: theme.colors.text,
+                    borderRadius: 4,
+                    backgroundColor: theme.colors.surface,
                   }}
-                  inputFilterStyle={{
-                    color: theme.colors.text,
+                  containerStyle={{
+                    backgroundColor: theme.colors.background,
+                    paddingVertical: 10,
+                    borderRadius: 4,
+                    shadowOffset: 0,
+                    borderWidth: 0,
                   }}
-                  optionsLabelStyle={{color: theme.colors.text}}
-                  multiOptionsLabelStyle={{color: theme.colors.text}}
-                  arrowIconColor={theme.colors.text}
-                  searchIconColor={theme.colors.text}
-                  toggleIconColor={theme.colors.text}
-                  selectedValues={selectedKeys}
-                  onMultiSelect={onMultiChange2()}
-                  onTapClose={onMultiChange2()}
-                  isMulti
+                  iconStyle={styles.iconStyle}
+                  data={K_OPTIONS}
+                  search
+                  maxHeight={300}
+                  labelField="label"
+                  valueField="value"
+                  placeholder={
+                    selectedKeys.length === 0
+                      ? 'Assign Public Keys'
+                      : K_OPTIONS.filter(item =>
+                          selectedKeys.includes(item.value),
+                        )
+                          .map(item => item.label)
+                          .join(', ')
+                  }
+                  searchPlaceholder="Search..."
+                  value={selectedKeys}
+                  onChange={item => {
+                    setSelectedKeys(item);
+                  }}
+                  renderItem={(item, selected) => (
+                    <View
+                      style={{
+                        backgroundColor: selected
+                          ? theme.colors.surface
+                          : theme.colors.background,
+                        padding: 10,
+                        flexDirection: 'row',
+                        gap: 10,
+                        alignItems: 'center',
+                      }}>
+                      <Checkbox
+                        status={selected ? 'checked' : 'unchecked'}
+                        color={theme.colors.primaryText}
+                      />
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          textAlign: 'left',
+                          color: theme.colors.text,
+                        }}>
+                        {item.label}
+                      </Text>
+                    </View>
+                  )}
+                  alwaysRenderSelectedItem={false}
+                  renderSelectedItem={() => <View style={{height: 0}} />}
+                  // renderSelectedItem={(item, unSelect) => (
+                  //   <TouchableOpacity
+                  //     onPress={() => unSelect && unSelect(item)}>
+                  //     <View
+                  //       style={{
+                  //         flexDirection: 'row',
+                  //         justifyContent: 'center',
+                  //         alignItems: 'center',
+                  //         borderRadius: 14,
+                  //         backgroundColor: 'white',
+                  //         shadowColor: '#000',
+                  //         marginTop: 8,
+                  //         marginRight: 12,
+                  //         paddingHorizontal: 12,
+                  //         paddingVertical: 8,
+                  //         shadowOffset: {
+                  //           width: 0,
+                  //           height: 1,
+                  //         },
+                  //         shadowOpacity: 0.2,
+                  //         shadowRadius: 1.41,
+
+                  //         elevation: 2,
+                  //       }}>
+                  //       <Text
+                  //         style={{
+                  //           marginRight: 5,
+                  //           fontSize: 16,
+                  //           fontFamily: 'Poppins',
+                  //         }}>
+                  //         {item.label}
+                  //       </Text>
+                  //       <Icon color="black" name="delete" size={17} />
+                  //     </View>
+                  //   </TouchableOpacity>
+                  // )}
                 />
               </View>
               <View
@@ -816,6 +844,7 @@ export default function ServerShellUsers({route, navigation}) {
             </View>
             <FlatList
               data={shellUsers}
+              scrollEnabled={false}
               showsVerticalScrollIndicator={false}
               onRefresh={() => onRefresh()}
               refreshing={isFetching}
@@ -864,7 +893,15 @@ export default function ServerShellUsers({route, navigation}) {
         </View>
       </BottomSheetWrapper>
       <ReactNativeModal isVisible={isModalVisible}>
-        <View style={styles.content}>
+        <View
+          style={{
+            backgroundColor: theme.colors.background,
+            padding: 0,
+            borderRadius: 8,
+            borderColor: 'rgba(0, 0, 0, 0.1)',
+            gap: 10,
+            padding: 20,
+          }}>
           <View style={{width: '100%'}}>
             <View
               style={{
@@ -875,133 +912,181 @@ export default function ServerShellUsers({route, navigation}) {
               <Text
                 style={{
                   textAlign: 'center',
-                  paddingStart: 20,
-                  fontFamily: 'Raleway-Medium',
-                  marginTop: 10,
+                  fontFamily: 'Poppins-Medium',
                   fontSize: 18,
+                  color: theme.colors.text,
                 }}>
                 {modalData ? modalData.username : ''}
               </Text>
             </View>
           </View>
-          <View style={{padding: 20}}>
-            <Text>
-              <Text style={{fontWeight: 'bold'}}>Username: </Text>
+          <View style={{gap: 5}}>
+            <Text
+              style={{fontFamily: 'Poppins-Regular', color: theme.colors.text}}>
+              <Text style={{fontFamily: 'Poppins-Medium'}}>Username: </Text>
               {modalData ? modalData.username : ''}
             </Text>
-            <Text>
-              <Text style={{fontWeight: 'bold'}}>Created: </Text>
+            <Text
+              style={{fontFamily: 'Poppins-Regular', color: theme.colors.text}}>
+              <Text style={{fontFamily: 'Poppins-Medium'}}>Created: </Text>
               {modalData ? modalData.created : ''}
             </Text>
-            <Text>
-              <Text style={{fontWeight: 'bold'}}>Group: </Text>
+            <Text
+              style={{fontFamily: 'Poppins-Regular', color: theme.colors.text}}>
+              <Text style={{fontFamily: 'Poppins-Medium'}}>Group: </Text>
               {modalData ? modalData.group : ''}
             </Text>
-            <Text>
-              <Text style={{fontWeight: 'bold'}}>Shell: </Text>
+            <Text
+              style={{fontFamily: 'Poppins-Regular', color: theme.colors.text}}>
+              <Text style={{fontFamily: 'Poppins-Medium'}}>Shell: </Text>
               {modalData ? modalData.shell : ''}
             </Text>
-
-            <SelectBox
-              label="Select public keys you want to assign to this user"
-              options={K_OPTIONS}
-              multiOptionContainerStyle={{
-                backgroundColor: '#008570',
+            <MultiSelect
+              mode="modal"
+              style={{
+                height: 44,
+                backgroundColor: theme.colors.surface,
+                padding: 12,
+                borderRadius: 4,
+                borderWidth: 1,
+                borderColor: '#D9D9D9',
               }}
-              arrowIconColor="#008570"
-              searchIconColor="#008570"
-              toggleIconColor="#008570"
-              selectedValues={selectedTeams}
-              onMultiSelect={onMultiChange()}
-              onTapClose={onMultiChange()}
-              isMulti
-            />
-
-            <TouchableOpacity onPress={openConsole}>
-              <View
-                style={{display: 'flex', flexDirection: 'row', marginTop: 20}}>
-                <View style={{backgroundColor: '#03A84E', width: 1}}></View>
-                <View>
+              placeholderStyle={{
+                fontFamily: 'Poppins-Light',
+                fontSize: 14,
+                color: theme.colors.text,
+              }}
+              selectedTextStyle={styles.selectedTextStyle}
+              inputSearchStyle={{
+                height: 40,
+                fontSize: 16,
+                color: theme.colors.text,
+                borderRadius: 4,
+                backgroundColor: theme.colors.surface,
+              }}
+              containerStyle={{
+                backgroundColor: theme.colors.background,
+                paddingVertical: 10,
+                borderRadius: 4,
+                shadowOffset: 0,
+                borderWidth: 0,
+              }}
+              iconStyle={styles.iconStyle}
+              data={K_OPTIONS}
+              search
+              maxHeight={300}
+              labelField="label"
+              valueField="value"
+              placeholder={
+                selectedTeams.length === 0
+                  ? 'Assign Public Keys'
+                  : K_OPTIONS.filter(item => selectedTeams.includes(item.value))
+                      .map(item => item.label)
+                      .join(', ')
+              }
+              searchPlaceholder="Search..."
+              value={selectedTeams}
+              onChange={item => {
+                setSelectedTeams(item);
+              }}
+              renderItem={(item, selected) => (
+                <View
+                  style={{
+                    backgroundColor: selected
+                      ? theme.colors.surface
+                      : theme.colors.background,
+                    padding: 10,
+                    flexDirection: 'row',
+                    gap: 10,
+                    alignItems: 'center',
+                  }}>
+                  <Checkbox
+                    status={selected ? 'checked' : 'unchecked'}
+                    color={theme.colors.primaryText}
+                  />
                   <Text
                     style={{
-                      fontFamily: 'Raleway-Bold',
                       fontSize: 14,
-                      color: '#5F5F5F',
-                      marginStart: 10,
+                      textAlign: 'left',
+                      color: theme.colors.text,
                     }}>
-                    Connect now in your browser:
-                  </Text>
-                  <Text
-                    style={{
-                      fontFamily: 'Raleway-Regular',
-                      fontSize: 12,
-                      color: '#039be5',
-                      marginStart: 10,
-                    }}>
-                    Click to connect with our Web SSH Terminal
+                    {item.label}
                   </Text>
                 </View>
-              </View>
-            </TouchableOpacity>
+              )}
+              alwaysRenderSelectedItem={false}
+              renderSelectedItem={() => <View style={{height: 0}} />}
+            />
           </View>
+          <TouchableOpacity onPress={openConsole}>
+            <View style={{display: 'flex', flexDirection: 'row'}}>
+              <View style={{backgroundColor: '#03A84E', width: 1}}></View>
+              <View>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-Medium',
+                    fontSize: 14,
+                    color: theme.colors.text,
+                    marginStart: 10,
+                  }}>
+                  Connect now in your browser:
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-Regular',
+                    fontSize: 12,
+                    color: '#039be5',
+                    marginStart: 10,
+                  }}>
+                  Click to connect with our Web SSH Terminal
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
           <View
             style={{
-              padding: 20,
-              width: '100%',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
             }}>
-            <View
+            <Button
+              mode="outlined"
+              textColor={theme.colors.text}
+              compact
               style={{
-                width: '100%',
-                marginVertical: 15,
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}>
-              <TouchableOpacity
-                onPress={() => toggleModal()}
-                style={{
-                  width: '45%',
-                  height: 40,
-                  borderColor: '#00956c',
-                  borderWidth: 1,
-                  backgroundColor: '#FFFFFF',
-                  borderRadius: 4,
-                  justifyContent: 'center',
-                }}>
-                <Text
-                  style={{
-                    fontFamily: 'Raleway-Bold',
-                    fontSize: 16,
-                    color: '#00956c',
-                    textAlign: 'center',
-                    includeFontPadding: false,
-                  }}>
-                  Cancel
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => updateShellUserPKs(modalData.id, selectedTeams)}
-                style={{
-                  width: '45%',
-                  height: 40,
-                  backgroundColor: '#449ADF',
-                  borderRadius: 4,
-                  justifyContent: 'center',
-                }}>
-                <Text
-                  style={{
-                    fontFamily: 'Raleway-Bold',
-                    fontSize: 16,
-                    color: '#FFFFFF',
-                    textAlign: 'center',
-                    includeFontPadding: false,
-                  }}>
-                  Assign
-                </Text>
-              </TouchableOpacity>
-            </View>
+                borderColor: '#00956c',
+                borderRadius: 4,
+                width: '50%',
+                paddingHorizontal: 8,
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                fontWeight: '600',
+                includeFontPadding: false,
+              }}
+              onPress={toggleModal}>
+              Cancel
+            </Button>
+            <Button
+              mode="contained"
+              textColor={'white'}
+              compact
+              style={{
+                width: '50%',
+                borderRadius: 4,
+                minWidth: 0,
+                backgroundColor: '#449ADF',
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 14,
+                fontWeight: '600',
+              }}
+              onPress={() => updateShellUserPKs(modalData.id, selectedTeams)}>
+              Assign
+            </Button>
           </View>
         </View>
       </ReactNativeModal>
@@ -1024,7 +1109,7 @@ export default function ServerShellUsers({route, navigation}) {
             style={{
               fontFamily: 'Poppins-SemiBold',
               fontSize: 18,
-              color: theme.colors.accent,
+              color: theme.colors.text,
             }}>
             Delete user {selectedShellUser ? selectedShellUser.username : null}
           </Text>
@@ -1044,7 +1129,7 @@ export default function ServerShellUsers({route, navigation}) {
                 fontFamily: 'Poppins-Regular',
                 fontSize: 12,
                 includeFontPadding: false,
-                color: '#000000',
+                color: theme.colors.text,
                 marginStart: 10,
               }}>
               Warning: As is standard behavior in Linux, all data in this users
@@ -1111,56 +1196,65 @@ export default function ServerShellUsers({route, navigation}) {
   }
 }
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    marginTop: StatusBar.currentHeight || 0,
-  },
-  item: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 5,
-    marginHorizontal: 5,
-    padding: 5,
-  },
-  closebutton: {
-    alignItems: 'flex-end',
-  },
-  icon: {
-    width: '10%',
-  },
-  name: {
-    width: '80%',
-  },
-  status: {
-    width: '10%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  fab: {
-    backgroundColor: 'red',
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
-  },
   content: {
     backgroundColor: 'white',
     padding: 0,
     borderRadius: 8,
     borderColor: 'rgba(0, 0, 0, 0.1)',
   },
-  content1: {
-    width: '100%',
-    height: '100%',
+
+  dropdown: {
+    height: 50,
     backgroundColor: 'white',
-    padding: 0,
-    borderRadius: 8,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 4,
+    padding: 12,
+    borderWidth: 1,
   },
-  contentTitle: {
-    fontSize: 20,
-    marginBottom: 12,
-    textAlign: 'center',
+  placeholderStyle: {
+    fontSize: 16,
+  },
+  selectedTextStyle: {
+    fontSize: 14,
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+  },
+  icon: {
+    marginRight: 5,
+  },
+  item: {
+    padding: 17,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  selectedStyle: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 14,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    marginTop: 8,
+    marginRight: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+
+    elevation: 2,
+  },
+  textSelectedStyle: {
+    marginRight: 5,
+    fontSize: 16,
   },
 });

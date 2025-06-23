@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:id="@+id/layoutsplash"
-    android:background="@drawable/gradientbackground"
+    android:background="#022213"
+    android:orientation="vertical"
     android:gravity="center">
     <ImageView
         android:id="@+id/the_button"
@@ -14,4 +15,76 @@
         android:paddingHorizontal="50dp"
         android:adjustViewBounds="true"
         android:src="@drawable/launch_logo" />
-</RelativeLayout>
+</LinearLayout>
+    <!--    <TextView-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:text="Our No-Nonsense App"-->
+    <!--        android:textSize="32sp"-->
+    <!--        android:textColor="#01FF48"-->
+    <!--        android:textFontWeight="700"/>-->
+    <!--    <TextView-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:text="Monitor. Manage. Create."-->
+    <!--        android:textSize="32sp"-->
+    <!--        android:textColor="white"-->
+    <!--        android:textFontWeight="700"/>-->
+    <!--    <ProgressBar-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:progress="20"-->
+    <!--        android:progressTint="#01FF48"-->
+    <!--        style="?android:attr/progressBarStyleHorizontal"/>-->
+    <!--    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="match_parent"-->
+    <!--        android:background="#1e1e1e"-->
+    <!--        android:layout_marginHorizontal="16dp">-->
+
+    <!--        &lt;!&ndash; Title Bar (Fake macOS window controls) &ndash;&gt;-->
+    <!--        <LinearLayout-->
+    <!--            android:id="@+id/terminalTopBar"-->
+    <!--            android:layout_width="match_parent"-->
+    <!--            android:layout_height="48dp"-->
+    <!--            android:background="#E8EFE8"-->
+    <!--            android:orientation="horizontal"-->
+    <!--            android:layout_alignParentTop="true">-->
+
+    <!--            <View-->
+    <!--                android:layout_width="12dp"-->
+    <!--                android:layout_height="12dp"-->
+    <!--                android:layout_marginEnd="8dp"-->
+    <!--                android:background="@drawable/circle_red" />-->
+
+    <!--            <View-->
+    <!--                android:layout_width="12dp"-->
+    <!--                android:layout_height="12dp"-->
+    <!--                android:layout_marginEnd="8dp"-->
+    <!--                android:background="@drawable/circle_yellow" />-->
+
+    <!--            <View-->
+    <!--                android:layout_width="12dp"-->
+    <!--                android:layout_height="12dp"-->
+    <!--                android:background="@drawable/circle_green" />-->
+
+    <!--            <TextView-->
+    <!--                android:layout_width="match_parent"-->
+    <!--                android:layout_height="wrap_content"-->
+    <!--                android:text="Terminal"-->
+    <!--                android:textAlignment="center"-->
+    <!--                android:gravity="center"/>-->
+    <!--        </LinearLayout>-->
+
+    <!--        &lt;!&ndash; Terminal Body &ndash;&gt;-->
+    <!--        <TextView-->
+    <!--            android:id="@+id/terminalBody"-->
+    <!--            android:layout_below="@id/terminalTopBar"-->
+    <!--            android:layout_width="match_parent"-->
+    <!--            android:layout_height="match_parent"-->
+    <!--            android:text="user@android:~$ echo 'Hello'\nHello"-->
+    <!--            android:textColor="#00FF00"-->
+    <!--            android:textSize="14sp"-->
+    <!--            android:paddingTop="12dp"-->
+    <!--            android:typeface="monospace" />-->
+    <!--    </RelativeLayout>-->

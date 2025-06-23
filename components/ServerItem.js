@@ -9,8 +9,11 @@ import {Image, Text, View} from 'react-native';
 import Spacer from './Spacer';
 import {useTheme} from 'react-native-paper';
 import ArrowIcon from '../assets/arrow-icon.svg';
+import {getServerIcon} from '../service/servers';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import FastImage from 'react-native-fast-image';
 
-const ServerItem = ({title, alias, dc, profile, ipv4, status}) => {
+const ServerItem = ({title, alias, dc, profile, ipv4, status, slug}) => {
   const theme = useTheme();
   const renderStatusIcon = icon => {
     if (icon == 'running') {
@@ -92,6 +95,24 @@ const ServerItem = ({title, alias, dc, profile, ipv4, status}) => {
     }
     return null;
   };
+  const [icon, setIcon] = useState();
+  useEffect(() => {
+    getServerIcon(slug).then(data => {
+      console.log(fixUrl(data.icon));
+      setIcon(fixUrl(data.icon));
+    });
+  }, []);
+  function fixUrl(url) {
+    let unescaped = url.replace(/\\\//g, '/');
+    if (unescaped.startsWith('//')) {
+      return 'https:' + unescaped;
+    }
+    if (unescaped.startsWith('http://') || unescaped.startsWith('https://')) {
+      return unescaped;
+    }
+    return unescaped;
+  }
+
   return (
     <>
       <View style={{backgroundColor: theme.colors.surface}}>
@@ -103,9 +124,10 @@ const ServerItem = ({title, alias, dc, profile, ipv4, status}) => {
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
-          <Image
+          <FastImage
             source={{
-              uri: 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
+              uri: icon,
+              priority: FastImage.priority.normal,
             }}
             style={{borderRadius: 4, width: 42, height: 42}}
           />

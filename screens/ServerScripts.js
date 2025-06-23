@@ -14,6 +14,7 @@ import {
   Alert,
   Dimensions,
   Keyboard,
+  InteractionManager,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -66,31 +67,30 @@ export default function ServerScripts({route, navigation}) {
       onBackgroundRefresh();
     });
 
-    setTimeout(async () => {
-      let userToken = null;
-      try {
-        userToken = await AsyncStorage.getItem('userToken');
-        getServerScripts(userToken, route.params.slug).then(data => {
-          console.log(data);
-          setScripts(data);
-        });
-        getAccountScripts(userToken).then(data => {
-          var array = [];
-          data.map(item => {
-            array.push({
+    const task = InteractionManager.runAfterInteractions(() => {
+      (async () => {
+        try {
+          const userToken = await AsyncStorage.getItem('userToken');
+          getServerScripts(userToken, route.params.slug).then(setScripts);
+          getAccountScripts(userToken).then(data => {
+            const array = data.map(item => ({
               label: item.name,
               value: item.id,
               key: item.id,
               filename: item.filename,
-            });
+            }));
+            setModifiedScripts(array);
           });
-          setModifiedScripts(array);
-        });
-      } catch (e) {
-        alert(e);
-      }
-    }, 0);
-    return unsubscribe;
+        } catch (e) {
+          alert(e);
+        }
+      })();
+    });
+
+    return () => {
+      task.cancel();
+      unsubscribe();
+    };
   }, [route]);
 
   const [callbackId, setCallbackId] = useState();
@@ -333,6 +333,7 @@ export default function ServerScripts({route, navigation}) {
           width="100%"
           height="100%"
           style={{
+            minHeight: '100%',
             backgroundColor: theme.colors.background,
             paddingHorizontal: 20,
             gap: 24,
@@ -530,6 +531,7 @@ export default function ServerScripts({route, navigation}) {
               showsVerticalScrollIndicator={false}
               onRefresh={() => onRefresh()}
               refreshing={isFetching}
+              scrollEnabled={false}
               renderItem={({item}) => (
                 <>
                   <ServerScriptItem

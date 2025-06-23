@@ -19,6 +19,7 @@ import {
   UIManager,
   LayoutAnimation,
   Pressable,
+  Share,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -100,13 +101,9 @@ export function Dashboard({navigation}) {
   }, [isFirstRun]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      start();
-    }, 3000);
     const listener = () => {
       // Copilot tutorial finished!
     };
-    start();
 
     copilotEvents.on('stop', listener);
     const init = async () => {
@@ -123,7 +120,6 @@ export function Dashboard({navigation}) {
       onBackgroundRefresh();
     }, 0);
     return () => {
-      clearTimeout(timer);
       copilotEvents.off('stop', listener);
     };
   }, [navigation]);
@@ -272,9 +268,39 @@ export function Dashboard({navigation}) {
   };
   const WalkthroughableText = walkthroughable(Text);
   const WalkthroughableIconButton = walkthroughable(IconButton);
-  const WalkthroughableView = walkthroughable(View);
+  const WalkthroughableView = walkthroughable(Pressable);
 
   const theme = useTheme();
+
+  const onShare = async () => {
+    try {
+      const value = await AsyncStorage.getItem('accountInfo');
+      const accountInfo = JSON.parse(value);
+      console.log(accountInfo);
+      const result = await Share.share({
+        message: 'Join Webdock ' + accountInfo.referralURl,
+      });
+
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          console.log('Shared with activity type:', result.activityType);
+        } else {
+          console.log('Shared successfully');
+        }
+      } else if (result.action === Share.dismissedAction) {
+        console.log('Share dismissed');
+      }
+    } catch (error) {
+      console.error('❌ Error sharing:', error.message);
+    }
+  };
+  const openWebView = async url => {
+    navigation.navigate('WebViewScreen', {
+      uri: url,
+      tokenType: 'query',
+      token: await AsyncStorage.getItem('userToken'),
+    });
+  };
   return (
     <>
       <SafeAreaView
@@ -297,6 +323,7 @@ export function Dashboard({navigation}) {
             order={3}
             name="referAFriend">
             <WalkthroughableView
+              onPress={onShare}
               style={{
                 flexDirection: 'row',
                 height: 42,
@@ -399,6 +426,7 @@ export function Dashboard({navigation}) {
                       }}>
                       <View>
                         <ServerItem
+                          slug={item.slug}
                           title={item.name}
                           alias={item.aliases[0]}
                           dc={item.location}
@@ -464,7 +492,9 @@ export function Dashboard({navigation}) {
                             lineHeight: 12 * 1.2,
                             fontWeight: '600',
                           }}
-                          onPress={() => {}}>
+                          onPress={() =>
+                            openWebView('https://webdock.io/en/pricing')
+                          }>
                           Create a Server
                         </Button>
                       </View>
@@ -486,7 +516,7 @@ export function Dashboard({navigation}) {
                     alignItems: 'flex-end',
                   }}>
                   <TouchableOpacity
-                    onPress={() => navigation.navigate('HomeScreen')}>
+                    onPress={() => navigation.navigate('Servers')}>
                     <Text
                       style={{
                         fontFamily: 'Poppins-Regular',
@@ -588,31 +618,31 @@ export function Dashboard({navigation}) {
                     <ThumbsUp color={theme.colors.text} />
                   </View>
                 }
-                ListFooterComponent={
-                  <View
-                    style={{
-                      height: 42,
-                      backgroundColor: theme.colors.surface,
-                      borderBottomLeftRadius: 4,
-                      borderBottomRightRadius: 4,
-                      padding: 12,
-                      alignItems: 'flex-end',
-                    }}>
-                    <TouchableOpacity
-                      onPress={() => navigation.navigate('Servers')}>
-                      <Text
-                        style={{
-                          fontFamily: 'Poppins-Regular',
-                          fontWeight: '400',
-                          fontSize: 12,
-                          includeFontPadding: false,
-                          color: theme.colors.primaryText,
-                        }}>
-                        All notifications →
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                }
+                // ListFooterComponent={
+                //   // <View
+                //   //   style={{
+                //   //     height: 42,
+                //   //     backgroundColor: theme.colors.surface,
+                //   //     borderBottomLeftRadius: 4,
+                //   //     borderBottomRightRadius: 4,
+                //   //     padding: 12,
+                //   //     alignItems: 'flex-end',
+                //   //   }}>
+                //   //   <TouchableOpacity
+                //   //     onPress={() => navigation.navigate('Servers')}>
+                //   //     <Text
+                //   //       style={{
+                //   //         fontFamily: 'Poppins-Regular',
+                //   //         fontWeight: '400',
+                //   //         fontSize: 12,
+                //   //         includeFontPadding: false,
+                //   //         color: theme.colors.primaryText,
+                //   //       }}>
+                //   //       All notifications →
+                //   //     </Text>
+                //   //   </TouchableOpacity>
+                //   // </View>
+                // }
                 keyExtractor={item => item.slug}
               />
             )}
@@ -661,9 +691,23 @@ export function Dashboard({navigation}) {
                     <TouchableOpacity
                       key={item.id}
                       onPress={() => {
-                        navigation.navigate('News', {});
+                        navigation.navigate('WebViewScreen', {
+                          uri: item.link,
+                          token: 'abc123',
+                        });
                       }}>
-                      <NewsItem key={item.id} item={item} />
+                      <NewsItem
+                        key={item.id}
+                        item={item}
+                        onPress={() =>
+                          navigation.navigate('WebViewScreen', {
+                            uri:
+                              'https://webdock.io/en/docs/webdock-news/' +
+                              item.slug,
+                            token: 'abc123',
+                          })
+                        }
+                      />
                     </TouchableOpacity>
                     <View
                       style={{

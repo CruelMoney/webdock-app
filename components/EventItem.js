@@ -99,7 +99,7 @@ const EventItem = ({
               style={{
                 width: 42,
                 height: 42,
-                backgroundColor: '#F3F3F3',
+                backgroundColor: theme.dark ? '#E6F2E61A' : '#F3F3F3',
                 borderRadius: 4,
                 justifyContent: 'center',
                 alignItems: 'center',

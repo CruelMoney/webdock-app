@@ -1,11 +1,16 @@
 import React, {useRef, useEffect, useMemo} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {View, StyleSheet, Text, InteractionManager, Alert} from 'react-native';
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetScrollView,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import {Icon, IconButton, useTheme} from 'react-native-paper';
+import {
+  ActivityIndicator,
+  Icon,
+  IconButton,
+  useTheme,
+} from 'react-native-paper';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Pressable} from 'react-native-gesture-handler';
 import {ErrorBoundary} from './ErrorBoundary';
@@ -19,12 +24,32 @@ export default function BottomSheetWrapper({
   const bottomSheetRef = useRef(null);
 
   useEffect(() => {
-    if (children) {
-      requestAnimationFrame(() => {
-        bottomSheetRef.current?.snapToIndex(0);
-      });
-    }
-  }, [children]);
+    let attempts = 0;
+
+    const trySnap = () => {
+      if (bottomSheetRef.current) {
+        try {
+          bottomSheetRef.current.snapToIndex(0);
+        } catch (e) {
+          Alert.alert('test', e);
+        }
+      }
+
+      // If it hasn't opened yet, try again
+      if (attempts < 5) {
+        attempts++;
+        setTimeout(trySnap, 100); // Retry every 100ms
+      }
+    };
+
+    const task = InteractionManager.runAfterInteractions(() => {
+      trySnap(); // try after interactions & layout
+    });
+
+    return () => {
+      task.cancel();
+    };
+  }, []);
 
   const handleChange = index => {
     if (index === -1 && onClose) {
@@ -60,8 +85,17 @@ export default function BottomSheetWrapper({
             pressBehavior="close"
           />
         )}>
-        <BottomSheetView
-          style={{flex: 1, flexDirection: 'column', padding: 0, margin: 0}}>
+        <BottomSheetScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+          }}
+          style={{
+            flex: 1,
+            flexDirection: 'column',
+            padding: 0,
+            margin: 0,
+            gap: 0,
+          }}>
           <View
             style={{
               width: '100%',
@@ -94,10 +128,31 @@ export default function BottomSheetWrapper({
             </Text>
             <View style={{width: 30, height: 30}}></View>
           </View>
-          <View style={{flex: 1}}>
-            <ErrorBoundary onError={onClose}>{children}</ErrorBoundary>
+          <View
+            style={{
+              flex: 1,
+              paddingBottom: 20 + insets.bottom,
+              minHeight: '100%',
+            }}>
+            <ErrorBoundary onError={onClose}>
+              {children ? (
+                children
+              ) : (
+                <View
+                  style={{
+                    height: 400,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                  <ActivityIndicator
+                    size="large"
+                    color={theme.colors.primary}
+                  />
+                </View>
+              )}
+            </ErrorBoundary>
           </View>
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheet>
     </View>
   );

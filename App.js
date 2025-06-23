@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import {createStackNavigator} from '@react-navigation/stack';
 import React, {useEffect, useState} from 'react';
-import {StyleSheet} from 'react-native';
+import {StatusBar, StyleSheet} from 'react-native';
 // import SplashScreen from 'react-native-splash-screen';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {ThemeProvider} from './components/ThemeContext';
@@ -18,6 +18,7 @@ import WebdockApp from './WebdockApp';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import BootSplash from 'react-native-bootsplash';
+import {useTheme} from 'react-native-paper';
 
 // const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -113,9 +114,10 @@ export default function App() {
       });
     }
   }, [loginState]);
-
+  const theme = useTheme();
   return (
-    <GestureHandlerRootView style={{flex: 1}}>
+    <GestureHandlerRootView
+      style={{flex: 1, backgroundColor: theme.colors.background}}>
       <ThemeProvider>
         <SafeAreaProvider>
           <WebdockApp />

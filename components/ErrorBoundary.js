@@ -21,7 +21,11 @@ export class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <Text style={{padding: 20, color: 'red'}}>Failed to load content.</Text>
+        <View style={{minHeight: '100%'}}>
+          <Text style={{padding: 20, color: 'red'}}>
+            Failed to load content.
+          </Text>
+        </View>
       );
     }
 
