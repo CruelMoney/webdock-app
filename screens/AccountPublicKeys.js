@@ -408,6 +408,7 @@ export default function AccountPublicKeys({navigation}) {
             <FlatList
               style={{}}
               data={publicKeys}
+              scrollEnabled={false}
               showsVerticalScrollIndicator={false}
               onRefresh={() => onRefresh()}
               refreshing={isFetching}
