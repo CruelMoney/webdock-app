@@ -8,10 +8,11 @@ import React, {
 import {Image, Text, View} from 'react-native';
 import Spacer from './Spacer';
 import {Button, useTheme} from 'react-native-paper';
+import FastImage from 'react-native-fast-image';
 const NewsItem = ({
   item: {
     title,
-    markdownContent,
+    content,
     featuredImage,
     date,
     locale,
@@ -63,7 +64,8 @@ const NewsItem = ({
 
     return `${month} ${day}${getDaySuffix(day)}, ${year}`;
   }
-
+  const match = content.match(/<p[^>]*>[\s\S]*?<\/p>/i);
+  const firstParagraph = match ? match[0] : '';
   return (
     <View
       key={slug}
@@ -72,6 +74,7 @@ const NewsItem = ({
         paddingHorizontal: 11,
         paddingVertical: 10,
         borderRadius: 4,
+        gap: 12,
       }}>
       <View
         style={{
@@ -103,7 +106,6 @@ const NewsItem = ({
         <Spacer size={12} horizontal />
         <Text style={{color: theme.colors.text}}>{formatDate(date)}</Text>
       </View>
-      <Spacer size={12} />
       <Text
         style={{
           width: '100%',
@@ -115,18 +117,24 @@ const NewsItem = ({
         }}>
         {title}
       </Text>
-      <Spacer size={12} />
-      <Image
-        resizeMode="contain"
-        objectFit="cover"
+      <FastImage
+        resizeMode="cover"
         source={{
           uri: featuredImage,
+          priority: FastImage.priority.normal,
+          cache: FastImage.cacheControl.web,
         }}
         style={{borderRadius: 4, width: '100%', height: 168}}
       />
-      <Spacer size={12} />
-
-      <Text style={{color: theme.colors.text}}>{markdownContent}</Text>
+      <Text
+        style={{
+          color: theme.colors.text,
+          fontFamily: 'Poppins',
+          fontSize: 14,
+          lineHeight: 18,
+        }}>
+        {firstParagraph.replace(/<[^>]+>/g, '')}
+      </Text>
       <Button
         mode="contained"
         textColor="black"

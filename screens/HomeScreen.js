@@ -193,7 +193,7 @@ export function HomeScreen({navigation}) {
         onRefresh={() => onRefresh()}
         ListEmptyComponent={
           servers ? (
-            servers.length === 1 ? (
+            servers.length === 0 ? (
               <View
                 style={{
                   padding: 14,

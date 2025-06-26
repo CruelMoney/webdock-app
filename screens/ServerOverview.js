@@ -67,6 +67,8 @@ import ActivityIcon from '../assets/activity-icon.svg';
 import EventsIcon from '../assets/events-icon.svg';
 import SnapshotIcon from '../assets/snapshot-icon.svg';
 import UsersIcon from '../assets/users-icon.svg';
+import DashboardIcon from '../assets/dashboard-icon.svg';
+import GlobeIcon from '../assets/globe-icon.svg';
 import MoreIcon from '../assets/more-icon.svg';
 import LinkIcon from '../assets/link-icon.svg';
 import UtilizationIcon from '../assets/utilization-icon.svg';
@@ -853,16 +855,6 @@ export default function ServerOverview({route, navigation}) {
       description:
         'See current and past network, disk, memory and CPU activity for your server',
     },
-    // {
-    //   label: 'Events',
-    //   icon: <EventsIcon width={19} height={19} color="#00a1a1" />,
-    //   navigate: 'Events',
-    // },
-    // {
-    //   label: 'Utilization',
-    //   icon: <UtilizationIcon width={19} height={19} color="#00a1a1" />,
-    //   navigate: 'Utilization',
-    // },
     {
       label: 'Server Scripts',
       icon: <ScriptsIcon width={19} height={19} color="#00a1a1" />,
@@ -881,6 +873,19 @@ export default function ServerOverview({route, navigation}) {
       navigate: 'Snapshots',
       description:
         'Create and delete server snapshots or restore your server from a snapshot (backups)',
+    },
+    {
+      label: 'Upgrade/Downgrade',
+      icon: <DashboardIcon width={19} height={19} color="#00a1a1" />,
+      navigate: 'https://webdock.io/en/dash/changeprofile/',
+      description: 'Upgrade or Downgrade your server hardware',
+    },
+    {
+      label: 'Server Identity',
+      icon: <GlobeIcon width={19} height={19} color="#00a1a1" />,
+      navigate: 'https://webdock.io/en/dash/server/',
+      description:
+        'Domain routing. Do this before generating new SSL certificates',
     },
   ];
 
@@ -912,7 +917,20 @@ export default function ServerOverview({route, navigation}) {
     const fraction = u / a;
     return Math.max(0, Math.min(1, parseFloat(fraction.toFixed(2))));
   }
+  const openWebView = async url => {
+    navigation.navigate('WebViewScreen', {
+      uri: url,
+      tokenType: 'query',
+      token: await AsyncStorage.getItem('userToken'),
+    });
+  };
+  const [eventDetailsModal, setEventDetailsModal] = useState(false);
+  const [eventDetails, setEventDetails] = useState(false);
 
+  const openSheet = event => {
+    setEventDetails(event);
+    setEventDetailsModal(true);
+  };
   return server ? (
     <>
       <ScrollView
@@ -1214,30 +1232,6 @@ export default function ServerOverview({route, navigation}) {
                       })
                   : null} */}
               </Text>
-              <View
-                style={{display: 'flex', flexDirection: 'row', width: '10%'}}>
-                <TouchableOpacity
-                  onPress={() =>
-                    profiles.filter(item => server.profile === item.slug)
-                      .length > 0
-                      ? navigation.navigate('ChangeProfile', {
-                          location: server.location,
-                          profile: profiles.filter(
-                            item => server.profile === item.slug,
-                          )[0].slug,
-                          virtualization: server.virtualization,
-                        })
-                      : Toast.show({
-                          type: 'error',
-                          position: 'bottom',
-                          text1: 'Profile not found!',
-                          visibilityTime: 4000,
-                          autoHide: true,
-                        })
-                  }>
-                  <EditIcon width={25} height={25} />
-                </TouchableOpacity>
-              </View>
             </View>
             <Divider />
             <View
@@ -1336,7 +1330,8 @@ export default function ServerOverview({route, navigation}) {
         <AccordionItem
           style={{marginBottom: 12}}
           title="Utilization"
-          viewKey="ServerUtilizationAccordion">
+          viewKey="ServerUtilizationAccordion"
+          expanded={true}>
           <View
             style={{
               flexDirection: 'row',
@@ -1553,6 +1548,11 @@ export default function ServerOverview({route, navigation}) {
                     startTime={item.startTime}
                     status={item.status}
                     message={item.message}
+                    onDetailsPress={item =>
+                      openSheet({
+                        message: item.message,
+                      })
+                    }
                   />
                   <View
                     style={{
@@ -1620,10 +1620,12 @@ export default function ServerOverview({route, navigation}) {
               <TouchableOpacity
                 key={item.label}
                 onPress={() =>
-                  navigation.navigate(item.navigate, {
-                    slug: route.params.slug,
-                    name: route.params.name,
-                  })
+                  item?.navigate.includes('https://')
+                    ? openWebView(item.navigate + route.params.slug)
+                    : navigation.navigate(item.navigate, {
+                        slug: route.params.slug,
+                        name: route.params.name,
+                      })
                 }>
                 <View style={{height: 132, padding: 12}}>
                   <View style={{display: 'flex', gap: 8}}>
@@ -2469,6 +2471,87 @@ export default function ServerOverview({route, navigation}) {
                 </Text>
               </LinearGradient> */}
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      {/* Server Event Detail Modal */}
+      <Modal
+        testID={'modal'}
+        isVisible={eventDetailsModal}
+        swipeDirection={['up', 'left', 'right', 'down']}
+        onSwipeComplete={() => setEventDetailsModal(false)}
+        style={{justifyContent: 'flex-start', marginHorizontal: 20}}>
+        <View
+          style={{
+            backgroundColor: 'white',
+            borderRadius: 4,
+          }}>
+          <View
+            style={{
+              backgroundColor: theme.colors.accent,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderTopStartRadius: 4,
+              borderTopEndRadius: 4,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+            <Text
+              style={{
+                fontFamily: 'Poppins-Medium',
+                fontSize: 16,
+                color: 'white',
+                includeFontPadding: false,
+              }}>
+              Event details
+            </Text>
+            <IconButton
+              icon="close"
+              size={24}
+              iconColor="white"
+              onPress={() => setEventDetailsModal(false)}
+              style={{
+                padding: 0,
+                margin: 0,
+              }}
+            />
+          </View>
+          <View
+            style={{
+              padding: 12,
+              gap: 12,
+            }}>
+            <Text
+              style={{
+                fontFamily: 'Raleway-Regular',
+                fontSize: 10,
+                borderColor: '#000000',
+                borderStyle: 'dashed',
+                borderWidth: 1,
+                borderRadius: 4,
+                padding: 16,
+              }}>
+              {eventDetails.message}
+            </Text>
+            <Button
+              mode="contained"
+              textColor={theme.colors.text}
+              compact
+              style={{
+                borderRadius: 4,
+                minWidth: 0,
+                paddingHorizontal: 8,
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 12,
+                lineHeight: 12 * 1.2,
+                fontWeight: '600',
+              }}
+              onPress={() => setEventDetailsModal(false)}>
+              Okay, thanks
+            </Button>
           </View>
         </View>
       </Modal>

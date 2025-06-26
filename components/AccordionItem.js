@@ -19,6 +19,7 @@ export default function AccordionItem({
   viewKey,
   style,
   duration = 500,
+  expanded = false,
 }) {
   const contentHeight = useSharedValue(0);
   const isExpanded = useSharedValue(false);
@@ -59,7 +60,12 @@ export default function AccordionItem({
   useEffect(() => {
     setRenderKey(prev => prev + 1);
   }, [children]);
-
+  useEffect(() => {
+    runOnUI(() => {
+      'worklet';
+      isExpanded.value = expanded;
+    })();
+  }, [expanded]);
   return (
     <SafeAreaView>
       <Pressable onPress={toggleAccordion}>

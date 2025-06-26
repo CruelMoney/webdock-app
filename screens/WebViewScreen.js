@@ -77,34 +77,37 @@ export default function WebViewScreen({navigation}) {
       title=""
       onClose={() => navigation.goBack()}
       style={styles.container}>
-      {loading && (
-        <View style={styles.loader}>
-          <ActivityIndicator size="large" color="gray" />
-        </View>
-      )}
+      <View style={{flex: 1}}>
+        {loading && (
+          <View style={styles.loader}>
+            <ActivityIndicator size="large" color="gray" />
+            <Text>Loading... Many links take a couple of seconds loading.</Text>
+          </View>
+        )}
 
-      {error ? (
-        <View style={styles.error}>
-          <Text style={{color: 'red'}}>Error loading page: {error}</Text>
-        </View>
-      ) : (
-        <WebView
-          userAgent={'Webdock Mobile App WebView v2.0'}
-          source={source}
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              paddingHorizontal: 20,
-              gap: 24,
-              marginBottom: insets.bottom,
-            },
-          ]}
-          onLoadEnd={handleLoadEnd}
-          onError={handleError}
-          nestedScrollEnabled={true}
-          pullToRefreshEnabled={enablePullToRefresh}
-        />
-      )}
+        {error ? (
+          <View style={styles.error}>
+            <Text style={{color: 'red'}}>Error loading page: {error}</Text>
+          </View>
+        ) : (
+          <WebView
+            userAgent={'Webdock Mobile App WebView v2.0'}
+            source={source}
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                paddingHorizontal: 20,
+                gap: 24,
+                marginBottom: insets.bottom,
+              },
+            ]}
+            onLoadEnd={handleLoadEnd}
+            onError={handleError}
+            nestedScrollEnabled={true}
+            pullToRefreshEnabled={enablePullToRefresh}
+          />
+        )}
+      </View>
     </BottomSheetWrapper>
   );
 }
@@ -113,8 +116,11 @@ const styles = StyleSheet.create({
   container: {flex: 1},
   loader: {
     ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
+    zIndex: 10,
+    backgroundColor: 'white',
     justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
   },
   error: {
     ...StyleSheet.absoluteFillObject,

@@ -54,6 +54,15 @@ export default function Account({navigation}) {
     }
     measuredCount.current += 1;
   };
+
+  const openNotificationSettings = () => {
+    if (Platform.OS === 'ios') {
+      Linking.openURL('app-settings:');
+    } else {
+      // For Android, open app-specific notification settings
+      Linking.openSettings(); // works on most Android versions
+    }
+  };
   const theme = useTheme();
   const tabs = [
     // {"label":"General","icon":<UserIcon width={30} height={30} color="#00a1a1" />,"navigate":"AccountInfo"},
@@ -76,7 +85,7 @@ export default function Account({navigation}) {
       icon: <NotificationIcon width={20} height={20} color={'white'} />,
       description:
         'See current and past network, disk, memory and CPU activity for your server',
-      navigate: 'Notification settings',
+      navigate: 'https://',
     },
     {
       label: 'Public keys',
@@ -220,7 +229,9 @@ export default function Account({navigation}) {
             key={item.label}
             onPress={() =>
               item?.navigate?.includes('https://')
-                ? openWebView(item.navigate)
+                ? item?.label == 'Notification settings'
+                  ? openNotificationSettings()
+                  : openWebView(item.navigate)
                 : navigation.navigate(item.navigate)
             }
             onLayout={e => onLayout(e, index)}

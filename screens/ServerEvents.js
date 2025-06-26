@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef, useMemo} from 'react';
 import {
   FlatList,
   Image,
@@ -25,6 +25,7 @@ import {
   ActivityIndicator,
   Colors,
   useTheme,
+  IconButton,
 } from 'react-native-paper';
 import {Avatar, Divider} from 'react-native-paper';
 import Toast from 'react-native-toast-message';
@@ -45,6 +46,11 @@ import GradientButton from '../components/GradientButton';
 import EmptyList from '../components/EmptyList';
 import BottomSheetWrapper from '../components/BottomSheetWrapper';
 import EventItem from '../components/EventItem';
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet';
 
 let stopFetchMore = true;
 const ListFooterComponent = () => (
@@ -247,6 +253,12 @@ export default function ServerEvents({route, navigation}) {
   const [eventDetailsModal, setEventDetailsModal] = useState(false);
   const [eventDetails, setEventDetails] = useState(false);
   const theme = useTheme();
+
+  const openSheet = event => {
+    console.log(event);
+    setEventDetails(event);
+    setEventDetailsModal(true);
+  };
   return (
     <>
       <BottomSheetWrapper title="Events" onClose={() => navigation.goBack()}>
@@ -299,6 +311,11 @@ export default function ServerEvents({route, navigation}) {
                   startTime={item.startTime}
                   status={item.status}
                   message={item.message}
+                  onDetailsPress={item =>
+                    openSheet({
+                      message: item.message,
+                    })
+                  }
                 />
                 <View
                   style={{
@@ -328,7 +345,7 @@ export default function ServerEvents({route, navigation}) {
                 ) : null
               ) : null
             }
-            keyExtractor={item => item.slug}
+            keyExtractor={item => item.id}
           />
         </View>
       </BottomSheetWrapper>
@@ -337,61 +354,78 @@ export default function ServerEvents({route, navigation}) {
         isVisible={eventDetailsModal}
         swipeDirection={['up', 'left', 'right', 'down']}
         onSwipeComplete={() => setEventDetailsModal(false)}
-        style={{justifyContent: 'flex-end', margin: 0}}>
+        style={{justifyContent: 'flex-start', marginHorizontal: 20}}>
         <View
           style={{
             backgroundColor: 'white',
-            padding: 30,
-            borderTopStartRadius: 10,
-            borderTopEndRadius: 10,
+            borderRadius: 4,
           }}>
-          <Text
-            style={{
-              fontFamily: 'Raleway-Medium',
-              fontSize: 18,
-              color: '#00a1a1',
-              marginVertical: 10,
-            }}>
-            Error details
-          </Text>
-          <Text style={{fontFamily: 'Raleway-Regular', fontSize: 12}}>
-            We are sorry but we could not complete your command. In most cases
-            an Administrator has already been notified. In some cases you can
-            figure out what went wrong and fix it yourself by looking at the
-            command output below.
-          </Text>
           <View
             style={{
-              borderColor: '#AEAEAE',
-              borderStyle: 'dashed',
-              borderWidth: 1,
-              borderRadius: 4,
-              padding: 20,
-              marginVertical: 15,
+              backgroundColor: theme.colors.accent,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderTopStartRadius: 4,
+              borderTopEndRadius: 4,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
             }}>
-            <Text style={{fontFamily: 'Raleway-Regular', fontSize: 10}}>
-              {eventDetails.message}
+            <Text
+              style={{
+                fontFamily: 'Poppins-Medium',
+                fontSize: 16,
+                color: 'white',
+                includeFontPadding: false,
+              }}>
+              Event details
             </Text>
+            <IconButton
+              icon="close"
+              size={24}
+              iconColor="white"
+              onPress={() => setEventDetailsModal(false)}
+              style={{
+                padding: 0,
+                margin: 0,
+              }}
+            />
           </View>
           <View
             style={{
-              width: '100%',
-              marginVertical: 15,
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              padding: 12,
+              gap: 12,
             }}>
-            <TouchableOpacity
-              style={{width: '100%'}}
+            <Text
+              style={{
+                fontFamily: 'Raleway-Regular',
+                fontSize: 10,
+                borderColor: '#000000',
+                borderStyle: 'dashed',
+                borderWidth: 1,
+                borderRadius: 4,
+                padding: 16,
+              }}>
+              {eventDetails.message}
+            </Text>
+            <Button
+              mode="contained"
+              textColor={theme.colors.text}
+              compact
+              style={{
+                borderRadius: 4,
+                minWidth: 0,
+                paddingHorizontal: 8,
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 12,
+                lineHeight: 12 * 1.2,
+                fontWeight: '600',
+              }}
               onPress={() => setEventDetailsModal(false)}>
-              <GradientButton text={'Okay, thanks'} />
-              {/* <LinearGradient locations={[0.29,0.80]} start={{x: 0, y: 0}} end={{x: 1, y: 0}} colors={['#00A1A1', '#03A84E']} style={{borderRadius:5}}>
-                      <Text style={{padding:15,fontFamily:'Raleway-Bold',fontSize:18,color:'white',textAlign:'center'}}>
-                        Okay, thanks
-                      </Text>
-                  </LinearGradient> */}
-            </TouchableOpacity>
+              Okay, thanks
+            </Button>
           </View>
         </View>
       </Modal>

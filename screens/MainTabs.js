@@ -17,7 +17,7 @@ import BottomSheet, {
   CONTENT_HEIGHT,
 } from '@gorhom/bottom-sheet';
 import {Pressable, TouchableOpacity} from 'react-native-gesture-handler';
-import {Divider, useTheme, Button} from 'react-native-paper';
+import {Divider, useTheme, Button, ProgressBar} from 'react-native-paper';
 import MenuIcon from '../assets/menu-icon.svg';
 import PlusIcon from '../assets/plus-icon.svg';
 import CloseIcon from '../assets/close-icon.svg';
@@ -390,7 +390,7 @@ export default function MainTabs({navigation}) {
                       fontSize: 16,
                       color: theme.colors.text,
                     }}>
-                    Refer a Friend
+                    Refer friends. Earn a 20% Commission.
                   </Text>
                   <Text
                     style={{
@@ -399,7 +399,7 @@ export default function MainTabs({navigation}) {
                       fontSize: 12,
                       color: theme.colors.text,
                     }}>
-                    Invite friends and earn Credits to use for payment
+                    Your friend will receive a 20% discount too.
                   </Text>
                 </View>
                 <View style={{flexDirection: 'row', gap: 12}}>

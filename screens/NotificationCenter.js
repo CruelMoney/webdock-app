@@ -34,6 +34,7 @@ import {
   BottomSheetSectionList,
 } from '@gorhom/bottom-sheet';
 import ThumbsUp from '../assets/thumbs-up.svg';
+import Modal from 'react-native-modal';
 
 const initialLayout = {width: Dimensions.get('window').width};
 
@@ -133,7 +134,13 @@ export default function NotificationCenter({navigation}) {
 
     return Object.entries(grouped).map(([title, data]) => ({title, data}));
   };
+  const [eventDetailsModal, setEventDetailsModal] = useState(false);
+  const [eventDetails, setEventDetails] = useState(false);
 
+  const openSheet = event => {
+    setEventDetails(event);
+    setEventDetailsModal(true);
+  };
   const renderScene = SceneMap({
     alerts: () => (
       // <BottomSheetFlatList
@@ -214,77 +221,74 @@ export default function NotificationCenter({navigation}) {
       </View>
     ),
 
-    events: () =>
-      events.length ? (
-        <BottomSheetSectionList
-          sections={groupByFormattedDate(searchQuery?.length ? events : events)}
-          keyExtractor={(item, index) => `${item.slug || 'item'}-${index}`}
-          refreshing={isFetching}
-          onRefresh={onBackgroundRefresh}
-          style={{flex: 1}}
-          // scrollEnabled={false}
-          stickySectionHeadersEnabled={false}
-          contentContainerStyle={{paddingBottom: 20}}
-          ListEmptyComponent={
-            events && events.length === 0 ? (
-              <View
-                style={{
-                  padding: 14,
-                  gap: 16,
-                  backgroundColor: theme.colors.surface,
-                  borderBottomLeftRadius: 4,
-                  borderBottomRightRadius: 4,
-                }}>
-                <Text
-                  style={{
-                    fontFamily: 'Poppins',
-                    fontSize: 14,
-                    color: theme.colors.text,
-                  }}>
-                  You do not have any manual snapshots for your servers yet.
-                  Create a manual snapshot for a server and it will show up
-                  here.
-                </Text>
-              </View>
-            ) : null
-          }
-          renderSectionHeader={({section: {title}}) => (
-            <>
+    events: () => (
+      <BottomSheetSectionList
+        sections={groupByFormattedDate(searchQuery?.length ? events : events)}
+        keyExtractor={(item, index) => `${item.slug || 'item'}-${index}`}
+        refreshing={isFetching}
+        onRefresh={onBackgroundRefresh}
+        style={{flex: 1}}
+        // scrollEnabled={false}
+        stickySectionHeadersEnabled={false}
+        contentContainerStyle={{paddingBottom: 20}}
+        ListEmptyComponent={
+          events && events.length === 0 ? (
+            <View
+              style={{
+                padding: 14,
+                gap: 16,
+                backgroundColor: theme.colors.surface,
+                borderBottomLeftRadius: 4,
+                borderBottomRightRadius: 4,
+              }}>
               <Text
                 style={{
-                  fontFamily: 'Poppins-Medium',
-                  fontSize: 10,
-                  paddingTop: 14,
-                  paddingBottom: 4,
-                  paddingHorizontal: 14,
+                  fontFamily: 'Poppins',
+                  fontSize: 14,
                   color: theme.colors.text,
-                  backgroundColor: theme.colors.surface,
                 }}>
-                {title}
+                No events have been triggered yet ...
               </Text>
-              <View style={{height: 1}} />
-            </>
-          )}
-          renderItem={({item}) => (
-            <>
-              <EventItem
-                key={item.id}
-                action={item.action}
-                actionData={item.actionData}
-                startTime={item.startTime}
-                status={item.status}
-                message={item.message}
-              />
-              <View style={{height: 1}} />
-            </>
-          )}
-        />
-      ) : (
-        <View style={{padding: 40}}>
-          <ActivityIndicator />
-        </View>
-      ),
-
+            </View>
+          ) : null
+        }
+        renderSectionHeader={({section: {title}}) => (
+          <>
+            <Text
+              style={{
+                fontFamily: 'Poppins-Medium',
+                fontSize: 10,
+                paddingTop: 14,
+                paddingBottom: 4,
+                paddingHorizontal: 14,
+                color: theme.colors.text,
+                backgroundColor: theme.colors.surface,
+              }}>
+              {title}
+            </Text>
+            <View style={{height: 1}} />
+          </>
+        )}
+        renderItem={({item}) => (
+          <>
+            <EventItem
+              key={item.id}
+              action={item.action}
+              actionData={item.actionData}
+              startTime={item.startTime}
+              status={item.status}
+              message={item.message}
+              onDetailsPress={item =>
+                openSheet({
+                  message: item.message,
+                })
+              }
+            />
+            <View style={{height: 1}} />
+          </>
+        )}
+      />
+    ),
     news: () => (
       <FlatList
         style={{
@@ -490,6 +494,86 @@ export default function NotificationCenter({navigation}) {
           </View>
         </View>
       </BottomSheetWrapper>
+      <Modal
+        testID={'modal'}
+        isVisible={eventDetailsModal}
+        swipeDirection={['up', 'left', 'right', 'down']}
+        onSwipeComplete={() => setEventDetailsModal(false)}
+        style={{justifyContent: 'flex-start', marginHorizontal: 20}}>
+        <View
+          style={{
+            backgroundColor: 'white',
+            borderRadius: 4,
+          }}>
+          <View
+            style={{
+              backgroundColor: theme.colors.accent,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderTopStartRadius: 4,
+              borderTopEndRadius: 4,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+            <Text
+              style={{
+                fontFamily: 'Poppins-Medium',
+                fontSize: 16,
+                color: 'white',
+                includeFontPadding: false,
+              }}>
+              Event details
+            </Text>
+            <IconButton
+              icon="close"
+              size={24}
+              iconColor="white"
+              onPress={() => setEventDetailsModal(false)}
+              style={{
+                padding: 0,
+                margin: 0,
+              }}
+            />
+          </View>
+          <View
+            style={{
+              padding: 12,
+              gap: 12,
+            }}>
+            <Text
+              style={{
+                fontFamily: 'Raleway-Regular',
+                fontSize: 10,
+                borderColor: '#000000',
+                borderStyle: 'dashed',
+                borderWidth: 1,
+                borderRadius: 4,
+                padding: 16,
+              }}>
+              {eventDetails.message}
+            </Text>
+            <Button
+              mode="contained"
+              textColor={theme.colors.text}
+              compact
+              style={{
+                borderRadius: 4,
+                minWidth: 0,
+                paddingHorizontal: 8,
+              }}
+              labelStyle={{
+                fontFamily: 'Poppins-SemiBold',
+                fontSize: 12,
+                lineHeight: 12 * 1.2,
+                fontWeight: '600',
+              }}
+              onPress={() => setEventDetailsModal(false)}>
+              Okay, thanks
+            </Button>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }

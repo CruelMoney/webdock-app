@@ -17,6 +17,8 @@ import ArrowIcon from '../assets/arrow-icon.svg';
 import NormalEventIcon from '../assets/normal-event.svg';
 import DoneEventIcon from '../assets/done-event.svg';
 import ErrorEventIcon from '../assets/error-event.svg';
+import {Pressable} from 'react-native-gesture-handler';
+import BottomSheet, {BottomSheetModal} from '@gorhom/bottom-sheet';
 const EventItem = ({
   action,
   actionData,
@@ -25,11 +27,14 @@ const EventItem = ({
   startTime,
   status,
   id,
+  onDetailsPress,
 }) => {
   const theme = useTheme();
   const renderEventStatusIcon = status => {
     if (status == 'error') {
       return <ErrorEventIcon />;
+    } else if (status == 'finished' && message != '') {
+      return <NormalEventIcon />;
     } else if (status == 'finished') {
       return <DoneEventIcon />;
     } else if (status == 'waiting') {
@@ -87,7 +92,11 @@ const EventItem = ({
             </View>
           </View>
         ) : (
-          <View
+          <Pressable
+            disabled={
+              !(status === 'error' || (status === 'finished' && !!message))
+            }
+            onPress={onDetailsPress}
             style={{
               display: 'flex',
               padding: 14,
@@ -146,15 +155,15 @@ const EventItem = ({
                 {startTime}
               </Text>
             </View>
-            {status == 'error' ? (
+            {(status === 'error' || (status === 'finished' && !!message)) && (
               <ArrowIcon
                 width={15}
                 height={15}
                 color={theme.colors.primaryText}
-                style={{flex: 1}}
+                style={{marginLeft: 8}}
               />
-            ) : null}
-          </View>
+            )}
+          </Pressable>
         )}
       </View>
     </>

@@ -341,17 +341,9 @@ export function Dashboard({navigation}) {
                   fontSize: 14,
                   fontWeight: '600',
                   includeFontPadding: false,
+                  color: theme.dark ? 'black' : 'white',
                 }}>
-                Refer and Earn up to{' '}
-                <Text
-                  style={{
-                    fontFamily: 'Poppins-ExtraBold',
-                    fontSize: 14,
-                    fontWeight: '800',
-                    includeFontPadding: false,
-                  }}>
-                  200 Credits
-                </Text>
+                Refer a Friend and Earn Credits
               </Text>
             </WalkthroughableView>
           </CopilotStep>

@@ -12,9 +12,12 @@ import ArrowIcon from '../assets/arrow-icon.svg';
 import {getServerIcon} from '../service/servers';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FastImage from 'react-native-fast-image';
+const iconMemoryCache = {};
+const serverIconResponseCache = {};
 
 const ServerItem = ({title, alias, dc, profile, ipv4, status, slug}) => {
   const theme = useTheme();
+
   const renderStatusIcon = icon => {
     if (icon == 'running') {
       return (
@@ -97,11 +100,33 @@ const ServerItem = ({title, alias, dc, profile, ipv4, status, slug}) => {
   };
   const [icon, setIcon] = useState();
   useEffect(() => {
-    getServerIcon(slug).then(data => {
-      console.log(fixUrl(data.icon));
-      setIcon(fixUrl(data.icon));
-    });
-  }, []);
+    let mounted = true;
+
+    async function loadIcon() {
+      if (serverIconResponseCache[slug]) {
+        const cachedIcon = fixUrl(serverIconResponseCache[slug].icon);
+        mounted && setIcon(cachedIcon);
+        return;
+      }
+
+      try {
+        const response = await getServerIcon(slug);
+        serverIconResponseCache[slug] = response;
+
+        const fixed = fixUrl(response.icon);
+        mounted && setIcon(fixed);
+      } catch (error) {
+        console.error('Failed to fetch icon for slug:', slug, error);
+      }
+    }
+
+    loadIcon();
+
+    return () => {
+      mounted = false;
+    };
+  }, [slug]);
+
   function fixUrl(url) {
     let unescaped = url.replace(/\\\//g, '/');
     if (unescaped.startsWith('//')) {
@@ -128,6 +153,7 @@ const ServerItem = ({title, alias, dc, profile, ipv4, status, slug}) => {
             source={{
               uri: icon,
               priority: FastImage.priority.normal,
+              cache: FastImage.cacheControl.immutable,
             }}
             style={{borderRadius: 4, width: 42, height: 42}}
           />
