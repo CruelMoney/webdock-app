@@ -81,6 +81,7 @@ import AccordionItem from '../components/AccordionItem';
 import EmptyList from '../components/EmptyList';
 import EventItem from '../components/EventItem';
 import {getInstantMetrics} from '../service/serverMetrics';
+import {setGlobalCallbackId} from '../service/storageEvents';
 
 export default function ServerOverview({route, navigation}) {
   const [loading, setLoading] = React.useState(false);
@@ -185,6 +186,8 @@ export default function ServerOverview({route, navigation}) {
         //   autoHide: true,
         // });
         setCallbackId(result.headers.get('x-callback-id'));
+        await setGlobalCallbackId(result.headers.get('x-callback-id'));
+
         setVisibleSnack(true);
       } catch (e) {
         alert(e);
@@ -237,6 +240,8 @@ export default function ServerOverview({route, navigation}) {
         //   autoHide: true,
         // });
         setCallbackId(result.headers.get('X-Callback-ID'));
+        await setGlobalCallbackId(result.headers.get('x-callback-id'));
+
         setVisibleSnack(true);
       } catch (e) {
         alert(e);
@@ -288,6 +293,8 @@ export default function ServerOverview({route, navigation}) {
         //   autoHide: true,
         // });
         setCallbackId(result.headers.get('X-Callback-ID'));
+        await setGlobalCallbackId(result.headers.get('x-callback-id'));
+
         setVisibleSnack(true);
       } catch (e) {
         alert(e);
@@ -340,6 +347,8 @@ export default function ServerOverview({route, navigation}) {
         //   autoHide: true,
         // });
         setCallbackId(result.headers.get('X-Callback-ID'));
+        await setGlobalCallbackId(result.headers.get('x-callback-id'));
+
         setVisibleSnack(true);
       } catch (e) {
         alert(e);
@@ -385,6 +394,8 @@ export default function ServerOverview({route, navigation}) {
       try {
         setReinstallModal(false);
         setCallbackId(result.headers.get('X-Callback-ID'));
+        await setGlobalCallbackId(result.headers.get('x-callback-id'));
+
         setVisibleSnack(true);
       } catch (e) {
         alert(e);
@@ -1600,10 +1611,9 @@ export default function ServerOverview({route, navigation}) {
         <View
           style={{
             marginBottom: 16,
-            display: 'flex',
             flexDirection: 'row',
             flexWrap: 'wrap',
-            alignItems: 'center',
+            alignItems: 'stretch',
             justifyContent: 'space-between',
           }}>
           {tabs.map(item => (
@@ -1627,7 +1637,7 @@ export default function ServerOverview({route, navigation}) {
                         name: route.params.name,
                       })
                 }>
-                <View style={{height: 132, padding: 12}}>
+                <View style={{padding: 12}}>
                   <View style={{display: 'flex', gap: 8}}>
                     <View
                       style={{

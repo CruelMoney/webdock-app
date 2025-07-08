@@ -255,7 +255,6 @@ export default function ServerEvents({route, navigation}) {
   const theme = useTheme();
 
   const openSheet = event => {
-    console.log(event);
     setEventDetails(event);
     setEventDetailsModal(true);
   };
@@ -362,7 +361,7 @@ export default function ServerEvents({route, navigation}) {
           }}>
           <View
             style={{
-              backgroundColor: theme.colors.accent,
+              backgroundColor: '#022213',
               paddingHorizontal: 10,
               paddingVertical: 6,
               borderTopStartRadius: 4,
@@ -398,19 +397,20 @@ export default function ServerEvents({route, navigation}) {
             }}>
             <Text
               style={{
-                fontFamily: 'Raleway-Regular',
-                fontSize: 10,
+                fontFamily: 'Poppins',
+                fontSize: 12,
                 borderColor: '#000000',
                 borderStyle: 'dashed',
                 borderWidth: 1,
                 borderRadius: 4,
                 padding: 16,
+                color: 'black',
               }}>
-              {eventDetails.message}
+              {eventDetails.message ?? 'No event message provided'}
             </Text>
             <Button
               mode="contained"
-              textColor={theme.colors.text}
+              textColor="black"
               compact
               style={{
                 borderRadius: 4,

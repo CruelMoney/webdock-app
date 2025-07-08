@@ -1,111 +1,73 @@
-import React, {
-  useState,
-  useEffect,
-  PureComponent,
-  useRef,
-  useCallback,
-} from 'react';
-import {Image, Text, View} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {Text, View} from 'react-native';
 import Spacer from './Spacer';
 import {useTheme} from 'react-native-paper';
 import ArrowIcon from '../assets/arrow-icon.svg';
 import {getServerIcon} from '../service/servers';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FastImage from 'react-native-fast-image';
-const iconMemoryCache = {};
+
 const serverIconResponseCache = {};
 
-const ServerItem = ({title, alias, dc, profile, ipv4, status, slug}) => {
+function ServerItem({title, alias, dc, profile, ipv4, status, slug}) {
   const theme = useTheme();
+  const [icon, setIcon] = useState();
 
   const renderStatusIcon = icon => {
-    if (icon == 'running') {
-      return (
-        <>
-          <Text
-            style={{
-              fontFamily: 'Poppins-Light',
-              fontSize: 14,
-              includeFontPadding: false,
-              color: '#4C9F5A',
-            }}>
-            {icon.charAt(0).toUpperCase() + icon.slice(1)}
-          </Text>
-        </>
-      );
-    } else if (icon == 'stopped') {
-      return (
-        <>
-          <Text
-            style={{
-              fontFamily: 'Poppins-Light',
-              fontSize: 14,
-              includeFontPadding: false,
-              color: '#E15241',
-            }}>
-            {icon.charAt(0).toUpperCase() + icon.slice(1)}
-          </Text>
-        </>
-      );
-    } else if (icon == 'waiting') {
-      return (
-        <>
-          <Text
-            style={{
-              fontFamily: 'Poppins-Light',
-              fontSize: 14,
-              includeFontPadding: false,
-              color: '#4C9F5A',
-            }}>
-            {icon.charAt(0).toUpperCase() + icon.slice(1)}
-          </Text>
-        </>
-      );
-    } else if (icon == 'working') {
-      return (
-        <>
-          <Text
-            style={{
-              fontFamily: 'Poppins-Light',
-              fontSize: 14,
-              includeFontPadding: false,
-              color: '#4C9F5A',
-            }}>
-            {icon.charAt(0).toUpperCase() + icon.slice(1)}
-          </Text>
-        </>
-      );
-    } else if (
-      icon == 'provisioning' ||
-      icon == 'rebooting' ||
-      icon == 'starting' ||
-      icon == 'stopping' ||
-      icon == 'reinstalling'
-    ) {
-      return (
-        <>
-          <Text
-            style={{
-              fontFamily: 'Poppins-Light',
-              fontSize: 14,
-              includeFontPadding: false,
-              color: '#4C9F5A',
-            }}>
-            {icon.charAt(0).toUpperCase() + icon.slice(1)}
-          </Text>
-        </>
-      );
-    }
-    return null;
+    const color =
+      icon === 'stopped'
+        ? '#E15241'
+        : [
+            'running',
+            'waiting',
+            'working',
+            'provisioning',
+            'rebooting',
+            'starting',
+            'stopping',
+            'reinstalling',
+          ].includes(icon)
+        ? '#4C9F5A'
+        : theme.colors.text;
+
+    return (
+      <Text
+        style={{
+          fontFamily: 'Poppins-Light',
+          fontSize: 14,
+          includeFontPadding: false,
+          color,
+        }}>
+        {icon.charAt(0).toUpperCase() + icon.slice(1)}
+      </Text>
+    );
   };
-  const [icon, setIcon] = useState();
+
+  function fixUrl(url) {
+    let unescaped = url.replace(/\\\//g, '/');
+
+    // Optional: Strip query params if caching issues occur
+    // unescaped = unescaped.split('?')[0];
+
+    if (unescaped.startsWith('//')) {
+      return 'https:' + unescaped;
+    }
+    if (unescaped.startsWith('http://') || unescaped.startsWith('https://')) {
+      return unescaped;
+    }
+    return unescaped;
+  }
+
   useEffect(() => {
     let mounted = true;
 
     async function loadIcon() {
       if (serverIconResponseCache[slug]) {
         const cachedIcon = fixUrl(serverIconResponseCache[slug].icon);
-        mounted && setIcon(cachedIcon);
+        if (mounted && cachedIcon !== icon) {
+          FastImage.preload([{uri: cachedIcon}]);
+          setIcon(cachedIcon);
+        }
         return;
       }
 
@@ -114,7 +76,10 @@ const ServerItem = ({title, alias, dc, profile, ipv4, status, slug}) => {
         serverIconResponseCache[slug] = response;
 
         const fixed = fixUrl(response.icon);
-        mounted && setIcon(fixed);
+        if (mounted && fixed !== icon) {
+          FastImage.preload([{uri: fixed}]);
+          setIcon(fixed);
+        }
       } catch (error) {
         console.error('Failed to fetch icon for slug:', slug, error);
       }
@@ -127,69 +92,62 @@ const ServerItem = ({title, alias, dc, profile, ipv4, status, slug}) => {
     };
   }, [slug]);
 
-  function fixUrl(url) {
-    let unescaped = url.replace(/\\\//g, '/');
-    if (unescaped.startsWith('//')) {
-      return 'https:' + unescaped;
-    }
-    if (unescaped.startsWith('http://') || unescaped.startsWith('https://')) {
-      return unescaped;
-    }
-    return unescaped;
-  }
-
   return (
-    <>
-      <View style={{backgroundColor: theme.colors.surface}}>
+    <View style={{backgroundColor: theme.colors.surface}}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          padding: 14,
+        }}>
+        {/* Icon */}
+        <FastImage
+          source={{
+            uri: icon,
+            priority: FastImage.priority.normal,
+            cache: FastImage.cacheControl.immutable,
+          }}
+          style={{borderRadius: 4, width: 42, height: 42, marginRight: 12}}
+        />
+
+        {/* Text Content */}
         <View
           style={{
-            display: 'flex',
-            padding: 14,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            flex: 1, // Take up remaining space
+            minWidth: 0, // Important to allow text truncation
           }}>
-          <FastImage
-            source={{
-              uri: icon,
-              priority: FastImage.priority.normal,
-              cache: FastImage.cacheControl.immutable,
-            }}
-            style={{borderRadius: 4, width: 42, height: 42}}
-          />
-          <View style={{flexGrow: 1, paddingLeft: 12, height: 42}}>
-            <View
-              style={{
-                height: 24,
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}>
-              <Text
-                style={{
-                  fontFamily: 'Poppins-Medium',
-                  fontSize: 16,
-                  fontWeight: '500',
-                  color: theme.colors.text,
-                }}>
-                {title}
-              </Text>
-            </View>
-            <Text
-              style={{
-                height: 18,
-                fontFamily: 'Poppins-Light',
-                fontSize: 12,
-                fontWeight: '300',
-                color: '#8F8F8F',
-              }}>
-              {renderStatusIcon(status)} · {ipv4}
-            </Text>
-          </View>
+          <Text
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={{
+              fontFamily: 'Poppins-Medium',
+              fontSize: 16,
+              fontWeight: '500',
+              color: theme.colors.text,
+            }}>
+            {title}
+          </Text>
+
+          <Text
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={{
+              fontFamily: 'Poppins-Light',
+              fontSize: 12,
+              fontWeight: '300',
+              color: '#8F8F8F',
+            }}>
+            {renderStatusIcon(status)} · {ipv4}
+          </Text>
+        </View>
+
+        {/* Arrow Icon */}
+        <View style={{marginLeft: 12}}>
           <ArrowIcon width={15} height={15} color={theme.colors.primaryText} />
         </View>
       </View>
-    </>
+    </View>
   );
-};
-export default ServerItem;
+}
+
+export default React.memo(ServerItem);

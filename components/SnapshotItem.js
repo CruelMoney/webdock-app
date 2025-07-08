@@ -10,7 +10,7 @@ import ReactNativeModal from 'react-native-modal';
 import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {deleteAccountPublicKey} from '../service/accountPublicKeys';
-const ServerSnapshotItem = ({item, onRequestDelete, onRequestEdit}) => {
+const SnapshotItem = ({item}) => {
   const theme = useTheme();
   return (
     <View style={{backgroundColor: theme.colors.surface}}>
@@ -57,27 +57,8 @@ const ServerSnapshotItem = ({item, onRequestDelete, onRequestEdit}) => {
             {item.type} snapshot
           </Text>
         </View>
-
-        {/* Right: Buttons */}
-        <View
-          style={{
-            flexDirection: 'row',
-            gap: 8,
-            marginLeft: 12,
-          }}>
-          {item.completed && (
-            <Pressable onPress={() => onRequestEdit(item)}>
-              <RestoreIcon />
-            </Pressable>
-          )}
-          {item.deletable && (
-            <Pressable onPress={() => onRequestDelete(item)}>
-              <DeleteIcon color={theme.dark ? '#FFE6E61A' : '#FFE6E6'} />
-            </Pressable>
-          )}
-        </View>
       </View>
     </View>
   );
 };
-export default ServerSnapshotItem;
+export default SnapshotItem;

@@ -100,21 +100,7 @@ export default function MainTabs({navigation}) {
   const theme = useTheme();
   const WalkthroughablePressable = walkthroughable(Pressable);
   const WalkthroughableView = walkthroughable(View);
-  useEffect(() => {
-    const handleStepChange = step => {
-      if (step?.name === 'openNotificationCenter') {
-        requestUserPermission();
-      }
-    };
-
-    // Subscribe to step changes
-    copilotEvents.on('stepChange', handleStepChange);
-
-    // Cleanup
-    return () => {
-      copilotEvents.off?.('stepChange', handleStepChange); // use `.off()` if supported
-    };
-  }, []);
+  useEffect(() => {}, []);
 
   const openWebView = async url => {
     navigation.navigate('WebViewScreen', {
@@ -198,7 +184,7 @@ export default function MainTabs({navigation}) {
                   <WalkthroughablePressable
                     onPress={() => navigation.navigate('NotificationCenter')}>
                     <NotificationBell
-                      hasNew={true}
+                      // hasNew={true}
                       height={28}
                       width={28}
                       color={theme.colors.text}

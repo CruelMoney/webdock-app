@@ -19,12 +19,15 @@ import {
   ProgressBar,
 } from 'react-native-paper';
 import {getServers} from '../service/servers';
+import {getServerSnapshots} from '../service/serverSnapshots';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PowerIcon from '../assets/power-icon.svg';
 import ArrowIcon from '../assets/arrow-icon.svg';
 import EmptyList from '../components/EmptyList';
 import ServerItem from '../components/ServerItem';
 import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
+import CallbackStatusWatcher from '../components/CallbackStatusWatcher';
+import SnapshotItem from '../components/SnapshotItem';
 
 const initialLayout = {width: Dimensions.get('window').width};
 
@@ -35,32 +38,69 @@ export function HomeScreen({navigation}) {
   const [images, setImages] = useState();
   const [snapshots, setSnapshots] = useState([]);
   const [sortOrder, setSortOrder] = useState('desc');
+
+  // Fetch servers on screen focus
   useEffect(() => {
     setAPIBusy(true);
     const unsubscribe = navigation.addListener('focus', () => {
       onBackgroundRefresh();
     });
-    setTimeout(async () => {
-      let userToken = null;
-      try {
-        userToken = await AsyncStorage.getItem('userToken');
-        getServers(userToken).then(data => {
-          const sorter = (a, b) => {
-            var dA = a.date.split(' ');
-            var dB = b.date.split(' ');
-            var dateA = Date.parse(dA[0] + 'T' + dA[1]),
-              dateB = Date.parse(dB[0] + 'T' + dB[1]);
 
-            return dateB - dateA;
-          };
-          setServers(data.sort(sorter));
-          setAPIBusy(false);
+    setTimeout(async () => {
+      try {
+        const userToken = await AsyncStorage.getItem('userToken');
+        const data = await getServers(userToken);
+        const sorted = data.sort((a, b) => {
+          const dateA = Date.parse(a.date.replace(' ', 'T'));
+          const dateB = Date.parse(b.date.replace(' ', 'T'));
+          return dateB - dateA;
         });
+        setServers(sorted);
+        setAPIBusy(false);
       } catch (e) {
         alert(e);
+        setAPIBusy(false);
       }
     }, 0);
+
+    return unsubscribe;
   }, [navigation]);
+
+  // Fetch snapshots for each server after servers are loaded
+  useEffect(() => {
+    const fetchSnapshots = async () => {
+      try {
+        const userToken = await AsyncStorage.getItem('userToken');
+        const allSnapshots = [];
+
+        for (const server of servers) {
+          try {
+            const allServerSnapshots = await getServerSnapshots(
+              userToken,
+              server.slug,
+            );
+
+            const userSnapshots = allServerSnapshots.filter(
+              snap => snap.type === 'user',
+            );
+
+            allSnapshots.push(...userSnapshots); // spread each into the array
+          } catch (e) {
+            console.error(`Failed to fetch snapshots for ${server.slug}:`, e);
+          }
+        }
+
+        setSnapshots(allSnapshots);
+      } catch (e) {
+        console.error('Failed to fetch snapshots:', e);
+      }
+    };
+
+    if (servers.length > 0) {
+      fetchSnapshots();
+    }
+  }, [servers]);
+
   const onBackgroundRefresh = async () => {
     setAPIBusy(true);
     let userToken = null;
@@ -188,6 +228,30 @@ export function HomeScreen({navigation}) {
               : filteredServers
             : servers
         }
+        ListHeaderComponent={
+          isAPIbusy ? (
+            <View
+              style={{
+                alignItems: 'center',
+                padding: 14,
+                gap: 16,
+                backgroundColor: theme.colors.surface,
+                borderBottomLeftRadius: 4,
+                borderBottomRightRadius: 4,
+              }}>
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+              <Text
+                style={{
+                  marginTop: 8,
+                  fontFamily: 'Poppins',
+                  fontSize: 12,
+                  color: theme.colors.primary,
+                }}>
+                Loading servers...
+              </Text>
+            </View>
+          ) : null
+        }
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
         onRefresh={() => onRefresh()}
@@ -216,7 +280,7 @@ export function HomeScreen({navigation}) {
                 </Text>
                 <Button
                   mode="contained"
-                  textColor={theme.colors.text}
+                  textColor="black"
                   compact
                   style={{
                     borderRadius: 4,
@@ -263,7 +327,7 @@ export function HomeScreen({navigation}) {
             </TouchableOpacity>
             <View
               style={{
-                height: 10,
+                height: 1,
                 width: '100%',
               }}
             />
@@ -276,13 +340,7 @@ export function HomeScreen({navigation}) {
     second: () => (
       <FlatList
         style={{}}
-        data={
-          searchQuery
-            ? searchQuery.length == 0
-              ? snapshots
-              : filteredServers
-            : snapshots
-        }
+        data={snapshots}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
         onRefresh={() => onRefresh()}
@@ -311,35 +369,37 @@ export function HomeScreen({navigation}) {
             ) : null
           ) : null
         }
+        ListHeaderComponent={
+          isAPIbusy ? (
+            <View
+              style={{
+                alignItems: 'center',
+                padding: 14,
+                gap: 16,
+                backgroundColor: theme.colors.surface,
+                borderBottomLeftRadius: 4,
+                borderBottomRightRadius: 4,
+              }}>
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+              <Text
+                style={{
+                  marginTop: 8,
+                  fontFamily: 'Poppins',
+                  fontSize: 12,
+                  color: theme.colors.primary,
+                }}>
+                Loading snapshots...
+              </Text>
+            </View>
+          ) : null
+        }
         refreshing={isFetching}
         renderItem={({item}) => (
           <>
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate('ServerManagement', {
-                  slug: item.slug,
-                  name: item.name,
-                  description: item.description,
-                  notes: item.notes,
-                  nextActionDate: item.nextActionDate,
-                })
-              }>
-              <View>
-                <ServerItem
-                  slug={item.slug}
-                  title={item.name}
-                  alias={item.aliases[0]}
-                  dc={item.location}
-                  virtualization={item.virtualization}
-                  profile={item.profile}
-                  ipv4={item.ipv4}
-                  status={item.status}
-                />
-              </View>
-            </TouchableOpacity>
+            <SnapshotItem item={item} />
             <View
               style={{
-                height: 10,
+                height: 1,
                 width: '100%',
               }}
             />
@@ -379,16 +439,11 @@ export function HomeScreen({navigation}) {
           paddingVertical: 10,
           gap: 15,
         }}>
-        <View style={{width: '100%'}}>
-          <ProgressBar
-            indeterminate
-            color={theme.colors.primary}
-            style={{
-              height: 5,
-              backgroundColor: '#bcbcbc',
-            }}
-          />
-        </View>
+        <CallbackStatusWatcher
+          onFinished={() => {
+            console.log('Event completed!');
+          }}
+        />
         <View
           style={{
             flexDirection: 'row',
@@ -399,32 +454,28 @@ export function HomeScreen({navigation}) {
           }}>
           <View style={{flex: 1, height: 38}}>
             <TextInput
-              mode="flat" // 'flat' avoids double borders and works better for custom height
-              label="Search"
-              dense
-              multiline={false}
+              mode="flat"
+              value={undefined}
               onChangeText={searchtext => {
                 onChangeSearch(searchtext);
                 search();
               }}
+              placeholder="Search"
               style={{
-                flex: 1,
                 height: 38,
                 backgroundColor: theme.colors.surface,
                 borderRadius: 4,
-                justifyContent: 'center',
+                paddingVertical: 0,
               }}
               contentStyle={{
-                paddingVertical: 0,
-                height: 38,
+                fontSize: 12,
+                lineHeight: 38,
                 fontFamily: 'Poppins',
                 fontWeight: '400',
-                fontSize: 12,
-                lineHeight: 12,
                 includeFontPadding: false,
               }}
-              left={<TextInput.Icon icon="magnify" color={theme.colors.text} />}
               underlineColor="transparent"
+              left={<TextInput.Icon icon="magnify" color={theme.colors.text} />}
               theme={{
                 colors: {
                   primary: 'transparent',
@@ -472,20 +523,68 @@ export function HomeScreen({navigation}) {
             <Menu.Item
               key="desc"
               title="Oldest first"
-              onPress={() => sortServers(servers, 'desc')}
-              titleStyle={{fontSize: 14, fontFamily: 'Poppins'}}
+              onPress={() => {
+                sortServers(servers, 'desc');
+                setSortOrder('desc');
+              }}
+              style={{
+                backgroundColor:
+                  sortOrder === 'desc'
+                    ? theme.colors.background
+                    : theme.colors.surface,
+              }}
+              titleStyle={{
+                fontSize: 14,
+                fontFamily: 'Poppins',
+                color:
+                  sortOrder === 'desc'
+                    ? theme.colors.primary
+                    : theme.colors.text,
+              }}
             />
             <Menu.Item
               key="asc"
               title="Newest first"
-              onPress={() => sortServers(servers, 'asc')}
-              titleStyle={{fontSize: 14, fontFamily: 'Poppins'}}
+              onPress={() => {
+                sortServers(servers, 'asc');
+                setSortOrder('asc');
+              }}
+              style={{
+                backgroundColor:
+                  sortOrder === 'asc'
+                    ? theme.colors.background
+                    : theme.colors.surface,
+              }}
+              titleStyle={{
+                fontSize: 14,
+                fontFamily: 'Poppins',
+                color:
+                  sortOrder === 'asc'
+                    ? theme.colors.primary
+                    : theme.colors.text,
+              }}
             />
             <Menu.Item
               key="alphabetical"
               title="Alphabetical"
-              onPress={() => sortServers(servers, 'alphabetical')}
-              titleStyle={{fontSize: 14, fontFamily: 'Poppins'}}
+              onPress={() => {
+                sortServers(servers, 'alphabetical');
+                setSortOrder('alphabetical');
+              }}
+              style={{
+                backgroundColor:
+                  sortOrder === 'alphabetical'
+                    ? theme.colors.background
+                    : theme.colors.surface,
+              }}
+              titleStyle={{
+                fontSize: 14,
+                fontFamily: 'Poppins',
+                color:
+                  sortOrder === 'alphabetical'
+                    ? theme.colors.primary
+                    : theme.colors.text,
+              }}
             />
           </Menu>
         </View>

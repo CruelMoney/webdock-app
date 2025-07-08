@@ -53,6 +53,7 @@ import AccordionItem from '../components/AccordionItem';
 import {Picker} from '@react-native-picker/picker';
 import ScriptItem from '../components/ScriptItem';
 import ServerScriptItem from '../components/ServerScriptItem';
+import {setGlobalCallbackId} from '../service/storageEvents';
 export default function ServerScripts({route, navigation}) {
   const [serverScripts, setScripts] = useState();
   const [inputs, setInputs] = React.useState({
@@ -199,6 +200,8 @@ export default function ServerScripts({route, navigation}) {
       try {
         setIsExecuteModalVisible(false);
         setCallbackId(result.headers.get('x-callback-id'));
+        await setGlobalCallbackId(result.headers.get('x-callback-id'));
+
         setVisibleSnack(true);
       } catch (e) {
         alert(e);

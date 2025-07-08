@@ -17,7 +17,8 @@ import {resetSession} from 'react-native-crisp-chat-sdk';
 import {Pressable, ScrollView} from 'react-native-gesture-handler';
 import {getMainMenu} from '../service/menu';
 import {getReadableVersion, getVersion} from 'react-native-device-info';
-
+import {SvgFromUri, SvgUri} from 'react-native-svg';
+import Tiktok from '../assets/tiktok.svg';
 export function DrawerContent({props, navigation}) {
   const {signOut} = React.useContext(AuthContext);
   const [account, setAccountInfo] = useState();
@@ -63,10 +64,20 @@ export function DrawerContent({props, navigation}) {
               paddingLeft: 46,
             }}>
             {item.icon ? (
-              <Image
-                source={{uri: item.icon}}
-                style={{width: 16, height: 16}}
-              />
+              item.icon.endsWith('.svg') ? (
+                <SvgUri
+                  width={16}
+                  height={16}
+                  uri={'https://webdock.io' + item.icon}
+                />
+              ) : (
+                <Image
+                  source={{
+                    uri: 'https://webdock.io' + item.icon,
+                  }}
+                  style={{width: 16, height: 16, backgroundColor: 'red'}}
+                />
+              )
             ) : null}
             <Text
               style={{
@@ -116,10 +127,20 @@ export function DrawerContent({props, navigation}) {
                     gap: 10,
                   }}>
                   {item.icon ? (
-                    <Image
-                      source={{uri: item.icon}}
-                      style={{width: 20, height: 20}}
-                    />
+                    item.icon.endsWith('.svg') ? (
+                      <SvgUri
+                        width={20}
+                        height={20}
+                        uri={'https://webdock.io' + item.icon}
+                      />
+                    ) : (
+                      <Image
+                        source={{
+                          uri: 'https://webdock.io' + item.icon,
+                        }}
+                        style={{width: 20, height: 20, backgroundColor: 'red'}}
+                      />
+                    )
                   ) : null}
                   <Text style={{fontSize: 16, fontFamily: 'Poppins'}}>
                     {item.title}
@@ -194,8 +215,10 @@ export function DrawerContent({props, navigation}) {
             }}>
             {item.icon ? (
               <Image
-                source={{uri: item.icon}}
-                style={{width: 24, height: 24}}
+                source={{
+                  uri: 'https://webdock.io' + item.icon,
+                }}
+                style={{width: 24, height: 24, backgroundColor: 'red'}}
               />
             ) : null}
             <Text
@@ -383,7 +406,7 @@ export function DrawerContent({props, navigation}) {
               }
             />
             <IconButton
-              icon="tiktok"
+              icon={() => <Tiktok width={24} height={24} fill="#000" />}
               onPress={() => handlePress('https://www.tiktok.com/@webdock.io')}
             />
             <IconButton

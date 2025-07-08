@@ -1,9 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
+import {PermissionsAndroid, Platform} from 'react-native';
 
 const API_ENDPOINT = 'https://webdock.io/en/app_data/savePushToken';
 
-async function requestUserPermission() {
+export default async function requestUserPermission() {
   if (Platform.OS === 'android' && Platform.Version >= 33) {
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
@@ -44,7 +45,7 @@ async function requestUserPermission() {
       accountInfo.userId
     }&push_token=${encodeURIComponent(
       fcmToken,
-    )}&device_type=${deviceType}&secret=${userToken}`;
+    )}&device_type=${deviceType}&secret=bf34eaa48c2643bb9bec16e8f46d88d8`;
 
     const response = await fetch(url);
     const data = await response.json();
@@ -52,7 +53,7 @@ async function requestUserPermission() {
     if (response.ok) {
       console.log('✅ Token sent successfully:', data);
     } else {
-      console.error('❌ Server error:', data);
+      console.error('❌ Server error:', data, url);
     }
   } catch (error) {
     console.error('❌ Failed to send token:', error.message);

@@ -71,6 +71,8 @@ import NewsItem from '../components/NewsItem';
 import ServerItem from '../components/ServerItem';
 import {CopilotStep, useCopilot, walkthroughable} from 'react-native-copilot';
 import BootSplash from 'react-native-bootsplash';
+import CallbackStatusWatcher from '../components/CallbackStatusWatcher';
+import requestUserPermission from '../service/notifications';
 
 const ONBOARDING_KEY = 'hasShownCopilot';
 
@@ -104,11 +106,19 @@ export function Dashboard({navigation}) {
     const listener = () => {
       // Copilot tutorial finished!
     };
+    const requestNotification = step => {
+      if (step.name === 'openNotificationCenter') {
+        console.log('Requestinguserperms');
+        requestUserPermission();
+      }
+    };
 
     copilotEvents.on('stop', listener);
     const init = async () => {
       // …do multiple sync or async tasks
     };
+    copilotEvents.on('stepChange', requestNotification);
+
     init().finally(async () => {
       await BootSplash.hide({fade: true});
       console.log('BootSplash has been hidden successfully');
@@ -121,6 +131,7 @@ export function Dashboard({navigation}) {
     }, 0);
     return () => {
       copilotEvents.off('stop', listener);
+      copilotEvents.off('stepChange', requestNotification);
     };
   }, [navigation]);
 
@@ -317,6 +328,11 @@ export function Dashboard({navigation}) {
             paddingVertical: 10,
             height: '100%',
           }}>
+          <CallbackStatusWatcher
+            onFinished={() => {
+              console.log('Event completed!');
+            }}
+          />
           <CopilotStep
             title=""
             text="Refer a friend|Click the “Refer” button and and start inviting friends and earn credits to use for future payments."
@@ -341,7 +357,7 @@ export function Dashboard({navigation}) {
                   fontSize: 14,
                   fontWeight: '600',
                   includeFontPadding: false,
-                  color: theme.dark ? 'black' : 'white',
+                  color: 'black',
                 }}>
                 Refer a Friend and Earn Credits
               </Text>
@@ -385,66 +401,11 @@ export function Dashboard({navigation}) {
               </View>
             ) : (
               <FlatList
-                showsHorizontalScrollIndicator={false}
-                showsVerticalScrollIndicator={false}
+                style={{}}
                 data={servers}
-                scrollEnabled={false}
-                removeClippedSubviews={true}
-                // onRefresh={() => onRefresh()}
-                // refreshing={isFetching}
-                renderItem={({item}) => (
-                  <>
-                    <TouchableOpacity
-                      key={item.slug}
-                      onPress={() => {
-                        navigation.setParams({
-                          slug: item.slug,
-                          name: item.name,
-                          description: item.description,
-                          notes: item.notes,
-                          nextActionDate: item.nextActionDate,
-                          location: item.location,
-                          profile: item.profile,
-                        });
-                        navigation.navigate('ServerManagement', {
-                          slug: item.slug,
-                          name: item.name,
-                          description: item.description,
-                          notes: item.notes,
-                          nextActionDate: item.nextActionDate,
-                          location: item.location,
-                          profile: item.profile,
-                        });
-                      }}>
-                      <View>
-                        <ServerItem
-                          slug={item.slug}
-                          title={item.name}
-                          alias={item.aliases[0]}
-                          dc={item.location}
-                          profile={item.profile}
-                          // profile={profiles.filter(obj => {
-                          //   return obj.slug === item.profile}).name}
-                          ipv4={item.ipv4}
-                          status={item.status}
-                        />
-                      </View>
-                    </TouchableOpacity>
-                    <View
-                      style={{
-                        height: 1,
-                      }}></View>
-                  </>
-                )}
-                contentContainerStyle={
-                  servers
-                    ? servers.length === 0 && {
-                        flexGrow: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }
-                    : {}
-                }
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+                onRefresh={() => onRefresh()}
                 ListEmptyComponent={
                   servers ? (
                     servers.length === 0 ? (
@@ -462,16 +423,15 @@ export function Dashboard({navigation}) {
                             fontSize: 14,
                             color: theme.colors.text,
                           }}>
-                          Start running websites and apps on our fast VPS
-                          Servers.
+                          You have no servers.{' '}
                           <Text style={{color: theme.colors.primary}}>
                             Create a server
-                          </Text>
+                          </Text>{' '}
                           and it will be listed here.
                         </Text>
                         <Button
                           mode="contained"
-                          textColor={theme.colors.text}
+                          textColor={'black'}
                           compact
                           style={{
                             borderRadius: 4,
@@ -493,6 +453,39 @@ export function Dashboard({navigation}) {
                     ) : null
                   ) : null
                 }
+                refreshing={isFetching}
+                renderItem={({item}) => (
+                  <>
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate('ServerManagement', {
+                          slug: item.slug,
+                          name: item.name,
+                          description: item.description,
+                          notes: item.notes,
+                          nextActionDate: item.nextActionDate,
+                        })
+                      }>
+                      <View>
+                        <ServerItem
+                          title={item.name}
+                          alias={item.aliases[0]}
+                          dc={item.location}
+                          virtualization={item.virtualization}
+                          profile={item.profile}
+                          ipv4={item.ipv4}
+                          status={item.status}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                    <View
+                      style={{
+                        height: 1,
+                        width: '100%',
+                      }}
+                    />
+                  </>
+                )}
                 keyExtractor={item => item.slug}
               />
             )}

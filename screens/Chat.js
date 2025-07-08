@@ -18,6 +18,7 @@ import Spacer from '../components/Spacer';
 import ThemeSwitch from '../components/ThemeSwitch';
 import {ThemeContext} from '../components/ThemeContext';
 import CrispChat, {show} from 'react-native-crisp-chat-sdk';
+import CallbackStatusWatcher from '../components/CallbackStatusWatcher';
 
 export default function Chat({navigation}) {
   const [account, setAccount] = useState();
@@ -84,6 +85,11 @@ export default function Chat({navigation}) {
         backgroundColor: theme.colors.background,
         paddingHorizontal: 20,
       }}>
+      <CallbackStatusWatcher
+        onFinished={() => {
+          console.log('Event completed!');
+        }}
+      />
       <View>
         <View
           style={{
@@ -153,7 +159,7 @@ export default function Chat({navigation}) {
                 <Spacer size={12} />
                 <Button
                   mode="contained"
-                  textColor={theme.colors.text}
+                  textColor={'black'}
                   compact
                   style={{
                     borderRadius: 4,
@@ -246,10 +252,9 @@ export default function Chat({navigation}) {
       <Spacer size={24} />
       <View
         style={{
-          display: 'flex',
           flexDirection: 'row',
           flexWrap: 'wrap',
-          alignItems: 'center',
+          alignItems: 'stretch',
           justifyContent: 'space-between',
         }}>
         {tabs.map(item => (
@@ -271,7 +276,7 @@ export default function Chat({navigation}) {
                   token: 'abc123',
                 })
               }>
-              <View style={{height: 132, padding: 12}}>
+              <View style={{padding: 12}}>
                 <View style={{display: 'flex'}}>
                   <View
                     style={{

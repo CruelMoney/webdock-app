@@ -69,10 +69,13 @@ export default function BottomSheetWrapper({
         enablePanDownToClose
         onChange={handleChange}
         handleComponent={() => null}
+        style={{backgroundColor: 'transparent'}}
+        backgroundStyle={{backgroundColor: 'transparent'}}
         handleStyle={{
           backgroundColor: theme.colors.surface,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
+          elevation: 0,
         }}
         handleIndicatorStyle={{
           backgroundColor: theme.colors.text,
@@ -87,7 +90,11 @@ export default function BottomSheetWrapper({
         )}>
         <BottomSheetScrollView
           contentContainerStyle={{
+            backgroundColor: theme.colors.background,
             flexGrow: 1,
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            overflow: 'hidden',
           }}
           style={{
             flex: 1,
@@ -104,8 +111,6 @@ export default function BottomSheetWrapper({
               justifyContent: 'space-between',
               padding: 20,
               backgroundColor: theme.colors.background,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
             }}>
             <IconButton
               icon="close"

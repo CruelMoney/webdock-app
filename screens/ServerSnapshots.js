@@ -47,6 +47,7 @@ import EmptyList from '../components/EmptyList';
 import BottomSheetWrapper from '../components/BottomSheetWrapper';
 import ServerSnapshotItem from '../components/ServerSnapshotItem';
 import AccordionItem from '../components/AccordionItem';
+import {setGlobalCallbackId} from '../service/storageEvents';
 export default function ServerSnapshots({route, navigation}) {
   const [serverSnapshots, setSnapshots] = useState();
   useEffect(() => {
@@ -118,6 +119,8 @@ export default function ServerSnapshots({route, navigation}) {
       try {
         toggleModal();
         setCallbackId(result.headers.get('x-callback-id'));
+        await setGlobalCallbackId(result.headers.get('x-callback-id'));
+
         setVisibleSnack(true);
       } catch (e) {
         alert(e);
@@ -183,6 +186,8 @@ export default function ServerSnapshots({route, navigation}) {
       try {
         setIsDeleteModalVisible(false);
         setCallbackId(result.headers.get('x-callback-id'));
+        await setGlobalCallbackId(result.headers.get('x-callback-id'));
+
         setVisibleSnack(true);
       } catch (e) {
         alert(e);
@@ -221,6 +226,7 @@ export default function ServerSnapshots({route, navigation}) {
     if (result.status == 202) {
       try {
         setCallbackId(result.headers.get('X-Callback-ID'));
+        await setGlobalCallbackId(result.headers.get('x-callback-id'));
         setVisibleSnack(true);
       } catch (e) {
         alert(e);
@@ -379,6 +385,7 @@ export default function ServerSnapshots({route, navigation}) {
             <FlatList
               data={serverSnapshots}
               onRefresh={() => onRefresh()}
+              scrollEnabled={false}
               refreshing={isFetching}
               showsVerticalScrollIndicator={false}
               ListFooterComponent={<View style={{height: 60}}></View>}

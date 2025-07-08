@@ -28,6 +28,7 @@ import Spacer from '../components/Spacer';
 import ThemeSwitch from '../components/ThemeSwitch';
 import {ThemeContext} from '../components/ThemeContext';
 import {useBottomSheet} from '../components/BottomSheetProvider';
+import CallbackStatusWatcher from '../components/CallbackStatusWatcher';
 
 export default function Account({navigation}) {
   const [account, setAccount] = useState();
@@ -76,7 +77,7 @@ export default function Account({navigation}) {
     {
       label: 'Team',
       description:
-        'See current and past network, disk, memory and CPU activity for your server asd asdasdasdasdasdasdasd asdsa das saassa',
+        'See current and past network, disk, memory and CPU activity for your server',
       icon: <TeamIcon width={20} height={20} color={'white'} />,
       navigate: 'https://webdock.io/en/dash/manageteam',
     },
@@ -134,10 +135,16 @@ export default function Account({navigation}) {
       width="100%"
       height="100%"
       showsVerticalScrollIndicator={false}
+      contentContainerStyle={{gap: 24}}
       style={{
         backgroundColor: theme.colors.background,
         padding: 20,
       }}>
+      <CallbackStatusWatcher
+        onFinished={() => {
+          console.log('Event completed!');
+        }}
+      />
       <View
         style={{
           padding: 20,
@@ -204,7 +211,6 @@ export default function Account({navigation}) {
           </View>
         </Pressable>
       </View>
-      <Spacer size={24} />
       <View>
         <ThemeSwitch
           options={[
@@ -215,40 +221,34 @@ export default function Account({navigation}) {
           selectedOption={theme.dark ? 1 : 0}
         />
       </View>
-      <Spacer size={24} />
       <View
         style={{
-          display: 'flex',
           flexDirection: 'row',
           flexWrap: 'wrap',
-          alignItems: 'center',
+          alignItems: 'stretch',
           justifyContent: 'space-between',
         }}>
         {tabs.map((item, index) => (
-          <Pressable
+          <View
             key={item.label}
-            onPress={() =>
-              item?.navigate?.includes('https://')
-                ? item?.label == 'Notification settings'
-                  ? openNotificationSettings()
-                  : openWebView(item.navigate)
-                : navigation.navigate(item.navigate)
-            }
-            onLayout={e => onLayout(e, index)}
             style={{
               width: '48%',
               marginBottom: 10,
-              height: itemHeight || undefined,
+              borderRightWidth: 4,
+              borderRightColor: theme.colors.primary,
+              backgroundColor: '#022213',
+              borderRadius: 10,
             }}>
-            <View
-              style={{
-                padding: 12,
-                borderRightWidth: 4,
-                borderRightColor: theme.colors.primary,
-                backgroundColor: '#022213',
-                borderRadius: 10,
-              }}>
-              <View style={{display: 'flex'}}>
+            <Pressable
+              key={item.label}
+              onPress={() =>
+                item?.navigate?.includes('https://')
+                  ? item?.label == 'Notification settings'
+                    ? openNotificationSettings()
+                    : openWebView(item.navigate)
+                  : navigation.navigate(item.navigate)
+              }>
+              <View style={{padding: 12, display: 'flex'}}>
                 <View
                   style={{
                     width: 20,
@@ -260,7 +260,6 @@ export default function Account({navigation}) {
                 </View>
                 <View style={{height: 8}} />
                 <Text
-                  numberOfLines={1}
                   style={{
                     fontFamily: 'Poppins-SemiBold',
                     fontWeight: '600',
@@ -272,7 +271,6 @@ export default function Account({navigation}) {
                 </Text>
                 <View style={{height: 8}} />
                 <Text
-                  numberOfLines={4}
                   style={{
                     fontFamily: 'Poppins-Light',
                     fontWeight: '300',
@@ -283,11 +281,10 @@ export default function Account({navigation}) {
                   {item.description}
                 </Text>
               </View>
-            </View>
-          </Pressable>
+            </Pressable>
+          </View>
         ))}
       </View>
-      <Spacer size={30} />
     </ScrollView>
   ) : (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
