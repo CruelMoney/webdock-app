@@ -30,6 +30,10 @@ const lightTheme = {
       background: '#02221326',
       text: 'black',
     },
+    startButton: {
+      background: '#b2ffc8',
+      text: 'black',
+    },
   },
 };
 

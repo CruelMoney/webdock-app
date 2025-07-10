@@ -34,12 +34,13 @@ const initialLayout = {width: Dimensions.get('window').width};
 export function HomeScreen({navigation}) {
   const serversCache = useRef(null);
   const snapshotsCache = useRef(null);
+  const sortOrderCache = useRef('desc'); // Default sort order
   const [servers, setServers] = useState([]);
   const [locations, setLocations] = useState();
   const [profiles, setProfiles] = useState();
   const [images, setImages] = useState();
   const [snapshots, setSnapshots] = useState([]);
-  const [sortOrder, setSortOrder] = useState('desc');
+  const [sortOrder, setSortOrder] = useState(sortOrderCache.current);
 
   const fetchServers = async () => {
     setIsFetching(true);
@@ -47,16 +48,23 @@ export function HomeScreen({navigation}) {
     try {
       userToken = await AsyncStorage.getItem('userToken');
       const data = await getServers(userToken);
-      const sorter = (a, b) => {
-        var dA = a.date.split(' ');
-        var dB = b.date.split(' ');
-        var dateA = Date.parse(dA[0] + 'T' + dA[1]),
-          dateB = Date.parse(dB[0] + 'T' + dB[1]);
-        return dateB - dateA;
-      };
-      setServers(data.sort(sorter));
+      // Always sort after fetch
+      const sorted = [...data].sort((a, b) => {
+        if (sortOrderCache.current === 'desc') {
+          return new Date(b.date) - new Date(a.date);
+        }
+        if (sortOrderCache.current === 'asc') {
+          return new Date(a.date) - new Date(b.date);
+        }
+        if (sortOrderCache.current === 'alphabetical') {
+          return a.name.localeCompare(b.name);
+        }
+        return 0;
+      });
+      setServers(sorted);
+      serversCache.current = sorted; // Update cache with sorted data
       setIsFetching(false);
-      return data;
+      return sorted;
     } catch (e) {
       alert(e);
       setIsFetching(false);
@@ -68,9 +76,11 @@ export function HomeScreen({navigation}) {
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       if (serversCache.current) {
-        setServers(serversCache.current);
+        // Always apply the cached sort order to the cached servers
+        sortServers(serversCache.current, sortOrderCache.current, true);
       } else {
-        await fetchServers();
+        const data = await fetchServers();
+        sortServers(data, sortOrderCache.current, true);
       }
       if (snapshotsCache.current) {
         setSnapshots(snapshotsCache.current);
@@ -384,7 +394,8 @@ export function HomeScreen({navigation}) {
       />
     ),
   });
-  const sortServers = (data, order) => {
+  // Update sortServers to allow silent update (no menu close)
+  const sortServers = (data, order, silent = false) => {
     const sorted = [...data].sort((a, b) => {
       if (order === 'desc') {
         // Newest first
@@ -400,7 +411,9 @@ export function HomeScreen({navigation}) {
       return 0;
     });
     setServers(sorted);
-    closeMenu();
+    sortOrderCache.current = order; // Update cache
+    setSortOrder(order); // Update state
+    if (!silent) closeMenu();
   };
 
   return (
@@ -499,6 +512,7 @@ export function HomeScreen({navigation}) {
               key="desc"
               title="Oldest first"
               onPress={() => {
+                sortOrderCache.current = 'desc';
                 sortServers(servers, 'desc');
                 setSortOrder('desc');
               }}
@@ -521,6 +535,7 @@ export function HomeScreen({navigation}) {
               key="asc"
               title="Newest first"
               onPress={() => {
+                sortOrderCache.current = 'asc';
                 sortServers(servers, 'asc');
                 setSortOrder('asc');
               }}
@@ -543,6 +558,7 @@ export function HomeScreen({navigation}) {
               key="alphabetical"
               title="Alphabetical"
               onPress={() => {
+                sortOrderCache.current = 'alphabetical';
                 sortServers(servers, 'alphabetical');
                 setSortOrder('alphabetical');
               }}

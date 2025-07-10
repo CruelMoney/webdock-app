@@ -104,46 +104,35 @@ export default function ServerOverview({route, navigation}) {
       let userToken = null;
       try {
         userToken = await AsyncStorage.getItem('userToken');
-        // Server
-        if (serverCache.current[slug]) {
-          setServer(serverCache.current[slug]);
-        } else {
-          getServerBySlug(userToken, slug).then(data => {
-            setServer(data);
-            serverCache.current[slug] = data;
-            getAllProfiles(data.location);
-          });
-        }
+        // 1. Show cached data immediately if available
+        if (serverCache.current[slug]) setServer(serverCache.current[slug]);
+        if (metricsCache.current[slug]) setMetrics(metricsCache.current[slug]);
+        if (eventsCache.current[slug]) setEvents(eventsCache.current[slug]);
+
+        // 2. Always fetch fresh data and update cache/state
+        getServerBySlug(userToken, slug).then(data => {
+          setServer(data);
+          serverCache.current[slug] = data;
+          getAllProfiles(data.location);
+        });
         getAllLocations();
         getAllImages();
-        // Metrics
-        if (metricsCache.current[slug]) {
-          setMetrics(metricsCache.current[slug]);
+        getInstantMetrics(userToken, slug).then(data => {
+          setMetrics(data);
+          metricsCache.current[slug] = data;
+        });
+        if (route.params.callbackId) {
+          getEventsByCallbackId(userToken, route.params.callbackId).then(
+            data => {
+              setEvents(data);
+              eventsCache.current[slug] = data;
+            },
+          );
         } else {
-          getInstantMetrics(userToken, slug).then(data => {
-            setMetrics(data);
-            metricsCache.current[slug] = data;
+          getAllEventsBySlug(userToken, slug).then(data => {
+            setEvents(data.slice(0, 3));
+            eventsCache.current[slug] = data.slice(0, 3);
           });
-        }
-        // Events
-        if (eventsCache.current[slug]) {
-          setEvents(eventsCache.current[slug]);
-        } else {
-          if (route.params.callbackId) {
-            getEventsByCallbackId(userToken, route.params.callbackId).then(
-              data => {
-                setEvents(data);
-                eventsCache.current[slug] = data;
-                setIsLoading(false);
-              },
-            );
-          } else {
-            getAllEventsBySlug(userToken, slug).then(data => {
-              setEvents(data.slice(0, 3));
-              eventsCache.current[slug] = data.slice(0, 3);
-              setIsLoading(false);
-            });
-          }
         }
       } catch (e) {
         alert(e);
@@ -806,12 +795,7 @@ export default function ServerOverview({route, navigation}) {
     } else if (icon == 'waiting') {
       return (
         <>
-          <ActivityIndicator
-            animating={true}
-            size={10}
-            color={Colors.blue400}
-          />
-          ;
+          <ActivityIndicator animating={true} size={10} color={'#2979FF'} />;
           <Text
             style={{
               fontFamily: 'Poppins-Light',
@@ -826,11 +810,7 @@ export default function ServerOverview({route, navigation}) {
     } else if (icon == 'working') {
       return (
         <>
-          <ActivityIndicator
-            animating={true}
-            size={10}
-            color={Colors.blue400}
-          />
+          <ActivityIndicator animating={true} size={10} color={'#2979FF'} />
           <Text
             style={{
               fontFamily: 'Poppins-Light',
@@ -851,11 +831,7 @@ export default function ServerOverview({route, navigation}) {
     ) {
       return (
         <>
-          <ActivityIndicator
-            animating={true}
-            size={10}
-            color={Colors.blue400}
-          />
+          <ActivityIndicator animating={true} size={10} color={'#2979FF'} />
           <Text
             style={{
               fontFamily: 'Poppins-Light',
@@ -1024,48 +1000,30 @@ export default function ServerOverview({route, navigation}) {
                 <TouchableOpacity
                   onPress={() => setStartModal(true)}
                   style={{
-                    width: '100%',
+                    width: '50%',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     flexDirection: 'row',
-                    backgroundColor: 'white',
+                    display: server.status == 'running' ? 'none' : 'flex',
+                    backgroundColor: theme.colors.restartButton.background,
                     borderRadius: 4,
                     padding: 10,
-                    marginTop: 15,
-                    display: server.status == 'running' ? 'none' : 'flex',
+                    gap: 8,
                   }}>
-                  <View
-                    style={{
-                      height: 25,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <View
-                      style={{
-                        width: 20,
-                        height: 20,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: 'rgba(76,159,90,0.26)',
-                        borderRadius: 20 / 2,
-                      }}>
-                      <Icon
-                        name="play-arrow"
-                        size={15}
-                        color="#4C9F5A"
-                        onPress={() => setStartModal(true)}
-                      />
-                    </View>
-                  </View>
+                  <Icon
+                    name="play-circle-outline"
+                    size={15}
+                    color={theme.colors.restartButton.text}
+                    onPress={() => setStartModal(true)}
+                  />
                   <Text
                     style={{
-                      marginStart: 5,
-                      textAlign: 'center',
-                      fontFamily: 'Raleway-SemiBold',
-                      fontSize: 12,
+                      fontFamily: 'Poppins-SemiBold',
+                      fontSize: 10,
                       includeFontPadding: false,
-                      color: '#4C9F5A',
+                      color: theme.colors.startButton.text,
                     }}>
-                    Start
+                    Start server
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity

@@ -444,30 +444,49 @@ export function DrawerContent({props, navigation}) {
               alignItems: 'center',
               justifyContent: 'flex-start',
             }}>
-            <IconButton
-              icon="youtube"
-              onPress={() => handlePress('https://www.youtube.com/@webdock')}
-            />
-            <IconButton
-              icon="instagram"
-              onPress={() =>
-                handlePress('https://www.instagram.com/webdock.io/')
-              }
-            />
-            <IconButton
-              icon={() => <Tiktok width={24} height={24} fill="#565656" />}
-              onPress={() => handlePress('https://www.tiktok.com/@webdock.io')}
-            />
-            <IconButton
-              icon="linkedin"
-              onPress={() =>
-                handlePress('https://www.linkedin.com/company/webdock-io/')
-              }
-            />
-            <IconButton
-              icon="facebook"
-              onPress={() => handlePress('https://www.facebook.com/webdockio')}
-            />
+            <View>
+              <IconButton
+                icon="youtube"
+                style={{width: 48, height: 48}}
+                onPress={() => handlePress('https://www.youtube.com/@webdock')}
+              />
+            </View>
+            <View>
+              <IconButton
+                icon="instagram"
+                style={{width: 48, height: 48}}
+                onPress={() =>
+                  handlePress('https://www.instagram.com/webdock.io/')
+                }
+              />
+            </View>
+            <View>
+              <IconButton
+                icon={() => <Tiktok width={24} height={24} fill="#565656" />}
+                style={{width: 48, height: 48}}
+                onPress={() =>
+                  handlePress('https://www.tiktok.com/@webdock.io')
+                }
+              />
+            </View>
+            <View>
+              <IconButton
+                icon="linkedin"
+                style={{width: 48, height: 48}}
+                onPress={() =>
+                  handlePress('https://www.linkedin.com/company/webdock-io/')
+                }
+              />
+            </View>
+            <View>
+              <IconButton
+                icon="facebook"
+                style={{width: 48, height: 48}}
+                onPress={() =>
+                  handlePress('https://www.facebook.com/webdockio')
+                }
+              />
+            </View>
           </View>
         </View>
       </View>
