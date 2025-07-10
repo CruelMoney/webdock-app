@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo} from 'react';
+import React, {useState, useEffect, useMemo, useRef} from 'react';
 import {
   FlatList,
   StatusBar,
@@ -32,6 +32,8 @@ import SnapshotItem from '../components/SnapshotItem';
 const initialLayout = {width: Dimensions.get('window').width};
 
 export function HomeScreen({navigation}) {
+  const serversCache = useRef(null);
+  const snapshotsCache = useRef(null);
   const [servers, setServers] = useState([]);
   const [locations, setLocations] = useState();
   const [profiles, setProfiles] = useState();
@@ -39,30 +41,43 @@ export function HomeScreen({navigation}) {
   const [snapshots, setSnapshots] = useState([]);
   const [sortOrder, setSortOrder] = useState('desc');
 
+  const fetchServers = async () => {
+    setIsFetching(true);
+    let userToken = null;
+    try {
+      userToken = await AsyncStorage.getItem('userToken');
+      const data = await getServers(userToken);
+      const sorter = (a, b) => {
+        var dA = a.date.split(' ');
+        var dB = b.date.split(' ');
+        var dateA = Date.parse(dA[0] + 'T' + dA[1]),
+          dateB = Date.parse(dB[0] + 'T' + dB[1]);
+        return dateB - dateA;
+      };
+      setServers(data.sort(sorter));
+      setIsFetching(false);
+      return data;
+    } catch (e) {
+      alert(e);
+      setIsFetching(false);
+      return [];
+    }
+  };
+
   // Fetch servers on screen focus
   useEffect(() => {
-    setAPIBusy(true);
-    const unsubscribe = navigation.addListener('focus', () => {
-      onBackgroundRefresh();
-    });
-
-    setTimeout(async () => {
-      try {
-        const userToken = await AsyncStorage.getItem('userToken');
-        const data = await getServers(userToken);
-        const sorted = data.sort((a, b) => {
-          const dateA = Date.parse(a.date.replace(' ', 'T'));
-          const dateB = Date.parse(b.date.replace(' ', 'T'));
-          return dateB - dateA;
-        });
-        setServers(sorted);
-        setAPIBusy(false);
-      } catch (e) {
-        alert(e);
-        setAPIBusy(false);
+    const unsubscribe = navigation.addListener('focus', async () => {
+      if (serversCache.current) {
+        setServers(serversCache.current);
+      } else {
+        await fetchServers();
       }
-    }, 0);
-
+      if (snapshotsCache.current) {
+        setSnapshots(snapshotsCache.current);
+      } else {
+        await fetchSnapshots();
+      }
+    });
     return unsubscribe;
   }, [navigation]);
 
@@ -102,26 +117,8 @@ export function HomeScreen({navigation}) {
   }, [servers]);
 
   const onBackgroundRefresh = async () => {
-    setAPIBusy(true);
-    let userToken = null;
-    try {
-      userToken = await AsyncStorage.getItem('userToken');
-      getServers(userToken).then(data => {
-        const sorter = (a, b) => {
-          var dA = a.date.split(' ');
-          var dB = b.date.split(' ');
-          var dateA = Date.parse(dA[0] + 'T' + dA[1]),
-            dateB = Date.parse(dB[0] + 'T' + dB[1]);
-
-          return dateB - dateA;
-        };
-
-        setServers(data.sort(sorter));
-        setAPIBusy(false);
-      });
-    } catch (e) {
-      alert(e);
-    }
+    setIsFetching(true);
+    await fetchServers();
   };
 
   const renderStatusIcon = icon => {
@@ -147,29 +144,9 @@ export function HomeScreen({navigation}) {
 
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
-    setAPIBusy(true);
     setIsFetching(true);
-    let userToken = null;
-    try {
-      userToken = await AsyncStorage.getItem('userToken');
-      getServers(userToken).then(data => {
-        console.log(data);
-        const sorter = (a, b) => {
-          var dA = a.date.split(' ');
-          var dB = b.date.split(' ');
-          var dateA = Date.parse(dA[0] + 'T' + dA[1]),
-            dateB = Date.parse(dB[0] + 'T' + dB[1]);
-
-          return dateB - dateA;
-        };
-
-        setServers(data.sort(sorter));
-        setIsFetching(false);
-        setAPIBusy(false);
-      });
-    } catch (e) {
-      alert(e);
-    }
+    await fetchServers();
+    setIsFetching(false);
   };
   const [isModalVisible, setModalVisible] = useState();
   const toggleModal = () => {
@@ -196,7 +173,6 @@ export function HomeScreen({navigation}) {
     }
   };
   const [rerenderFlatList, setRerenderFlatList] = useState(false);
-  const [isAPIbusy, setAPIBusy] = useState(false);
   const [visible, setVisible] = useState(false);
   const openMenu = () => {
     setVisible(true);
@@ -229,7 +205,7 @@ export function HomeScreen({navigation}) {
             : servers
         }
         ListHeaderComponent={
-          isAPIbusy ? (
+          isFetching ? (
             <View
               style={{
                 alignItems: 'center',
@@ -256,48 +232,46 @@ export function HomeScreen({navigation}) {
         showsHorizontalScrollIndicator={false}
         onRefresh={() => onRefresh()}
         ListEmptyComponent={
-          servers ? (
-            servers.length === 0 ? (
-              <View
+          servers && servers.length === 0 && !isFetching ? (
+            <View
+              style={{
+                padding: 14,
+                gap: 16,
+                backgroundColor: theme.colors.surface,
+                borderBottomLeftRadius: 4,
+                borderBottomRightRadius: 4,
+              }}>
+              <Text
                 style={{
-                  padding: 14,
-                  gap: 16,
-                  backgroundColor: theme.colors.surface,
-                  borderBottomLeftRadius: 4,
-                  borderBottomRightRadius: 4,
+                  fontFamily: 'Poppins',
+                  fontSize: 14,
+                  color: theme.colors.text,
                 }}>
-                <Text
-                  style={{
-                    fontFamily: 'Poppins',
-                    fontSize: 14,
-                    color: theme.colors.text,
-                  }}>
-                  You have no servers.{' '}
-                  <Text style={{color: theme.colors.primary}}>
-                    Create a server
-                  </Text>{' '}
-                  and it will be listed here.
-                </Text>
-                <Button
-                  mode="contained"
-                  textColor="black"
-                  compact
-                  style={{
-                    borderRadius: 4,
-                    minWidth: 0,
-                    paddingHorizontal: 8,
-                  }}
-                  labelStyle={{
-                    fontFamily: 'Poppins-SemiBold',
-                    fontSize: 12,
-                    lineHeight: 12 * 1.2,
-                    fontWeight: '600',
-                  }}
-                  onPress={() => openWebView('https://webdock.io/en/pricing')}>
-                  Create a Server
-                </Button>
-              </View>
-            ) : null
+                You have no servers.{' '}
+                <Text style={{color: theme.colors.primary}}>
+                  Create a server
+                </Text>{' '}
+                and it will be listed here.
+              </Text>
+              <Button
+                mode="contained"
+                textColor="black"
+                compact
+                style={{
+                  borderRadius: 4,
+                  minWidth: 0,
+                  paddingHorizontal: 8,
+                }}
+                labelStyle={{
+                  fontFamily: 'Poppins-SemiBold',
+                  fontSize: 12,
+                  lineHeight: 12 * 1.2,
+                  fontWeight: '600',
+                }}
+                onPress={() => openWebView('https://webdock.io/en/pricing')}>
+                Create a Server
+              </Button>
+            </View>
           ) : null
         }
         refreshing={isFetching}
@@ -370,7 +344,7 @@ export function HomeScreen({navigation}) {
           ) : null
         }
         ListHeaderComponent={
-          isAPIbusy ? (
+          isFetching ? (
             <View
               style={{
                 alignItems: 'center',
@@ -406,24 +380,25 @@ export function HomeScreen({navigation}) {
           </>
         )}
         extraData={rerenderFlatList}
-        keyExtractor={item => item.slug}
+        keyExtractor={item => item.id}
       />
     ),
   });
   const sortServers = (data, order) => {
     const sorted = [...data].sort((a, b) => {
       if (order === 'desc') {
-        return new Date(a.date) - new Date(b.date); // oldest first
+        // Newest first
+        return new Date(b.date) - new Date(a.date);
       }
       if (order === 'asc') {
-        return new Date(b.date) - new Date(a.date); // newest first
+        // Oldest first
+        return new Date(a.date) - new Date(b.date);
       }
       if (order === 'alphabetical') {
-        return a.name.localeCompare(b.name); // A–Z
+        return a.name.localeCompare(b.name);
       }
       return 0;
     });
-
     setServers(sorted);
     closeMenu();
   };

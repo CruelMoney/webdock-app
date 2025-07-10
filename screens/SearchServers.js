@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import {
   FlatList,
   Image,
@@ -21,6 +21,7 @@ import {AuthContext} from '../components/context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EmptyList from '../components/EmptyList';
 export default function SearchServers({navigation}) {
+  const serversCache = useRef(null);
   const [searchQuery, setSearchQuery] = React.useState('');
   const onChangeSearch = query => setSearchQuery(query);
 
@@ -62,18 +63,33 @@ export default function SearchServers({navigation}) {
   const [filteredServers, setFilteredServers] = useState();
 
   useEffect(() => {
-    setTimeout(async () => {
-      let userToken = null;
-      try {
-        userToken = await AsyncStorage.getItem('userToken');
-        getServers(userToken).then(data => {
-          setServers(data);
-        });
-      } catch (e) {
-        alert(e);
+    const unsubscribe = navigation.addListener('focus', async () => {
+      if (serversCache.current) {
+        setServers(serversCache.current);
+      } else {
+        await fetchServers();
       }
-    }, 0);
+    });
+    return () => {
+      unsubscribe();
+    };
   }, []);
+  const fetchServers = async () => {
+    let userToken = null;
+    try {
+      userToken = await AsyncStorage.getItem('userToken');
+      getServers(userToken).then(data => {
+        setServers(data);
+        serversCache.current = data;
+      });
+    } catch (e) {
+      alert(e);
+    }
+  };
+  const onRefresh = async () => {
+    serversCache.current = null;
+    await fetchServers();
+  };
   const Item = ({title, alias, dc, profile, ipv4}) => (
     <View style={styles.item}>
       <View style={styles.logo}>
@@ -132,7 +148,9 @@ export default function SearchServers({navigation}) {
           </TouchableOpacity>
         )}
         keyExtractor={item => item.slug}
-        ListEmptyComponent={<EmptyList />}
+        ListEmptyComponent={
+          servers && servers.length === 0 && !isFetching ? <EmptyList /> : null
+        }
       />
       <FAB
         style={styles.fab}

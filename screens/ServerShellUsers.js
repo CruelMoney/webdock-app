@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {useState, useEffect} from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import {
   FlatList,
   Image,
@@ -57,8 +57,9 @@ import ServerSnapshotItem from '../components/ServerSnapshotItem';
 import ServerShellUsersItem from '../components/ServerShellUsers';
 import {Dropdown, MultiSelect} from 'react-native-element-dropdown';
 export default function ServerShellUsers({route, navigation}) {
+  const shellUsersCache = useRef(null);
   const [K_OPTIONS, setkoptions] = useState([]);
-  const [shellUsers, setShellUsers] = useState([]);
+  const [shellUsers, setShellUsers] = useState();
   const [publicKeys, setPublicKeys] = useState([]);
   const [selectedTeams, setSelectedTeams] = useState([]);
   const [selectedKeys, setSelectedKeys] = useState([]);
@@ -74,8 +75,12 @@ export default function ServerShellUsers({route, navigation}) {
   const [errors, setErrors] = React.useState({});
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      onBackgroundRefresh();
+    const unsubscribe = navigation.addListener('focus', async () => {
+      if (shellUsersCache.current) {
+        setShellUsers(shellUsersCache.current);
+      } else {
+        await fetchShellUsers();
+      }
     });
 
     const task = InteractionManager.runAfterInteractions(() => {
@@ -848,26 +853,51 @@ export default function ServerShellUsers({route, navigation}) {
               showsVerticalScrollIndicator={false}
               onRefresh={() => onRefresh()}
               refreshing={isFetching}
-              ListEmptyComponent={
-                shellUsers ? (
-                  shellUsers.length == 0 ? (
-                    <View
+              ListHeaderComponent={
+                isFetching ? (
+                  <View
+                    style={{
+                      alignItems: 'center',
+                      padding: 14,
+                      gap: 16,
+                      backgroundColor: theme.colors.surface,
+                      borderBottomLeftRadius: 4,
+                      borderBottomRightRadius: 4,
+                    }}>
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.primary}
+                    />
+                    <Text
                       style={{
-                        borderBottomLeftRadius: 4,
-                        borderBottomRightRadius: 4,
-                        padding: 14,
-                        backgroundColor: theme.colors.surface,
+                        marginTop: 8,
+                        fontFamily: 'Poppins',
+                        fontSize: 12,
+                        color: theme.colors.primary,
                       }}>
-                      <Text
-                        style={{
-                          color: theme.colors.text,
-                          fontFamily: 'Poppins',
-                          fontSize: 14,
-                        }}>
-                        You do not have any shell user yet.
-                      </Text>
-                    </View>
-                  ) : null
+                      Loading shell users...
+                    </Text>
+                  </View>
+                ) : null
+              }
+              ListEmptyComponent={
+                shellUsers && shellUsers.length === 0 && !isFetching ? (
+                  <View
+                    style={{
+                      borderBottomLeftRadius: 4,
+                      borderBottomRightRadius: 4,
+                      padding: 14,
+                      backgroundColor: theme.colors.surface,
+                    }}>
+                    <Text
+                      style={{
+                        color: theme.colors.text,
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
+                      }}>
+                      You do not have any shell user yet.
+                    </Text>
+                  </View>
                 ) : null
               }
               ListFooterComponent={<View style={{height: 60}}></View>}

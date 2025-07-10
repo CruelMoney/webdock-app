@@ -60,22 +60,7 @@ export default function NotificationCenter({navigation}) {
   ]);
   const [searchQuery, setSearchQuery] = React.useState('');
   const onChangeSearch = query => setSearchQuery(query);
-  const search = () => {
-    if (searchQuery) {
-      const newData = servers.filter(item => {
-        const itemData = `${item.name.toUpperCase()} 
-                  ${item.location.toUpperCase()} 
-                  ${item.ipv4.toUpperCase()}
-                  ${item.ipv6.toUpperCase()}`;
 
-        const textData = searchQuery.toUpperCase();
-
-        return itemData.indexOf(textData) > -1;
-      });
-      setFilteredServers(newData);
-      setRerenderFlatList(!renderStatusIcon);
-    }
-  };
   const [isFetching, setIsFetching] = useState(false);
   const [rerenderFlatList, setRerenderFlatList] = useState(false);
 
@@ -95,6 +80,7 @@ export default function NotificationCenter({navigation}) {
   }, [navigation]);
   const onBackgroundRefresh = async () => {
     try {
+      setIsFetching(true);
       const userToken = await AsyncStorage.getItem('userToken');
 
       const [newsData, eventsData, activeServersData] = await Promise.all([
@@ -271,7 +257,6 @@ export default function NotificationCenter({navigation}) {
             <BottomSheetSectionList
               sections={groupByFormattedDate(getProcessedEvents())}
               keyExtractor={(item, index) => `${item.slug || 'item'}-${index}`}
-              refreshing={isFetching}
               style={{flexGrow: 1}}
               onRefresh={onBackgroundRefresh}
               showsVerticalScrollIndicator={false}
@@ -305,7 +290,7 @@ export default function NotificationCenter({navigation}) {
                 ) : null
               }
               ListEmptyComponent={
-                events && events.length === 0 ? (
+                events && events.length === 0 && !isFetching ? (
                   <View
                     style={{
                       padding: 14,
@@ -353,7 +338,7 @@ export default function NotificationCenter({navigation}) {
                     message={item.message}
                     onDetailsPress={() =>
                       openSheet({
-                        message: item.message,
+                        message: !item.message ? item.action : item.message,
                       })
                     }
                   />
@@ -572,36 +557,31 @@ export default function NotificationCenter({navigation}) {
                   <View style={{flex: 1, height: 38}}>
                     <TextInput
                       mode="flat"
-                      label="Search Events"
-                      dense
-                      multiline={false}
+                      value={undefined}
                       onChangeText={searchtext => {
                         onChangeSearch(searchtext);
-                        search();
                       }}
+                      placeholder="Search"
                       style={{
-                        flex: 1,
                         height: 38,
                         backgroundColor: theme.colors.surface,
                         borderRadius: 4,
-                        justifyContent: 'center',
+                        paddingVertical: 0,
                       }}
                       contentStyle={{
-                        paddingVertical: 0,
-                        height: 38,
+                        fontSize: 12,
+                        lineHeight: 38,
                         fontFamily: 'Poppins',
                         fontWeight: '400',
-                        fontSize: 12,
-                        lineHeight: 12,
                         includeFontPadding: false,
                       }}
+                      underlineColor="transparent"
                       left={
                         <TextInput.Icon
                           icon="magnify"
                           color={theme.colors.text}
                         />
                       }
-                      underlineColor="transparent"
                       theme={{
                         colors: {
                           primary: 'transparent',

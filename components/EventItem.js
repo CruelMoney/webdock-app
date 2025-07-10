@@ -93,9 +93,6 @@ const EventItem = ({
           </View>
         ) : (
           <Pressable
-            disabled={
-              !(status === 'error' || (status === 'finished' && !!message))
-            }
             onPress={onDetailsPress}
             style={{
               display: 'flex',
@@ -155,14 +152,12 @@ const EventItem = ({
                 {startTime}
               </Text>
             </View>
-            {(status === 'error' || (status === 'finished' && !!message)) && (
-              <ArrowIcon
-                width={15}
-                height={15}
-                color={theme.colors.primaryText}
-                style={{marginLeft: 8}}
-              />
-            )}
+            <ArrowIcon
+              width={15}
+              height={15}
+              color={theme.colors.primaryText}
+              style={{marginLeft: 8}}
+            />
           </Pressable>
         )}
       </View>

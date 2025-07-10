@@ -31,6 +31,7 @@ import {
   TextInput,
   useTheme,
   HelperText,
+  ActivityIndicator,
 } from 'react-native-paper';
 import {Avatar, Divider} from 'react-native-paper';
 import Toast from 'react-native-toast-message';
@@ -54,7 +55,10 @@ import {Picker} from '@react-native-picker/picker';
 import ScriptItem from '../components/ScriptItem';
 import ServerScriptItem from '../components/ServerScriptItem';
 import {setGlobalCallbackId} from '../service/storageEvents';
+
 export default function ServerScripts({route, navigation}) {
+  const serverScriptsCache = React.useRef(null);
+
   const [serverScripts, setScripts] = useState();
   const [inputs, setInputs] = React.useState({
     selectedScript: '',
@@ -64,27 +68,26 @@ export default function ServerScripts({route, navigation}) {
   const [errors, setErrors] = React.useState({});
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      onBackgroundRefresh();
+    const unsubscribe = navigation.addListener('focus', async () => {
+      if (serverScriptsCache.current) {
+        setScripts(serverScriptsCache.current);
+      } else {
+        await fetchScripts();
+      }
     });
 
     const task = InteractionManager.runAfterInteractions(() => {
       (async () => {
-        try {
-          const userToken = await AsyncStorage.getItem('userToken');
-          getServerScripts(userToken, route.params.slug).then(setScripts);
-          getAccountScripts(userToken).then(data => {
-            const array = data.map(item => ({
-              label: item.name,
-              value: item.id,
-              key: item.id,
-              filename: item.filename,
-            }));
-            setModifiedScripts(array);
-          });
-        } catch (e) {
-          alert(e);
-        }
+        const userToken = await AsyncStorage.getItem('userToken');
+        getAccountScripts(userToken).then(data => {
+          const array = data.map(item => ({
+            label: item.name,
+            value: item.id,
+            key: item.id,
+            filename: item.filename,
+          }));
+          setModifiedScripts(array);
+        });
       })();
     });
 
@@ -93,6 +96,19 @@ export default function ServerScripts({route, navigation}) {
       unsubscribe();
     };
   }, [route]);
+  const fetchScripts = async () => {
+    setIsFetching(true);
+    try {
+      const userToken = await AsyncStorage.getItem('userToken');
+      const data = await getServerScripts(userToken, route.params.slug);
+      setScripts(data);
+      serverScriptsCache.current = data; // ✅ store in cache
+    } catch (e) {
+      alert(e);
+    } finally {
+      setIsFetching(false);
+    }
+  };
 
   const [callbackId, setCallbackId] = useState();
 
@@ -142,17 +158,8 @@ export default function ServerScripts({route, navigation}) {
 
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
-    setIsFetching(true);
-    let userToken = null;
-    try {
-      userToken = await AsyncStorage.getItem('userToken');
-      getServerScripts(userToken, route.params.slug).then(data => {
-        setScripts(data);
-        setIsFetching(false);
-      });
-    } catch (e) {
-      alert(e);
-    }
+    serverScriptsCache.current = null; // clear cache
+    await fetchScripts();
   };
   const onBackgroundRefresh = async () => {
     let userToken = null;
@@ -548,27 +555,52 @@ export default function ServerScripts({route, navigation}) {
                     }}></View>
                 </>
               )}
+              ListHeaderComponent={
+                isFetching ? (
+                  <View
+                    style={{
+                      alignItems: 'center',
+                      padding: 14,
+                      gap: 16,
+                      backgroundColor: theme.colors.surface,
+                      borderBottomLeftRadius: 4,
+                      borderBottomRightRadius: 4,
+                    }}>
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.primary}
+                    />
+                    <Text
+                      style={{
+                        marginTop: 8,
+                        fontFamily: 'Poppins',
+                        fontSize: 12,
+                        color: theme.colors.primary,
+                      }}>
+                      Loading scripts...
+                    </Text>
+                  </View>
+                ) : null
+              }
               keyExtractor={item => item.id}
               ListEmptyComponent={
-                serverScripts ? (
-                  serverScripts.length == 0 ? (
-                    <View
+                serverScripts && serverScripts.length === 0 && !isFetching ? (
+                  <View
+                    style={{
+                      borderBottomLeftRadius: 4,
+                      borderBottomRightRadius: 4,
+                      padding: 14,
+                      backgroundColor: theme.colors.surface,
+                    }}>
+                    <Text
                       style={{
-                        borderBottomLeftRadius: 4,
-                        borderBottomRightRadius: 4,
-                        padding: 14,
-                        backgroundColor: theme.colors.surface,
+                        color: theme.colors.text,
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
                       }}>
-                      <Text
-                        style={{
-                          color: theme.colors.text,
-                          fontFamily: 'Poppins',
-                          fontSize: 14,
-                        }}>
-                        You do not have any deployed script yet.
-                      </Text>
-                    </View>
-                  ) : null
+                      You do not have any deployed script yet.
+                    </Text>
+                  </View>
                 ) : null
               }
             />

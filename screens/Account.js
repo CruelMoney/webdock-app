@@ -71,13 +71,13 @@ export default function Account({navigation}) {
       label: 'Edit profile',
       icon: <CogsIcon width={20} height={20} color={'white'} />,
       description:
-        'See current and past network, disk, memory and CPU activity for your server',
+        'Edit your profile info here like name, address and much more.',
       navigate: 'https://webdock.io/en/dash/editprofile',
     },
     {
       label: 'Team',
       description:
-        'See current and past network, disk, memory and CPU activity for your server',
+        'Invite somebody to join your Team and work on a specific server.',
       icon: <TeamIcon width={20} height={20} color={'white'} />,
       navigate: 'https://webdock.io/en/dash/manageteam',
     },
@@ -85,29 +85,26 @@ export default function Account({navigation}) {
       label: 'Notification settings',
       icon: <NotificationIcon width={20} height={20} color={'white'} />,
       description:
-        'See current and past network, disk, memory and CPU activity for your server',
+        'Go to notification settings on your device and change push permission.',
       navigate: 'https://',
     },
     {
       label: 'Public keys',
       icon: <PubicKeyIcon width={20} height={20} color={'white'} />,
-      description:
-        'See current and past network, disk, memory and CPU activity for your server',
+      description: 'Add a public SSH key to your account for your shell users.',
       navigate: 'AccountPublicKeys',
     },
     {
       label: 'Scripts',
-      description:
-        'See current and past network, disk, memory and CPU activity for your server',
+      description: 'Add a new script. Edit or delete existing scripts.',
       icon: <ScriptsIcon width={20} height={20} color={'white'} />,
       navigate: 'AccountScripts',
     },
     {
       label: 'Legal documents',
-      description:
-        'See current and past network, disk, memory and CPU activity for your server',
+      description: 'Read all our legal documents here.',
       icon: <LegalDocsIcon width={20} height={20} color={'white'} />,
-      navigate: 'https://webdock.io/en/dash/profile',
+      navigate: 'https://webdock.io/en/dash/profile#legalDocuments',
     },
   ];
   const {isDark, toggleTheme} = useContext(ThemeContext);

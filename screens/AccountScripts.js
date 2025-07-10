@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {useState, useEffect} from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import {
   FlatList,
   Image,
@@ -47,6 +47,7 @@ import ScriptItem from '../components/ScriptItem';
 import AccordionItem from '../components/AccordionItem';
 
 export default function AccountScripts({navigation}) {
+  const scriptsCache = useRef(null);
   const [scripts, setScripts] = useState();
   const [inputs, setInputs] = React.useState({
     name: '',
@@ -55,23 +56,46 @@ export default function AccountScripts({navigation}) {
   });
   const [errors, setErrors] = React.useState({});
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      onBackgroundRefresh();
-    });
-
-    setTimeout(async () => {
-      let userToken = null;
-      try {
-        userToken = await AsyncStorage.getItem('userToken');
-        getAccountScripts(userToken).then(data => {
-          setScripts(data);
-        });
-      } catch (e) {
-        alert(e);
+    const unsubscribe = navigation.addListener('focus', async () => {
+      if (scriptsCache.current) {
+        setScripts(scriptsCache.current);
+      } else {
+        await fetchScripts();
       }
-    }, 0);
-    return unsubscribe;
-  }, [navigation]);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+  const fetchScripts = async () => {
+    setIsFetching(true);
+    try {
+      let userToken = null;
+      userToken = await AsyncStorage.getItem('userToken');
+      const data = await getAccountScripts(userToken);
+      setScripts(data);
+      scriptsCache.current = data;
+    } catch (e) {
+      alert(e);
+    } finally {
+      setIsFetching(false);
+    }
+  };
+  const onRefresh = async () => {
+    scriptsCache.current = null;
+    await fetchScripts();
+  };
+  const onBackgroundRefresh = async () => {
+    let userToken = null;
+    try {
+      userToken = await AsyncStorage.getItem('userToken');
+      getAccountScripts(userToken).then(data => {
+        setScripts(data);
+      });
+    } catch (e) {
+      alert(e);
+    }
+  };
 
   const deleteScriptAlert = async pkey => {
     let userToken = null;
@@ -111,31 +135,6 @@ export default function AccountScripts({navigation}) {
   };
 
   const [isFetching, setIsFetching] = useState(false);
-  const onRefresh = async () => {
-    setIsFetching(true);
-    let userToken = null;
-    try {
-      userToken = await AsyncStorage.getItem('userToken');
-      getAccountScripts(userToken).then(data => {
-        setScripts(data);
-        setIsFetching(false);
-      });
-    } catch (e) {
-      alert(e);
-    }
-  };
-  const onBackgroundRefresh = async () => {
-    let userToken = null;
-    try {
-      userToken = await AsyncStorage.getItem('userToken');
-      getAccountScripts(userToken).then(data => {
-        setScripts(data);
-      });
-    } catch (e) {
-      alert(e);
-    }
-  };
-
   const [isDeleteModalVisible, setIsDeleteModalVisible] = React.useState(false);
   const [selectedScript, setSelectedScript] = React.useState();
   const theme = useTheme();
@@ -445,25 +444,23 @@ export default function AccountScripts({navigation}) {
               )}
               keyExtractor={item => item.id}
               ListEmptyComponent={
-                scripts ? (
-                  scripts.length == 0 ? (
-                    <View
+                scripts && scripts.length === 0 && !isFetching ? (
+                  <View
+                    style={{
+                      borderBottomLeftRadius: 4,
+                      borderBottomRightRadius: 4,
+                      padding: 14,
+                      backgroundColor: theme.colors.surface,
+                    }}>
+                    <Text
                       style={{
-                        borderBottomLeftRadius: 4,
-                        borderBottomRightRadius: 4,
-                        padding: 14,
-                        backgroundColor: theme.colors.surface,
+                        color: theme.colors.text,
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
                       }}>
-                      <Text
-                        style={{
-                          color: theme.colors.text,
-                          fontFamily: 'Poppins',
-                          fontSize: 14,
-                        }}>
-                        You do not have any saved Public Keys yet.
-                      </Text>
-                    </View>
-                  ) : null
+                      You do not have any saved Public Keys yet.
+                    </Text>
+                  </View>
                 ) : null
               }
             />

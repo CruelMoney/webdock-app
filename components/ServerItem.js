@@ -11,7 +11,22 @@ const serverIconResponseCache = {};
 
 function ServerItem({title, alias, dc, profile, ipv4, status, slug}) {
   const theme = useTheme();
-  const [icon, setIcon] = useState();
+  function fixUrl(url) {
+    let unescaped = url.replace(/\\\//g, '/');
+    if (unescaped.startsWith('//')) {
+      return 'https:' + unescaped;
+    }
+    if (unescaped.startsWith('http://') || unescaped.startsWith('https://')) {
+      return unescaped;
+    }
+    return unescaped;
+  }
+  // Initialize icon state from cache if available
+  const [icon, setIcon] = useState(() =>
+    serverIconResponseCache[slug]
+      ? fixUrl(serverIconResponseCache[slug].icon)
+      : undefined,
+  );
 
   const renderStatusIcon = icon => {
     const color =
@@ -42,21 +57,6 @@ function ServerItem({title, alias, dc, profile, ipv4, status, slug}) {
       </Text>
     );
   };
-
-  function fixUrl(url) {
-    let unescaped = url.replace(/\\\//g, '/');
-
-    // Optional: Strip query params if caching issues occur
-    // unescaped = unescaped.split('?')[0];
-
-    if (unescaped.startsWith('//')) {
-      return 'https:' + unescaped;
-    }
-    if (unescaped.startsWith('http://') || unescaped.startsWith('https://')) {
-      return unescaped;
-    }
-    return unescaped;
-  }
 
   useEffect(() => {
     let mounted = true;

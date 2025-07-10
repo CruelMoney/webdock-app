@@ -14,7 +14,7 @@ import {getAccountInformations} from '../service/accountInformations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LogoutIcon from '../assets/logout.svg';
 import {resetSession} from 'react-native-crisp-chat-sdk';
-import {Pressable, ScrollView} from 'react-native-gesture-handler';
+import {Pressable, ScrollView} from 'react-native';
 import {getMainMenu} from '../service/menu';
 import {getReadableVersion, getVersion} from 'react-native-device-info';
 import {SvgFromUri, SvgUri} from 'react-native-svg';
@@ -25,28 +25,55 @@ export function DrawerContent({props, navigation}) {
   const [mainMenu, setMainMenu] = useState();
   // const activeRouteName = state.routeNames[state.index];
   useEffect(() => {
-    setTimeout(async () => {
-      console.table(props);
-      let userToken = null;
+    (async () => {
+      // Load from AsyncStorage first
       try {
-        userToken = await AsyncStorage.getItem('userToken');
-
-        getAccountInformations(userToken).then(
-          data => {
-            setAccountInfo(data);
-          },
-
-          error => {
-            Alert.alert('Error', 'Something went wrong!');
-          },
-        );
-        getMainMenu(userToken).then(data => {
-          setMainMenu(data.menu);
-        });
+        const cachedMenu = await AsyncStorage.getItem('@mainMenuCache');
+        if (cachedMenu) {
+          setMainMenu(JSON.parse(cachedMenu));
+        }
       } catch (e) {
-        alert(e);
+        // ignore cache errors
       }
-    }, 0);
+      setTimeout(async () => {
+        let userToken = null;
+        try {
+          userToken = await AsyncStorage.getItem('userToken');
+          getAccountInformations(userToken).then(
+            data => {
+              setAccountInfo(data);
+            },
+            error => {
+              Alert.alert('Error', 'Something went wrong!');
+            },
+          );
+          getMainMenu(userToken).then(async data => {
+            // Only update if changed
+            try {
+              const newMenu = data.menu;
+              const cachedMenu = await AsyncStorage.getItem('@mainMenuCache');
+              if (
+                !cachedMenu ||
+                JSON.stringify(JSON.parse(cachedMenu)) !==
+                  JSON.stringify(newMenu)
+              ) {
+                await AsyncStorage.setItem(
+                  '@mainMenuCache',
+                  JSON.stringify(newMenu),
+                );
+                setMainMenu(newMenu);
+              } else if (!mainMenu) {
+                setMainMenu(newMenu); // ensure state is set if not already
+              }
+            } catch (e) {
+              setMainMenu(data.menu);
+            }
+          });
+        } catch (e) {
+          alert(e);
+        }
+      }, 0);
+    })();
   }, []);
   const theme = useTheme();
 
@@ -183,9 +210,19 @@ export function DrawerContent({props, navigation}) {
     };
 
     const handlePress = url => {
-      url = 'https://webdock.io' + url;
-      if (!url.includes('https://') && !url.includes('http://')) {
-        url = 'https://' + url;
+      // Check if URL already contains a domain (including subdomains)
+      const hasDomain =
+        /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}/.test(
+          url,
+        );
+      if (hasDomain) {
+        // URL already has a domain, just ensure it has a protocol
+        if (!url.includes('https://') && !url.includes('http://')) {
+          url = 'https://' + url;
+        }
+      } else {
+        // URL is a relative path, prepend the base domain
+        url = 'https://webdock.io' + url;
       }
       Linking.canOpenURL(url).then(supported => {
         if (supported) {
@@ -244,8 +281,20 @@ export function DrawerContent({props, navigation}) {
     });
   };
   const handlePress = url => {
-    if (!url.includes('https://') && !url.includes('http://')) {
-      url = 'https://' + url;
+    // If url already starts with http:// or https://, use as is
+    if (url.includes('https://') || url.includes('http://')) {
+      // do nothing, url is already absolute
+    } else {
+      // Check if URL already contains a domain (including subdomains)
+      const hasDomain =
+        /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}/.test(
+          url,
+        );
+      if (hasDomain) {
+        url = 'https://' + url;
+      } else {
+        url = 'https://webdock.io' + url;
+      }
     }
     Linking.canOpenURL(url).then(supported => {
       if (supported) {
@@ -406,7 +455,7 @@ export function DrawerContent({props, navigation}) {
               }
             />
             <IconButton
-              icon={() => <Tiktok width={24} height={24} fill="#000" />}
+              icon={() => <Tiktok width={24} height={24} fill="#565656" />}
               onPress={() => handlePress('https://www.tiktok.com/@webdock.io')}
             />
             <IconButton

@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {useState, useEffect} from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import {
   FlatList,
   Image,
@@ -50,6 +50,7 @@ import GradientButton from '../components/GradientButton';
 import BottomSheetWrapper from '../components/BottomSheetWrapper';
 
 export default function AccountPublicKeys({navigation}) {
+  const publicKeysCache = useRef(null);
   const [publicKeys, setPublicKeys] = useState([]);
   const [inputs, setInputs] = React.useState({
     name: '',
@@ -57,22 +58,32 @@ export default function AccountPublicKeys({navigation}) {
   });
   const [errors, setErrors] = React.useState({});
   useEffect(() => {
-    // const unsubscribe = navigation.addListener('focus', () => {
-    //   onBackgroundRefresh();
-    // });
-    setTimeout(async () => {
-      let userToken = null;
-      try {
-        userToken = await AsyncStorage.getItem('userToken');
-        getAccountPublicKeys(userToken).then(data => {
-          setPublicKeys(data);
-        });
-      } catch (e) {
-        alert(e);
+    const unsubscribe = navigation.addListener('focus', async () => {
+      if (publicKeysCache.current) {
+        setPublicKeys(publicKeysCache.current);
+      } else {
+        await fetchPublicKeys();
       }
-    }, 0);
-    // return unsubscribe;
+    });
+    return () => {
+      unsubscribe();
+    };
   }, []);
+
+  const fetchPublicKeys = async () => {
+    setIsFetching(true);
+    try {
+      let userToken = null;
+      userToken = await AsyncStorage.getItem('userToken');
+      const data = await getAccountPublicKeys(userToken);
+      setPublicKeys(data);
+      publicKeysCache.current = data;
+    } catch (e) {
+      alert(e);
+    } finally {
+      setIsFetching(false);
+    }
+  };
 
   const deletePublicKeyAlert = async pkey => {
     let userToken = null;
@@ -84,18 +95,8 @@ export default function AccountPublicKeys({navigation}) {
 
   const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
-    setIsFetching(true);
-    let userToken = null;
-    try {
-      userToken = await AsyncStorage.getItem('userToken');
-      getAccountPublicKeys(userToken).then(data => {
-        setPublicKeys(data);
-        setIsFetching(false);
-      });
-      console.log(publicKeys);
-    } catch (e) {
-      alert(e);
-    }
+    publicKeysCache.current = null;
+    await fetchPublicKeys();
   };
   const onBackgroundRefresh = async () => {
     let userToken = null;
@@ -426,25 +427,23 @@ export default function AccountPublicKeys({navigation}) {
               )}
               keyExtractor={item => item.id}
               ListEmptyComponent={
-                publicKeys ? (
-                  publicKeys.length == 0 ? (
-                    <View
+                publicKeys && publicKeys.length === 0 && !isFetching ? (
+                  <View
+                    style={{
+                      borderBottomLeftRadius: 4,
+                      borderBottomRightRadius: 4,
+                      padding: 14,
+                      backgroundColor: theme.colors.surface,
+                    }}>
+                    <Text
                       style={{
-                        borderBottomLeftRadius: 4,
-                        borderBottomRightRadius: 4,
-                        padding: 14,
-                        backgroundColor: theme.colors.surface,
+                        color: theme.colors.text,
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
                       }}>
-                      <Text
-                        style={{
-                          color: theme.colors.text,
-                          fontFamily: 'Poppins',
-                          fontSize: 14,
-                        }}>
-                        You do not have any saved Public Keys yet.
-                      </Text>
-                    </View>
-                  ) : null
+                      You do not have any saved Public Keys yet.
+                    </Text>
+                  </View>
                 ) : null
               }
             />

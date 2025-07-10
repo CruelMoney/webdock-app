@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {useState, useEffect} from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import {
   FlatList,
   Image,
@@ -49,10 +49,15 @@ import ServerSnapshotItem from '../components/ServerSnapshotItem';
 import AccordionItem from '../components/AccordionItem';
 import {setGlobalCallbackId} from '../service/storageEvents';
 export default function ServerSnapshots({route, navigation}) {
-  const [serverSnapshots, setSnapshots] = useState();
+  const serverSnapshotsCache = useRef(null);
+  const [serverSnapshots, setServerSnapshots] = useState();
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      onBackgroundRefresh();
+    const unsubscribe = navigation.addListener('focus', async () => {
+      if (serverSnapshotsCache.current) {
+        setServerSnapshots(serverSnapshotsCache.current);
+      } else {
+        await fetchSnapshots();
+      }
     });
 
     const task = InteractionManager.runAfterInteractions(() => {
@@ -60,7 +65,7 @@ export default function ServerSnapshots({route, navigation}) {
         try {
           const userToken = await AsyncStorage.getItem('userToken');
           const data = await getServerSnapshots(userToken, route.params.slug);
-          setSnapshots(data);
+          setServerSnapshots(data);
         } catch (e) {
           alert(e);
         }
@@ -80,7 +85,7 @@ export default function ServerSnapshots({route, navigation}) {
     try {
       userToken = await AsyncStorage.getItem('userToken');
       getServerSnapshots(userToken, route.params.slug).then(data => {
-        setSnapshots(data);
+        setServerSnapshots(data);
         setIsFetching(false);
       });
     } catch (e) {
@@ -92,7 +97,7 @@ export default function ServerSnapshots({route, navigation}) {
     try {
       userToken = await AsyncStorage.getItem('userToken');
       getServerSnapshots(userToken, route.params.slug).then(data => {
-        setSnapshots(data);
+        setServerSnapshots(data);
       });
     } catch (e) {
       alert(e);
@@ -405,27 +410,54 @@ export default function ServerSnapshots({route, navigation}) {
                     }}></View>
                 </>
               )}
+              ListHeaderComponent={
+                isFetching ? (
+                  <View
+                    style={{
+                      alignItems: 'center',
+                      padding: 14,
+                      gap: 16,
+                      backgroundColor: theme.colors.surface,
+                      borderBottomLeftRadius: 4,
+                      borderBottomRightRadius: 4,
+                    }}>
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.primary}
+                    />
+                    <Text
+                      style={{
+                        marginTop: 8,
+                        fontFamily: 'Poppins',
+                        fontSize: 12,
+                        color: theme.colors.primary,
+                      }}>
+                      Loading snapshots...
+                    </Text>
+                  </View>
+                ) : null
+              }
               keyExtractor={item => item.id}
               ListEmptyComponent={
-                serverSnapshots ? (
-                  serverSnapshots.length == 0 ? (
-                    <View
+                serverSnapshots &&
+                serverSnapshots.length === 0 &&
+                !isFetching ? (
+                  <View
+                    style={{
+                      borderBottomLeftRadius: 4,
+                      borderBottomRightRadius: 4,
+                      padding: 14,
+                      backgroundColor: theme.colors.surface,
+                    }}>
+                    <Text
                       style={{
-                        borderBottomLeftRadius: 4,
-                        borderBottomRightRadius: 4,
-                        padding: 14,
-                        backgroundColor: theme.colors.surface,
+                        color: theme.colors.text,
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
                       }}>
-                      <Text
-                        style={{
-                          color: theme.colors.text,
-                          fontFamily: 'Poppins',
-                          fontSize: 14,
-                        }}>
-                        This server doesn't have any snapshot yet.
-                      </Text>
-                    </View>
-                  ) : null
+                      This server doesn't have any snapshot yet.
+                    </Text>
+                  </View>
                 ) : null
               }
             />

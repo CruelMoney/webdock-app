@@ -1,11 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   StyleSheet,
   View,
   Text,
   Image,
-  ActivityIndicator,
   Alert,
   ScrollView,
   LayoutAnimation,
@@ -30,6 +29,7 @@ import {
   Colors,
   Snackbar,
   Badge,
+  ActivityIndicator,
   useTheme,
   ProgressBar,
 } from 'react-native-paper';
@@ -84,6 +84,9 @@ import {getInstantMetrics} from '../service/serverMetrics';
 import {setGlobalCallbackId} from '../service/storageEvents';
 
 export default function ServerOverview({route, navigation}) {
+  const serverCache = useRef({});
+  const eventsCache = useRef({});
+  const metricsCache = useRef({});
   const [loading, setLoading] = React.useState(false);
   const [visible, setVisible] = React.useState(false);
   const [dryRun, setDryRun] = React.useState();
@@ -96,57 +99,56 @@ export default function ServerOverview({route, navigation}) {
     }
   }, [navigation, route.params?.slug]);
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      onBackgroundRefresh();
-    });
-
-    setTimeout(async () => {
+    const unsubscribe = navigation.addListener('focus', async () => {
+      const slug = route.params.slug;
       let userToken = null;
       try {
         userToken = await AsyncStorage.getItem('userToken');
-        getServerBySlug(userToken, route.params.slug).then(data => {
-          setServer(data);
-          getAllProfiles(data.location);
-        });
+        // Server
+        if (serverCache.current[slug]) {
+          setServer(serverCache.current[slug]);
+        } else {
+          getServerBySlug(userToken, slug).then(data => {
+            setServer(data);
+            serverCache.current[slug] = data;
+            getAllProfiles(data.location);
+          });
+        }
         getAllLocations();
         getAllImages();
-        getInstantMetrics(userToken, route.params.slug).then(data => {
-          setMetrics(data);
-        });
-      } catch (e) {
-        alert(e);
-      }
-    }, 0);
-    return unsubscribe;
-  }, [route]);
-
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      onBackgroundRefresh();
-    });
-
-    setTimeout(async () => {
-      let userToken = null;
-      try {
-        userToken = await AsyncStorage.getItem('userToken');
-        if (route.params.callbackId) {
-          getEventsByCallbackId(userToken, route.params.callbackId).then(
-            data => {
-              setEvents(data);
-              setIsLoading(false);
-            },
-          );
+        // Metrics
+        if (metricsCache.current[slug]) {
+          setMetrics(metricsCache.current[slug]);
         } else {
-          getAllEventsBySlug(userToken, route.params.slug).then(data => {
-            setEvents(data.slice(0, 3));
-            setIsLoading(false);
+          getInstantMetrics(userToken, slug).then(data => {
+            setMetrics(data);
+            metricsCache.current[slug] = data;
           });
+        }
+        // Events
+        if (eventsCache.current[slug]) {
+          setEvents(eventsCache.current[slug]);
+        } else {
+          if (route.params.callbackId) {
+            getEventsByCallbackId(userToken, route.params.callbackId).then(
+              data => {
+                setEvents(data);
+                eventsCache.current[slug] = data;
+                setIsLoading(false);
+              },
+            );
+          } else {
+            getAllEventsBySlug(userToken, slug).then(data => {
+              setEvents(data.slice(0, 3));
+              eventsCache.current[slug] = data.slice(0, 3);
+              setIsLoading(false);
+            });
+          }
         }
       } catch (e) {
         alert(e);
       }
-    }, 0);
-
+    });
     return unsubscribe;
   }, [route]);
 
@@ -154,15 +156,37 @@ export default function ServerOverview({route, navigation}) {
   const closeMenu = () => setVisible(false);
 
   const onBackgroundRefresh = async () => {
+    const slug = route.params.slug;
+    serverCache.current[slug] = null;
+    eventsCache.current[slug] = null;
+    metricsCache.current[slug] = null;
     let userToken = null;
     try {
       userToken = await AsyncStorage.getItem('userToken');
-      getServerBySlug(userToken, route.params.slug).then(data => {
+      getServerBySlug(userToken, slug).then(data => {
         setServer(data);
+        serverCache.current[slug] = data;
         getAllProfiles(data.location);
       });
       getAllLocations();
       getAllImages();
+      getInstantMetrics(userToken, slug).then(data => {
+        setMetrics(data);
+        metricsCache.current[slug] = data;
+      });
+      if (route.params.callbackId) {
+        getEventsByCallbackId(userToken, route.params.callbackId).then(data => {
+          setEvents(data);
+          eventsCache.current[slug] = data;
+          setIsLoading(false);
+        });
+      } else {
+        getAllEventsBySlug(userToken, slug).then(data => {
+          setEvents(data.slice(0, 3));
+          eventsCache.current[slug] = data.slice(0, 3);
+          setIsLoading(false);
+        });
+      }
     } catch (e) {
       alert(e);
     }
@@ -1559,9 +1583,9 @@ export default function ServerOverview({route, navigation}) {
                     startTime={item.startTime}
                     status={item.status}
                     message={item.message}
-                    onDetailsPress={item =>
+                    onDetailsPress={() =>
                       openSheet({
-                        message: item.message,
+                        message: !item.message ? item.action : item.message,
                       })
                     }
                   />
@@ -1571,9 +1595,6 @@ export default function ServerOverview({route, navigation}) {
                     }}></View>
                 </View>
               )}
-              ListEmptyComponent={
-                events ? events.length > 0 ? <EmptyList /> : null : null
-              }
               keyExtractor={item => item.id}
               ListFooterComponent={
                 <View

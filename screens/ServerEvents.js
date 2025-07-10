@@ -66,9 +66,10 @@ const ListFooterComponent = () => (
 );
 
 export default function ServerEvents({route, navigation}) {
-  const [serverEvents, setEvents] = useState([]);
+  const serverEventsCache = useRef(null);
+  const [serverEvents, setServerEvents] = useState([]);
   const [eventsUpdated, setEventsUpdated] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
@@ -78,20 +79,23 @@ export default function ServerEvents({route, navigation}) {
     let pollingInterval = null;
 
     const fetchEvents = async () => {
+      setIsFetching(true);
       try {
         const userToken = await AsyncStorage.getItem('userToken');
 
         if (callbackId) {
           const data = await getEventsByCallbackId(userToken, callbackId);
-          setEvents(data);
-          setIsLoading(false);
+          setServerEvents(data);
+          serverEventsCache.current = data;
+          setIsFetching(false);
 
           // Start polling
           pollingInterval = setInterval(async () => {
             try {
               const token = await AsyncStorage.getItem('userToken');
               const refreshed = await getEventsByCallbackId(token, callbackId);
-              setEvents(refreshed);
+              setServerEvents(refreshed);
+              serverEventsCache.current = refreshed;
 
               const stillWaiting = refreshed.some(
                 obj => obj.status === 'waiting' || obj.status === 'working',
@@ -106,18 +110,24 @@ export default function ServerEvents({route, navigation}) {
           }, 1500);
         } else {
           const data = await getAllEventsBySlug(userToken, slug);
-          setEvents(data);
-          setIsLoading(false);
+          setServerEvents(data);
+          serverEventsCache.current = data;
+          setIsFetching(false);
         }
       } catch (e) {
         alert('Something went wrong.');
+        setIsFetching(false);
       }
     };
 
     fetchEvents();
 
-    const unsubscribe = navigation.addListener('focus', () => {
-      fetchEvents();
+    const unsubscribe = navigation.addListener('focus', async () => {
+      if (serverEventsCache.current) {
+        setServerEvents(serverEventsCache.current);
+      } else {
+        await fetchEvents();
+      }
     });
 
     return () => {
@@ -212,20 +222,22 @@ export default function ServerEvents({route, navigation}) {
     return null;
   };
 
-  const [isFetching, setIsFetching] = useState(false);
   const onRefresh = async () => {
+    serverEventsCache.current = null;
     setIsFetching(true);
     let userToken = null;
     try {
       userToken = await AsyncStorage.getItem('userToken');
       if (route.params?.callbackId) {
         getEventsByCallbackId(userToken, route.params.callbackId).then(data => {
-          setEvents(data);
+          setServerEvents(data);
+          serverEventsCache.current = data;
           setIsFetching(false);
         });
       } else {
         getAllEventsBySlug(userToken, route.params.slug).then(data => {
-          setEvents(data);
+          setServerEvents(data);
+          serverEventsCache.current = data;
           setIsFetching(false);
         });
       }
@@ -240,8 +252,8 @@ export default function ServerEvents({route, navigation}) {
       try {
         userToken = await AsyncStorage.getItem('userToken');
         getAllEvents(userToken).then(data => {
-          setEvents(data);
-          setIsLoading(false);
+          setServerEvents(data);
+          setIsFetching(false);
           stopFetchMore = true;
         });
       } catch (e) {
@@ -310,9 +322,9 @@ export default function ServerEvents({route, navigation}) {
                   startTime={item.startTime}
                   status={item.status}
                   message={item.message}
-                  onDetailsPress={item =>
+                  onDetailsPress={() =>
                     openSheet({
-                      message: item.message,
+                      message: item.message ?? item.action,
                     })
                   }
                 />
@@ -323,25 +335,50 @@ export default function ServerEvents({route, navigation}) {
               </View>
             )}
             ListEmptyComponent={
-              serverEvents ? (
-                serverEvents.length === 0 ? (
-                  <View
+              serverEvents && serverEvents.length === 0 && !isFetching ? (
+                <View
+                  style={{
+                    borderBottomLeftRadius: 4,
+                    borderBottomRightRadius: 4,
+                    padding: 14,
+                    backgroundColor: theme.colors.surface,
+                  }}>
+                  <Text
                     style={{
-                      borderBottomLeftRadius: 4,
-                      borderBottomRightRadius: 4,
-                      padding: 14,
-                      backgroundColor: theme.colors.surface,
+                      color: theme.colors.text,
+                      fontFamily: 'Poppins',
+                      fontSize: 14,
                     }}>
-                    <Text
-                      style={{
-                        color: theme.colors.text,
-                        fontFamily: 'Poppins',
-                        fontSize: 14,
-                      }}>
-                      No events have been triggered yet ...
-                    </Text>
-                  </View>
-                ) : null
+                    No events have been triggered yet ...
+                  </Text>
+                </View>
+              ) : null
+            }
+            ListHeaderComponent={
+              isFetching ? (
+                <View
+                  style={{
+                    alignItems: 'center',
+                    padding: 14,
+                    gap: 16,
+                    backgroundColor: theme.colors.surface,
+                    borderBottomLeftRadius: 4,
+                    borderBottomRightRadius: 4,
+                  }}>
+                  <ActivityIndicator
+                    size="small"
+                    color={theme.colors.primary}
+                  />
+                  <Text
+                    style={{
+                      marginTop: 8,
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      color: theme.colors.primary,
+                    }}>
+                    Loading events...
+                  </Text>
+                </View>
               ) : null
             }
             keyExtractor={item => item.id}
