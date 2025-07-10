@@ -17,8 +17,8 @@ import {ThemeProvider} from './components/ThemeContext';
 import WebdockApp from './WebdockApp';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import BootSplash from 'react-native-bootsplash';
 import {useTheme} from 'react-native-paper';
+import {hideSplash, showSplash} from 'react-native-splash-view';
 
 // const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -109,8 +109,7 @@ export default function App() {
         // …do multiple sync or async tasks
       };
       init().finally(async () => {
-        await BootSplash.hide({fade: true});
-        console.log('BootSplash has been hidden successfully');
+        hideSplash();
       });
     }
   }, [loginState]);

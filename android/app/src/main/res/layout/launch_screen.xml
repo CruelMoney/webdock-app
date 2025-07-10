@@ -1,90 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:id="@+id/layoutsplash"
-    android:background="#022213"
-    android:orientation="vertical"
-    android:gravity="center">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#00190F"
+    android:padding="20dp"> <!-- Dark green background -->
+
+    <!-- Logo -->
     <ImageView
-        android:id="@+id/the_button"
-        android:layout_width="match_parent"
+        android:id="@+id/logo"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="50dp"
-        android:adjustViewBounds="true"
-        android:src="@drawable/launch_logo" />
-</LinearLayout>
-    <!--    <TextView-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:text="Our No-Nonsense App"-->
-    <!--        android:textSize="32sp"-->
-    <!--        android:textColor="#01FF48"-->
-    <!--        android:textFontWeight="700"/>-->
-    <!--    <TextView-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:text="Monitor. Manage. Create."-->
-    <!--        android:textSize="32sp"-->
-    <!--        android:textColor="white"-->
-    <!--        android:textFontWeight="700"/>-->
-    <!--    <ProgressBar-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:progress="20"-->
-    <!--        android:progressTint="#01FF48"-->
-    <!--        style="?android:attr/progressBarStyleHorizontal"/>-->
-    <!--    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="match_parent"-->
-    <!--        android:background="#1e1e1e"-->
-    <!--        android:layout_marginHorizontal="16dp">-->
+        android:layout_marginTop="40dp"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/webdock_logo"
+        android:contentDescription="Webdock Logo" />
 
-    <!--        &lt;!&ndash; Title Bar (Fake macOS window controls) &ndash;&gt;-->
-    <!--        <LinearLayout-->
-    <!--            android:id="@+id/terminalTopBar"-->
-    <!--            android:layout_width="match_parent"-->
-    <!--            android:layout_height="48dp"-->
-    <!--            android:background="#E8EFE8"-->
-    <!--            android:orientation="horizontal"-->
-    <!--            android:layout_alignParentTop="true">-->
+    <!-- "Webdock" Text -->
 
-    <!--            <View-->
-    <!--                android:layout_width="12dp"-->
-    <!--                android:layout_height="12dp"-->
-    <!--                android:layout_marginEnd="8dp"-->
-    <!--                android:background="@drawable/circle_red" />-->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:orientation="vertical">
+    <!-- Slogan -->
+    <TextView
+        android:id="@+id/slogan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Our No-Nonsense App"
+        android:textAlignment="center"
+        android:textColor="#01FF48"
+        android:textSize="32sp"
+        android:layout_below="@id/logo"
+        android:layout_centerHorizontal="true"
+        android:lineSpacingExtra="4dp"
+        android:fontFamily="@font/poppins_regular" />
+        <TextView
+            android:id="@+id/slogan2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Monitor. Manage. Create."
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:textSize="32sp"
+            android:layout_below="@id/logo"
+            android:layout_centerHorizontal="true"
+            android:lineSpacingExtra="4dp"
+            android:fontFamily="@font/poppins_regular" />
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="50dp" />
 
-    <!--            <View-->
-    <!--                android:layout_width="12dp"-->
-    <!--                android:layout_height="12dp"-->
-    <!--                android:layout_marginEnd="8dp"-->
-    <!--                android:background="@drawable/circle_yellow" />-->
-
-    <!--            <View-->
-    <!--                android:layout_width="12dp"-->
-    <!--                android:layout_height="12dp"-->
-    <!--                android:background="@drawable/circle_green" />-->
-
-    <!--            <TextView-->
-    <!--                android:layout_width="match_parent"-->
-    <!--                android:layout_height="wrap_content"-->
-    <!--                android:text="Terminal"-->
-    <!--                android:textAlignment="center"-->
-    <!--                android:gravity="center"/>-->
-    <!--        </LinearLayout>-->
-
-    <!--        &lt;!&ndash; Terminal Body &ndash;&gt;-->
-    <!--        <TextView-->
-    <!--            android:id="@+id/terminalBody"-->
-    <!--            android:layout_below="@id/terminalTopBar"-->
-    <!--            android:layout_width="match_parent"-->
-    <!--            android:layout_height="match_parent"-->
-    <!--            android:text="user@android:~$ echo 'Hello'\nHello"-->
-    <!--            android:textColor="#00FF00"-->
-    <!--            android:textSize="14sp"-->
-    <!--            android:paddingTop="12dp"-->
-    <!--            android:typeface="monospace" />-->
-    <!--    </RelativeLayout>-->
+    <!-- Server Image -->
+    <ImageView
+        android:id="@+id/server"
+        android:layout_width="match_parent"
+        android:layout_height="320dp"
+        android:layout_centerInParent="true"
+        android:contentDescription="Server Image"
+        android:src="@drawable/bootsplash_logo" />
+    </LinearLayout>
+</RelativeLayout>

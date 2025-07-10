@@ -38,6 +38,7 @@ import {
   useTheme,
   Chip,
   Badge,
+  ProgressBar,
 } from 'react-native-paper';
 import {Avatar, Divider} from 'react-native-paper';
 import {getServers, provisionAServer} from '../service/servers';
@@ -70,10 +71,10 @@ import Spacer from '../components/Spacer';
 import NewsItem from '../components/NewsItem';
 import ServerItem from '../components/ServerItem';
 import {CopilotStep, useCopilot, walkthroughable} from 'react-native-copilot';
-import BootSplash from 'react-native-bootsplash';
 import CallbackStatusWatcher from '../components/CallbackStatusWatcher';
 import requestUserPermission from '../service/notifications';
 import EventItem from '../components/EventItem';
+import {hideSplash, showSplash} from 'react-native-splash-view';
 
 const ONBOARDING_KEY = 'hasShownCopilot';
 
@@ -126,25 +127,19 @@ export function Dashboard({navigation}) {
     copilotEvents.on('stepChange', requestNotification);
 
     init().finally(async () => {
-      await BootSplash.hide({fade: true});
+      hideSplash();
       console.log('BootSplash has been hidden successfully');
     });
     const unsubscribe = navigation.addListener('focus', async () => {
-      if (serversCache.current) {
-        setServers(serversCache.current);
-      } else {
-        await fetchServers();
-      }
-      if (newsCache.current) {
-        setNews(newsCache.current);
-      } else {
-        await fetchNews();
-      }
-      if (notificationsCache.current) {
+      // 1. Show cached data immediately if available
+      if (serversCache.current) setServers(serversCache.current);
+      if (newsCache.current) setNews(newsCache.current);
+      if (notificationsCache.current)
         setNotifications(notificationsCache.current);
-      } else {
-        await fetchNotifications();
-      }
+      // 2. Always fetch fresh data and update cache/state
+      await fetchServers();
+      await fetchNews();
+      await fetchNotifications();
       // Fetch latest events for notification center
       await fetchEvents();
     });
@@ -325,6 +320,14 @@ export function Dashboard({navigation}) {
       token: await AsyncStorage.getItem('userToken'),
     });
   };
+
+  const [eventDetailsModal, setEventDetailsModal] = useState(false);
+  const [eventDetails, setEventDetails] = useState(false);
+
+  const openSheet = event => {
+    setEventDetails(event);
+    setEventDetailsModal(true);
+  };
   return (
     <>
       <SafeAreaView
@@ -340,361 +343,366 @@ export function Dashboard({navigation}) {
             paddingHorizontal: 20,
             paddingVertical: 10,
             height: '100%',
+            gap: 20,
           }}>
-          <CallbackStatusWatcher
-            style={{marginBottom: 20}}
-            onFinished={() => {
-              console.log('Event completed!');
-            }}
-          />
-          <CopilotStep
-            title=""
-            text="Refer a friend|Click the “Refer” button and and start inviting friends and earn credits to use for future payments."
-            order={3}
-            name="referAFriend">
-            <WalkthroughableView
-              onPress={onShare}
-              style={{
-                flexDirection: 'row',
-                height: 42,
-                borderRadius: 4,
-                backgroundColor: theme.colors.primary,
-                width: '100%',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: 8,
-              }}>
-              <CirclePercent />
-              <Text
+          <View style={{gap: 24}}>
+            <CallbackStatusWatcher
+              onFinished={() => {
+                console.log('Event completed!');
+              }}
+            />
+            <CopilotStep
+              title=""
+              text="Refer a friend|Click the “Refer” button and and start inviting friends and earn credits to use for future payments."
+              order={3}
+              name="referAFriend">
+              <WalkthroughableView
+                onPress={onShare}
                 style={{
-                  fontFamily: 'Poppins-SemiBold',
-                  fontSize: 14,
-                  fontWeight: '600',
-                  includeFontPadding: false,
-                  color: 'black',
-                }}>
-                Refer a Friend and Earn Credits
-              </Text>
-            </WalkthroughableView>
-          </CopilotStep>
-
-          <View>
-            <View
-              style={{
-                height: 44,
-                marginTop: 20,
-                borderTopLeftRadius: 4,
-                borderTopRightRadius: 4,
-                backgroundColor: theme.colors.accent,
-                paddingHorizontal: 16,
-                paddingVertical: 10,
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-              <Text
-                style={{
-                  fontFamily: 'Poppins-Medium',
-                  fontWeight: '500',
-                  color: 'white',
-                  fontSize: 16,
-                  includeFontPadding: false,
-                }}>
-                All VPS Servers
-              </Text>
-            </View>
-            {loading ? (
-              <View
-                style={{
-                  height: '80%',
+                  flexDirection: 'row',
+                  height: 42,
+                  borderRadius: 4,
+                  backgroundColor: theme.colors.primary,
+                  width: '100%',
                   justifyContent: 'center',
                   alignItems: 'center',
+                  gap: 8,
                 }}>
-                <ActivityIndicator size="small" color="#00A1A1" />
+                <CirclePercent />
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontSize: 14,
+                    fontWeight: '600',
+                    includeFontPadding: false,
+                    color: 'black',
+                  }}>
+                  Refer a Friend and Earn Credits
+                </Text>
+              </WalkthroughableView>
+            </CopilotStep>
+
+            <View>
+              <View
+                style={{
+                  height: 44,
+                  borderTopLeftRadius: 4,
+                  borderTopRightRadius: 4,
+                  backgroundColor: theme.colors.accent,
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-Medium',
+                    fontWeight: '500',
+                    color: 'white',
+                    fontSize: 16,
+                    includeFontPadding: false,
+                  }}>
+                  All VPS Servers
+                </Text>
               </View>
-            ) : (
-              <FlatList
-                style={{}}
-                data={servers}
-                showsVerticalScrollIndicator={false}
-                showsHorizontalScrollIndicator={false}
-                onRefresh={() => fetchServers()}
-                ListEmptyComponent={
-                  servers && servers.length === 0 && !isFetching ? (
-                    <View
-                      style={{
-                        padding: 14,
-                        gap: 16,
-                        backgroundColor: theme.colors.surface,
-                        borderBottomLeftRadius: 4,
-                        borderBottomRightRadius: 4,
-                      }}>
-                      <Text
-                        style={{
-                          fontFamily: 'Poppins',
-                          fontSize: 14,
-                          color: theme.colors.text,
-                        }}>
-                        You have no servers.{' '}
-                        <Text style={{color: theme.colors.primary}}>
-                          Create a server
-                        </Text>{' '}
-                        and it will be listed here.
-                      </Text>
-                      <Button
-                        mode="contained"
-                        textColor={'black'}
-                        compact
-                        style={{
-                          borderRadius: 4,
-                          minWidth: 0,
-                          paddingHorizontal: 8,
-                        }}
-                        labelStyle={{
-                          fontFamily: 'Poppins-SemiBold',
-                          fontSize: 12,
-                          lineHeight: 12 * 1.2,
-                          fontWeight: '600',
-                        }}
-                        onPress={() =>
-                          openWebView('https://webdock.io/en/pricing')
-                        }>
-                        Create a Server
-                      </Button>
-                    </View>
-                  ) : null
-                }
-                refreshing={isFetching}
-                renderItem={({item}) => (
-                  <>
-                    <TouchableOpacity
-                      onPress={() =>
-                        navigation.navigate('ServerManagement', {
-                          slug: item.slug,
-                          name: item.name,
-                          description: item.description,
-                          notes: item.notes,
-                          nextActionDate: item.nextActionDate,
-                        })
-                      }>
-                      <View>
-                        <ServerItem
-                          title={item.name}
-                          alias={item.aliases[0]}
-                          dc={item.location}
-                          virtualization={item.virtualization}
-                          profile={item.profile}
-                          ipv4={item.ipv4}
-                          status={item.status}
-                        />
-                      </View>
-                    </TouchableOpacity>
-                    <View
-                      style={{
-                        height: 1,
-                        width: '100%',
-                      }}
-                    />
-                  </>
-                )}
-                keyExtractor={item => item.slug}
-              />
-            )}
-            {servers ? (
-              servers.length > 0 ? (
+              {loading ? (
                 <View
                   style={{
-                    height: 42,
-                    backgroundColor: theme.colors.surface,
-                    borderBottomLeftRadius: 4,
-                    borderBottomRightRadius: 4,
-                    padding: 12,
-                    alignItems: 'flex-end',
+                    height: '80%',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                   }}>
-                  <TouchableOpacity
-                    onPress={() => navigation.navigate('Servers')}>
-                    <Text
-                      style={{
-                        fontFamily: 'Poppins-Regular',
-                        fontWeight: '400',
-                        fontSize: 12,
-                        includeFontPadding: false,
-                        color: theme.colors.primaryText,
-                      }}>
-                      All Servers →
-                    </Text>
-                  </TouchableOpacity>
+                  <ActivityIndicator size="small" color="#00A1A1" />
                 </View>
-              ) : null
-            ) : null}
-          </View>
-          <View>
-            <View
-              style={{
-                height: 44,
-                marginTop: 20,
-                borderTopLeftRadius: 4,
-                borderTopRightRadius: 4,
-                backgroundColor: theme.colors.accent,
-                paddingHorizontal: 16,
-                paddingVertical: 10,
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-              <Text
-                style={{
-                  fontFamily: 'Poppins-Medium',
-                  fontWeight: '500',
-                  color: 'white',
-                  fontSize: 16,
-                  includeFontPadding: false,
-                }}>
-                Notification center
-              </Text>
+              ) : (
+                <FlatList
+                  style={{}}
+                  data={servers}
+                  showsVerticalScrollIndicator={false}
+                  showsHorizontalScrollIndicator={false}
+                  onRefresh={() => fetchServers()}
+                  ListEmptyComponent={
+                    servers && servers.length === 0 && !isFetching ? (
+                      <View
+                        style={{
+                          padding: 14,
+                          gap: 16,
+                          backgroundColor: theme.colors.surface,
+                          borderBottomLeftRadius: 4,
+                          borderBottomRightRadius: 4,
+                        }}>
+                        <Text
+                          style={{
+                            fontFamily: 'Poppins',
+                            fontSize: 14,
+                            color: theme.colors.text,
+                          }}>
+                          You have no servers.{' '}
+                          <Text style={{color: theme.colors.primary}}>
+                            Create a server
+                          </Text>{' '}
+                          and it will be listed here.
+                        </Text>
+                        <Button
+                          mode="contained"
+                          textColor={'black'}
+                          compact
+                          style={{
+                            borderRadius: 4,
+                            minWidth: 0,
+                            paddingHorizontal: 8,
+                          }}
+                          labelStyle={{
+                            fontFamily: 'Poppins-SemiBold',
+                            fontSize: 12,
+                            lineHeight: 12 * 1.2,
+                            fontWeight: '600',
+                          }}
+                          onPress={() =>
+                            openWebView('https://webdock.io/en/pricing')
+                          }>
+                          Create a Server
+                        </Button>
+                      </View>
+                    ) : null
+                  }
+                  refreshing={isFetching}
+                  renderItem={({item}) => (
+                    <>
+                      <TouchableOpacity
+                        onPress={() =>
+                          navigation.navigate('ServerManagement', {
+                            slug: item.slug,
+                            name: item.name,
+                            description: item.description,
+                            notes: item.notes,
+                            nextActionDate: item.nextActionDate,
+                          })
+                        }>
+                        <View>
+                          <ServerItem
+                            title={item.name}
+                            alias={item.aliases[0]}
+                            dc={item.location}
+                            virtualization={item.virtualization}
+                            profile={item.profile}
+                            ipv4={item.ipv4}
+                            status={item.status}
+                          />
+                        </View>
+                      </TouchableOpacity>
+                      <View
+                        style={{
+                          height: 1,
+                          width: '100%',
+                        }}
+                      />
+                    </>
+                  )}
+                  keyExtractor={item => item.slug}
+                />
+              )}
+              {servers ? (
+                servers.length > 0 ? (
+                  <View
+                    style={{
+                      height: 42,
+                      backgroundColor: theme.colors.surface,
+                      borderBottomLeftRadius: 4,
+                      borderBottomRightRadius: 4,
+                      padding: 12,
+                      alignItems: 'flex-end',
+                    }}>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate('Servers')}>
+                      <Text
+                        style={{
+                          fontFamily: 'Poppins-Regular',
+                          fontWeight: '400',
+                          fontSize: 12,
+                          includeFontPadding: false,
+                          color: theme.colors.primaryText,
+                        }}>
+                        All Servers →
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : null
+              ) : null}
             </View>
-            {loading ? (
+            <View>
               <View
                 style={{
-                  height: '80%',
-                  justifyContent: 'center',
+                  height: 44,
+                  borderTopLeftRadius: 4,
+                  borderTopRightRadius: 4,
+                  backgroundColor: theme.colors.accent,
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
                   alignItems: 'center',
                 }}>
-                <ActivityIndicator size="small" color="#00A1A1" />
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-Medium',
+                    fontWeight: '500',
+                    color: 'white',
+                    fontSize: 16,
+                    includeFontPadding: false,
+                  }}>
+                  Notification center
+                </Text>
               </View>
-            ) : (
-              <FlatList
-                showsHorizontalScrollIndicator={false}
-                showsVerticalScrollIndicator={false}
-                data={events}
-                scrollEnabled={false}
-                removeClippedSubviews={true}
-                renderItem={({item}) => (
-                  <View key={item.id}>
-                    <EventItem
-                      key={item.id}
-                      action={item.action}
-                      actionData={item.actionData}
-                      startTime={item.startTime}
-                      status={item.status}
-                      message={item.message}
-                      onDetailsPress={() =>
-                        openSheet({
-                          message: !item.message ? item.action : item.message,
-                        })
-                      }
-                    />
-                    <View style={{height: 1}} />
-                  </View>
-                )}
-                ListEmptyComponent={
-                  events && events.length === 0 && !isFetching ? (
-                    <View
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        paddingVertical: 24,
-                        backgroundColor: theme.colors.surface,
-                        gap: 11,
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        borderBottomRightRadius: 4,
-                        borderBottomLeftRadius: 4,
-                      }}>
-                      <Text
-                        style={{textAlign: 'center', color: theme.colors.text}}>
-                        Nice Job!
-                      </Text>
-                      <Text
-                        style={{textAlign: 'center', color: theme.colors.text}}>
-                        You have no notifications.
-                      </Text>
-                      <ThumbsUp color={theme.colors.text} />
-                    </View>
-                  ) : null
-                }
-                keyExtractor={item => item.id}
-              />
-            )}
-          </View>
-          <View>
-            <View
-              style={{
-                height: 44,
-                marginTop: 20,
-                borderTopLeftRadius: 4,
-                borderTopRightRadius: 4,
-                backgroundColor: theme.colors.accent,
-                paddingHorizontal: 16,
-                paddingVertical: 10,
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-              <Text
-                style={{
-                  fontFamily: 'Poppins-Medium',
-                  fontWeight: '500',
-                  color: 'white',
-                  fontSize: 16,
-                  includeFontPadding: false,
-                }}>
-                News
-              </Text>
-            </View>
-            <View
-              style={{
-                backgroundColor: theme.colors.surface,
-                borderBottomLeftRadius: 4,
-                borderBottomRightRadius: 4,
-                padding: 12,
-              }}>
-              <FlatList
-                showsHorizontalScrollIndicator={false}
-                showsVerticalScrollIndicator={false}
-                data={news}
-                scrollEnabled={false}
-                removeClippedSubviews={true}
-                renderItem={({item}) => (
-                  <View key={item.id}>
-                    <TouchableOpacity
-                      key={item.id}
-                      onPress={() => {
-                        navigation.navigate('WebViewScreen', {
-                          uri: item.link,
-                          token: 'abc123',
-                        });
-                      }}>
-                      <NewsItem
+              {loading ? (
+                <View
+                  style={{
+                    height: '80%',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <ActivityIndicator size="small" color="#00A1A1" />
+                </View>
+              ) : (
+                <FlatList
+                  showsHorizontalScrollIndicator={false}
+                  showsVerticalScrollIndicator={false}
+                  data={events}
+                  scrollEnabled={false}
+                  removeClippedSubviews={true}
+                  renderItem={({item}) => (
+                    <View key={item.id}>
+                      <EventItem
                         key={item.id}
-                        item={item}
-                        onPress={() =>
-                          navigation.navigate('WebViewScreen', {
-                            uri:
-                              'https://webdock.io/en/docs/webdock-news/' +
-                              item.slug,
-                            token: 'abc123',
+                        action={item.action}
+                        actionData={item.actionData}
+                        startTime={item.startTime}
+                        status={item.status}
+                        message={item.message}
+                        onDetailsPress={() =>
+                          openSheet({
+                            message: !item.message ? item.action : item.message,
                           })
                         }
                       />
-                    </TouchableOpacity>
-                    <View
-                      style={{
-                        height: 12,
-                      }}></View>
-                  </View>
-                )}
-                ListEmptyComponent={
-                  news && news.length === 0 && !isFetching ? (
-                    <EmptyList />
-                  ) : null
-                }
-                keyExtractor={item => item.slug}
-              />
+                      <View style={{height: 1}} />
+                    </View>
+                  )}
+                  ListEmptyComponent={
+                    events && events.length === 0 && !isFetching ? (
+                      <View
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          paddingVertical: 24,
+                          backgroundColor: theme.colors.surface,
+                          gap: 11,
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          borderBottomRightRadius: 4,
+                          borderBottomLeftRadius: 4,
+                        }}>
+                        <Text
+                          style={{
+                            textAlign: 'center',
+                            color: theme.colors.text,
+                          }}>
+                          Nice Job!
+                        </Text>
+                        <Text
+                          style={{
+                            textAlign: 'center',
+                            color: theme.colors.text,
+                          }}>
+                          You have no notifications.
+                        </Text>
+                        <ThumbsUp color={theme.colors.text} />
+                      </View>
+                    ) : null
+                  }
+                  keyExtractor={item => item.id}
+                />
+              )}
+            </View>
+            <View>
+              <View
+                style={{
+                  height: 44,
+                  borderTopLeftRadius: 4,
+                  borderTopRightRadius: 4,
+                  backgroundColor: theme.colors.accent,
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-Medium',
+                    fontWeight: '500',
+                    color: 'white',
+                    fontSize: 16,
+                    includeFontPadding: false,
+                  }}>
+                  News
+                </Text>
+              </View>
+              <View
+                style={{
+                  backgroundColor: theme.colors.surface,
+                  borderBottomLeftRadius: 4,
+                  borderBottomRightRadius: 4,
+                  padding: 12,
+                }}>
+                <FlatList
+                  showsHorizontalScrollIndicator={false}
+                  showsVerticalScrollIndicator={false}
+                  data={news}
+                  scrollEnabled={false}
+                  removeClippedSubviews={true}
+                  renderItem={({item}) => (
+                    <View key={item.id}>
+                      <TouchableOpacity
+                        key={item.id}
+                        onPress={() => {
+                          navigation.navigate('WebViewScreen', {
+                            uri: item.link,
+                            token: 'abc123',
+                          });
+                        }}>
+                        <NewsItem
+                          key={item.id}
+                          item={item}
+                          onPress={() =>
+                            navigation.navigate('WebViewScreen', {
+                              uri:
+                                'https://webdock.io/en/docs/webdock-news/' +
+                                item.slug,
+                              token: 'abc123',
+                            })
+                          }
+                        />
+                      </TouchableOpacity>
+                      <View
+                        style={{
+                          height: 12,
+                        }}></View>
+                    </View>
+                  )}
+                  ListEmptyComponent={
+                    news && news.length === 0 && !isFetching ? (
+                      <EmptyList />
+                    ) : null
+                  }
+                  keyExtractor={item => item.slug}
+                />
+              </View>
             </View>
           </View>
         </ScrollView>
@@ -704,6 +712,87 @@ export function Dashboard({navigation}) {
           name="chooseYourDisplayMode">
           <WalkthroughableView style={styles.fakeAnchor} />
         </CopilotStep>
+        <Modal
+          testID={'modal'}
+          isVisible={eventDetailsModal}
+          swipeDirection={['up', 'left', 'right', 'down']}
+          onSwipeComplete={() => setEventDetailsModal(false)}
+          style={{justifyContent: 'flex-start', marginHorizontal: 20}}>
+          <View
+            style={{
+              backgroundColor: 'white',
+              borderRadius: 4,
+            }}>
+            <View
+              style={{
+                backgroundColor: '#022213',
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderTopStartRadius: 4,
+                borderTopEndRadius: 4,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Medium',
+                  fontSize: 16,
+                  color: 'white',
+                  includeFontPadding: false,
+                }}>
+                Event details
+              </Text>
+              <IconButton
+                icon="close"
+                size={24}
+                iconColor="white"
+                onPress={() => setEventDetailsModal(false)}
+                style={{
+                  padding: 0,
+                  margin: 0,
+                }}
+              />
+            </View>
+            <View
+              style={{
+                padding: 12,
+                gap: 12,
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins',
+                  fontSize: 12,
+                  borderColor: '#000000',
+                  borderStyle: 'dashed',
+                  borderWidth: 1,
+                  borderRadius: 4,
+                  padding: 16,
+                  color: 'black',
+                }}>
+                {eventDetails.message ?? 'No event message provided'}
+              </Text>
+              <Button
+                mode="contained"
+                textColor="black"
+                compact
+                style={{
+                  borderRadius: 4,
+                  minWidth: 0,
+                  paddingHorizontal: 8,
+                }}
+                labelStyle={{
+                  fontFamily: 'Poppins-SemiBold',
+                  fontSize: 12,
+                  lineHeight: 12 * 1.2,
+                  fontWeight: '600',
+                }}
+                onPress={() => setEventDetailsModal(false)}>
+                Okay, thanks
+              </Button>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </>
   );
