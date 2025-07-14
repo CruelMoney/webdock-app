@@ -158,6 +158,7 @@ export default function MainTabs({navigation}) {
               shadowOffset: {height: -2}, // iOS shadow direction
               shadowRadius: sheetOpen ? 0 : 6,
             },
+            headerTitleAlign: 'left',
             headerTitleStyle: {
               fontSize: 28,
               fontFamily: 'Poppins-SemiBold',

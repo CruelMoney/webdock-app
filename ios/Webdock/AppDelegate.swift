@@ -2,7 +2,7 @@ import UIKit
 import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
-import RNBootSplash
+import Firebase
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -15,6 +15,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
+    FirebaseApp.configure()
+
     let delegate = ReactNativeDelegate()
     let factory = RCTReactNativeFactory(delegate: delegate)
     delegate.dependencyProvider = RCTAppDependencyProvider()
@@ -49,6 +51,15 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
 
   override func customize(_ rootView: RCTRootView) {
     super.customize(rootView)
-    RNBootSplash.initWithStoryboard("BootSplash", rootView: rootView) // ⬅️ initialize the splash screen
+    showSplashScreen();
   }
+  private func showSplashScreen() {
+        if let splashClass = NSClassFromString("SplashView") as? NSObject.Type,
+            let splashInstance = splashClass.perform(NSSelectorFromString("sharedInstance"))?.takeUnretainedValue() as? NSObject {
+            splashInstance.perform(NSSelectorFromString("showSplash"))
+            print("✅ Splash Screen Shown Successfully")
+        } else {
+            print("⚠️ SplashView module not found")
+        }
+      }
 }

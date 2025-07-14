@@ -1021,7 +1021,7 @@ export default function ServerOverview({route, navigation}) {
                       fontFamily: 'Poppins-SemiBold',
                       fontSize: 10,
                       includeFontPadding: false,
-                      color: theme.colors.startButton.text,
+                      color: theme.colors.restartButton.text,
                     }}>
                     Start server
                   </Text>

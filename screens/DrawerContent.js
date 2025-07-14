@@ -95,12 +95,12 @@ export function DrawerContent({props, navigation}) {
                 <SvgUri
                   width={16}
                   height={16}
-                  uri={'https://webdock.io' + item.icon}
+                  uri={'https://webdock.io' + theme.dark?item.icon_dark:item.icon}
                 />
               ) : (
                 <Image
                   source={{
-                    uri: 'https://webdock.io' + item.icon,
+                    uri: 'https://webdock.io' + theme.dark?item.icon_dark:item.icon,
                   }}
                   style={{width: 16, height: 16, backgroundColor: 'red'}}
                 />
@@ -158,12 +158,12 @@ export function DrawerContent({props, navigation}) {
                       <SvgUri
                         width={20}
                         height={20}
-                        uri={'https://webdock.io' + item.icon}
+                        uri={'https://webdock.io' + theme.dark?item.icon_dark:item.icon}
                       />
                     ) : (
                       <Image
                         source={{
-                          uri: 'https://webdock.io' + item.icon,
+                          uri: 'https://webdock.io' + theme.dark?item.icon_dark:item.icon,
                         }}
                         style={{width: 20, height: 20, backgroundColor: 'red'}}
                       />
@@ -253,7 +253,7 @@ export function DrawerContent({props, navigation}) {
             {item.icon ? (
               <Image
                 source={{
-                  uri: 'https://webdock.io' + item.icon,
+                  uri: 'https://webdock.io' + theme.dark?item.icon_dark:item.icon,
                 }}
                 style={{width: 24, height: 24, backgroundColor: 'red'}}
               />
@@ -462,7 +462,7 @@ export function DrawerContent({props, navigation}) {
             </View>
             <View>
               <IconButton
-                icon={() => <Tiktok width={24} height={24} fill="#565656" />}
+                icon={() => <Tiktok width={24} height={24} fill={theme.dark?"white":"#565656"} />}
                 style={{width: 48, height: 48}}
                 onPress={() =>
                   handlePress('https://www.tiktok.com/@webdock.io')

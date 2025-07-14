@@ -104,7 +104,7 @@ export default function Account({navigation}) {
       label: 'Legal documents',
       description: 'Read all our legal documents here.',
       icon: <LegalDocsIcon width={20} height={20} color={'white'} />,
-      navigate: 'https://webdock.io/en/dash/profile#legalDocuments',
+      navigate: 'https://webdock.io/en/dash/profile%23legalDocuments',
     },
   ];
   const {isDark, toggleTheme} = useContext(ThemeContext);

@@ -259,6 +259,7 @@ export default function NotificationCenter({navigation}) {
               keyExtractor={(item, index) => `${item.slug || 'item'}-${index}`}
               style={{flexGrow: 1}}
               onRefresh={onBackgroundRefresh}
+              refreshing={isFetching}
               showsVerticalScrollIndicator={false}
               stickySectionHeadersEnabled={false}
               contentContainerStyle={{paddingBottom: 20}}
