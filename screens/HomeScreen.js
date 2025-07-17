@@ -455,36 +455,27 @@ export function HomeScreen({navigation}) {
           <View style={{flex: 1, height: 38}}>
             <TextInput
               mode="flat"
-              value={undefined}
+              value={searchQuery}
               onChangeText={searchtext => {
                 onChangeSearch(searchtext);
                 search();
               }}
               placeholder="Search"
               style={{
-                height: 38,
+                height: 40,
+                paddingVertical: 0,
+                textAlignVertical: 'center',
+                includeFontPadding: false,
+                textAlign: 'left',
+                color: theme.colors.text,
+                fontFamily: 'Poppins',
+                fontSize: 14,
                 backgroundColor: theme.colors.surface,
                 borderRadius: 4,
-                paddingVertical: 0,
-              }}
-              contentStyle={{
-                fontSize: 12,
-                lineHeight: 38,
-                fontFamily: 'Poppins',
-                fontWeight: '400',
-                includeFontPadding: false,
               }}
               underlineColor="transparent"
               left={<TextInput.Icon icon="magnify" color={theme.colors.text} />}
-              theme={{
-                colors: {
-                  primary: 'transparent',
-                  text: theme.colors.text,
-                  placeholder: theme.colors.text,
-                  background: theme.colors.surface,
-                },
-                roundness: 4,
-              }}
+              placeholderTextColor={theme.colors.text + '99'}
             />
           </View>
 
