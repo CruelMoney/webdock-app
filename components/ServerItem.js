@@ -6,8 +6,7 @@ import ArrowIcon from '../assets/arrow-icon.svg';
 import {getServerIcon} from '../service/servers';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FastImage from 'react-native-fast-image';
-
-const serverIconResponseCache = {};
+import {serverIconResponseCache} from '../service/serverIconCache';
 
 function ServerItem({title, alias, dc, profile, ipv4, status, slug}) {
   const theme = useTheme();

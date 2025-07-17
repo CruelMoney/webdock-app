@@ -1,27 +1,25 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import EventEmitter from 'events';
-
-const storageEmitter = new EventEmitter();
+import eventBus from '../util/eventBus';
 
 export const setGlobalCallbackId = async id => {
   await AsyncStorage.setItem('callbackId', id);
-  storageEmitter.emit('callbackIdChanged', id);
+  eventBus.emit('callbackIdChanged', id);
 };
 
 export const removeGlobalCallbackId = async () => {
   await AsyncStorage.removeItem('callbackId');
-  storageEmitter.emit('callbackIdChanged', null);
+  eventBus.emit('callbackIdChanged', null);
 };
 
 export const onCallbackIdChanged = listener => {
-  storageEmitter.on('callbackIdChanged', listener);
-  return () => storageEmitter.removeListener('callbackIdChanged', listener);
+  eventBus.on('callbackIdChanged', listener);
+  return () => eventBus.removeListener('callbackIdChanged', listener);
 };
 export const emitBellTrigger = () => {
-  storageEmitter.emit('bellRing');
+  eventBus.emit('bellRing');
 };
 
 export const onBellRing = listener => {
-  storageEmitter.on('bellRing', listener);
-  return () => storageEmitter.removeListener('bellRing', listener);
+  eventBus.on('bellRing', listener);
+  return () => eventBus.removeListener('bellRing', listener);
 };

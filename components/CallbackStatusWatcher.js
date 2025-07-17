@@ -3,7 +3,11 @@ import {View} from 'react-native';
 import {ProgressBar, useTheme} from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getEventsByCallbackId} from '../service/events';
-import {emitBellTrigger} from '../service/storageEvents';
+import {
+  emitBellTrigger,
+  removeGlobalCallbackId,
+} from '../service/storageEvents';
+import eventBus from '../util/eventBus';
 
 export default function CallbackStatusWatcher({onFinished}) {
   const theme = useTheme();
@@ -13,11 +17,20 @@ export default function CallbackStatusWatcher({onFinished}) {
   const pollingTimeout = useRef(null);
   const [callbackId, setCallbackId] = useState(null);
 
-  // Load callbackId from AsyncStorage
+  // Load callbackId from AsyncStorage and listen for changes
   useEffect(() => {
+    let isMounted = true;
     AsyncStorage.getItem('callbackId').then(id => {
-      if (id) setCallbackId(id);
+      if (isMounted && id) setCallbackId(id);
     });
+    const handler = id => {
+      if (isMounted) setCallbackId(id);
+    };
+    eventBus.on('callbackIdChanged', handler);
+    return () => {
+      isMounted = false;
+      eventBus.off('callbackIdChanged', handler);
+    };
   }, []);
 
   useEffect(() => {
@@ -47,8 +60,7 @@ export default function CallbackStatusWatcher({onFinished}) {
             // Cleanup
             clearInterval(pollingInterval.current);
             clearTimeout(pollingTimeout.current);
-            await AsyncStorage.removeItem('callbackId');
-            setCallbackId(null);
+            await removeGlobalCallbackId();
           }
         }
       } catch (err) {
@@ -62,9 +74,8 @@ export default function CallbackStatusWatcher({onFinished}) {
       console.warn('Callback polling timed out');
       clearInterval(pollingInterval.current);
       clearTimeout(pollingTimeout.current);
-      await AsyncStorage.removeItem('callbackId');
+      await removeGlobalCallbackId();
       setLoading(false);
-      setCallbackId(null);
     }, 60000);
 
     return () => {

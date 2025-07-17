@@ -28,6 +28,7 @@ import ServerItem from '../components/ServerItem';
 import {TabView, SceneMap, TabBar} from 'react-native-tab-view';
 import CallbackStatusWatcher from '../components/CallbackStatusWatcher';
 import SnapshotItem from '../components/SnapshotItem';
+import {preloadServerIcons} from '../service/servers';
 
 const initialLayout = {width: Dimensions.get('window').width};
 
@@ -47,7 +48,8 @@ export function HomeScreen({navigation}) {
     let userToken = null;
     try {
       userToken = await AsyncStorage.getItem('userToken');
-      const data = await getServers(userToken);
+      let data = await getServers(userToken);
+      if (!Array.isArray(data)) data = [];
       // Always sort after fetch
       const sorted = [...data].sort((a, b) => {
         if (sortOrderCache.current === 'desc') {
@@ -63,6 +65,14 @@ export function HomeScreen({navigation}) {
       });
       setServers(sorted);
       serversCache.current = sorted; // Update cache with sorted data
+      // Preload icons for up to 20 servers, only using cache
+      setTimeout(() => {
+        try {
+          preloadServerIcons(sorted, 20);
+        } catch (e) {
+          console.error('preloadServerIcons error:', e);
+        }
+      }, 0);
       setIsFetching(false);
       return sorted;
     } catch (e) {
@@ -300,7 +310,11 @@ export function HomeScreen({navigation}) {
               <View>
                 <ServerItem
                   title={item.name}
-                  alias={item.aliases[0]}
+                  alias={
+                    Array.isArray(item.aliases) && item.aliases.length > 0
+                      ? item.aliases[0]
+                      : ''
+                  }
                   dc={item.location}
                   virtualization={item.virtualization}
                   profile={item.profile}
@@ -317,7 +331,6 @@ export function HomeScreen({navigation}) {
             />
           </>
         )}
-        extraData={rerenderFlatList}
         keyExtractor={item => item.slug}
       />
     ),
@@ -389,7 +402,6 @@ export function HomeScreen({navigation}) {
             />
           </>
         )}
-        extraData={rerenderFlatList}
         keyExtractor={item => item.id}
       />
     ),

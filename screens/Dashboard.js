@@ -337,14 +337,13 @@ export function Dashboard({navigation}) {
           backgroundColor: theme.colors.surface,
         }}>
         <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={{
-            backgroundColor: theme.colors.background,
+          style={{flex: 1, backgroundColor: theme.colors.background}}
+          contentContainerStyle={{
             paddingHorizontal: 20,
             paddingVertical: 10,
-            height: '100%',
             gap: 20,
-          }}>
+          }}
+          showsVerticalScrollIndicator={false}>
           <View style={{gap: 24}}>
             <CallbackStatusWatcher
               onFinished={() => {
@@ -417,61 +416,59 @@ export function Dashboard({navigation}) {
                   <ActivityIndicator size="small" color="#00A1A1" />
                 </View>
               ) : (
-                <FlatList
-                  style={{}}
-                  data={servers}
-                  showsVerticalScrollIndicator={false}
-                  showsHorizontalScrollIndicator={false}
-                  onRefresh={() => fetchServers()}
-                  ListEmptyComponent={
-                    servers && servers.length === 0 && !isFetching ? (
-                      <View
+                <View>
+                  {Array.isArray(servers) &&
+                  servers.length === 0 &&
+                  !isFetching ? (
+                    <View
+                      style={{
+                        padding: 14,
+                        gap: 16,
+                        backgroundColor: theme.colors.surface,
+                        borderBottomLeftRadius: 4,
+                        borderBottomRightRadius: 4,
+                      }}>
+                      <Text
                         style={{
-                          padding: 14,
-                          gap: 16,
-                          backgroundColor: theme.colors.surface,
-                          borderBottomLeftRadius: 4,
-                          borderBottomRightRadius: 4,
+                          fontFamily: 'Poppins',
+                          fontSize: 14,
+                          color: theme.colors.text,
                         }}>
-                        <Text
-                          style={{
-                            fontFamily: 'Poppins',
-                            fontSize: 14,
-                            color: theme.colors.text,
-                          }}>
-                          You have no servers.{' '}
-                          <Text style={{color: theme.colors.primary}}>
-                            Create a server
-                          </Text>{' '}
-                          and it will be listed here.
-                        </Text>
-                        <Button
-                          mode="contained"
-                          textColor={'black'}
-                          compact
-                          style={{
-                            borderRadius: 4,
-                            minWidth: 0,
-                            paddingHorizontal: 8,
-                          }}
-                          labelStyle={{
-                            fontFamily: 'Poppins-SemiBold',
-                            fontSize: 12,
-                            lineHeight: 12 * 1.2,
-                            fontWeight: '600',
-                          }}
-                          onPress={() =>
-                            openWebView('https://webdock.io/en/pricing')
-                          }>
-                          Create a Server
-                        </Button>
-                      </View>
-                    ) : null
-                  }
-                  refreshing={isFetching}
-                  renderItem={({item}) => (
-                    <>
+                        You have no servers.{' '}
+                        <Text style={{color: theme.colors.primary}}>
+                          Create a server
+                        </Text>{' '}
+                        and it will be listed here.
+                      </Text>
+                      <Button
+                        mode="contained"
+                        textColor={'black'}
+                        compact
+                        style={{
+                          borderRadius: 4,
+                          minWidth: 0,
+                          paddingHorizontal: 8,
+                        }}
+                        labelStyle={{
+                          fontFamily: 'Poppins-SemiBold',
+                          fontSize: 12,
+                          lineHeight: 12 * 1.2,
+                          fontWeight: '600',
+                        }}
+                        onPress={() =>
+                          openWebView('https://webdock.io/en/pricing')
+                        }>
+                        Create a Server
+                      </Button>
+                    </View>
+                  ) : null}
+                  {Array.isArray(servers) &&
+                    servers.slice(0, 3).map(item => (
                       <TouchableOpacity
+                        key={
+                          item &&
+                          (item.slug || item.id || Math.random().toString())
+                        }
                         onPress={() =>
                           navigation.navigate('ServerManagement', {
                             slug: item.slug,
@@ -484,7 +481,12 @@ export function Dashboard({navigation}) {
                         <View>
                           <ServerItem
                             title={item.name}
-                            alias={item.aliases[0]}
+                            alias={
+                              Array.isArray(item.aliases) &&
+                              item.aliases.length > 0
+                                ? item.aliases[0]
+                                : ''
+                            }
                             dc={item.location}
                             virtualization={item.virtualization}
                             profile={item.profile}
@@ -493,16 +495,8 @@ export function Dashboard({navigation}) {
                           />
                         </View>
                       </TouchableOpacity>
-                      <View
-                        style={{
-                          height: 1,
-                          width: '100%',
-                        }}
-                      />
-                    </>
-                  )}
-                  keyExtractor={item => item.slug}
-                />
+                    ))}
+                </View>
               )}
               {servers ? (
                 servers.length > 0 ? (
@@ -570,7 +564,7 @@ export function Dashboard({navigation}) {
                 <FlatList
                   showsHorizontalScrollIndicator={false}
                   showsVerticalScrollIndicator={false}
-                  data={events}
+                  data={Array.isArray(events) ? events.slice(0, 3) : []}
                   scrollEnabled={false}
                   removeClippedSubviews={true}
                   renderItem={({item}) => (
@@ -663,7 +657,7 @@ export function Dashboard({navigation}) {
                 <FlatList
                   showsHorizontalScrollIndicator={false}
                   showsVerticalScrollIndicator={false}
-                  data={news}
+                  data={Array.isArray(news) ? news.slice(0, 3) : []}
                   scrollEnabled={false}
                   removeClippedSubviews={true}
                   renderItem={({item}) => (

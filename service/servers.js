@@ -1,4 +1,6 @@
+import FastImage from 'react-native-fast-image';
 import {api_url} from '../config/config';
+import {serverIconResponseCache} from './serverIconCache';
 
 export async function getServers(api_key) {
   try {
@@ -137,5 +139,36 @@ export async function getServerIcon(slug) {
   } catch (error) {
     console.log('Api call error');
     alert(error.message);
+  }
+}
+
+export function preloadServerIcons(serverList, max = 20) {
+  try {
+    if (!Array.isArray(serverList)) return;
+    // Collect unique, valid icon URIs from the cache or from getServerIcon
+    const uris = [];
+    const seen = new Set();
+    for (let i = 0; i < serverList.length && uris.length < max; i++) {
+      const server = serverList[i];
+      if (!server || typeof server.slug !== 'string' || !server.slug) continue;
+      let icon = serverIconResponseCache[server.slug]?.icon;
+      if (!icon) {
+        // Optionally, you could fetch here, but safest is to only use cache
+        continue;
+      }
+      if (
+        typeof icon === 'string' &&
+        icon.startsWith('http') &&
+        !seen.has(icon)
+      ) {
+        uris.push({uri: icon});
+        seen.add(icon);
+      }
+    }
+    if (uris.length > 0) {
+      FastImage.preload(uris);
+    }
+  } catch (e) {
+    console.error('preloadServerIcons error:', e);
   }
 }
