@@ -13,7 +13,7 @@
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		9345B30FD45412E34C07F5D3 /* libPods-Webdock.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 94F91A7B48D4B9C7F923EF88 /* libPods-Webdock.a */; };
 		98EF3AD5968D4F0F84E0A590 /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D0E21B8EE52E455A9FC308BA /* BootSplash.storyboard */; };
-		B13D5AE52E2576D2003C2650 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B13D5AE42E2576D2003C2650 /* GoogleService-Info.plist */; };
+		B1C532EF2E29A548002E539A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B1C532EE2E29A548002E539A /* GoogleService-Info.plist */; };
 		F1DA3BF48D9A25317E909B66 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
@@ -27,7 +27,7 @@
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Webdock/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		94F91A7B48D4B9C7F923EF88 /* libPods-Webdock.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Webdock.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B13D5AE32E2575EA003C2650 /* Webdock.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = Webdock.entitlements; path = Webdock/Webdock.entitlements; sourceTree = "<group>"; };
-		B13D5AE42E2576D2003C2650 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B1C532EE2E29A548002E539A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B8513BFB0B7CFC19AE66FA01 /* Pods-Webdock.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Webdock.release.xcconfig"; path = "Target Support Files/Pods-Webdock/Pods-Webdock.release.xcconfig"; sourceTree = "<group>"; };
 		CD2D194A500205A07DF4FBCF /* Pods-Webdock.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Webdock.debug.xcconfig"; path = "Target Support Files/Pods-Webdock/Pods-Webdock.debug.xcconfig"; sourceTree = "<group>"; };
 		D0E21B8EE52E455A9FC308BA /* BootSplash.storyboard */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = BootSplash.storyboard; path = Webdock/BootSplash.storyboard; sourceTree = "<group>"; };
@@ -49,7 +49,7 @@
 		13B07FAE1A68108700A75B9A /* Webdock */ = {
 			isa = PBXGroup;
 			children = (
-				B13D5AE42E2576D2003C2650 /* GoogleService-Info.plist */,
+				B1C532EE2E29A548002E539A /* GoogleService-Info.plist */,
 				B13D5AE32E2575EA003C2650 /* Webdock.entitlements */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
@@ -175,7 +175,7 @@
 				F1DA3BF48D9A25317E909B66 /* PrivacyInfo.xcprivacy in Resources */,
 				98EF3AD5968D4F0F84E0A590 /* BootSplash.storyboard in Resources */,
 				6D2AB6C1428C4757B0390E97 /* Colors.xcassets in Resources */,
-				B13D5AE52E2576D2003C2650 /* GoogleService-Info.plist in Resources */,
+				B1C532EF2E29A548002E539A /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
