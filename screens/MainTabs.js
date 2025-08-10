@@ -16,7 +16,8 @@ import BottomSheet, {
   BottomSheetView,
   CONTENT_HEIGHT,
 } from '@gorhom/bottom-sheet';
-import {Pressable, TouchableOpacity} from 'react-native-gesture-handler';
+import {Pressable} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import {Divider, useTheme, Button, ProgressBar} from 'react-native-paper';
 import MenuIcon from '../assets/menu-icon.svg';
 import PlusIcon from '../assets/plus-icon.svg';
@@ -183,7 +184,10 @@ export default function MainTabs({navigation}) {
                   order={2}
                   name="openNotificationCenter">
                   <WalkthroughablePressable
-                    onPress={() => navigation.navigate('NotificationCenter')}>
+                    onPress={() => {
+                      console.log('NotificationCenter navigation attempted');
+                      navigation.navigate('NotificationCenter');
+                    }}>
                     <NotificationBell
                       // hasNew={true}
                       height={28}
@@ -448,14 +452,16 @@ export default function MainTabs({navigation}) {
             }>
             <View style={{flexDirection: 'row', gap: 16}}>
               <FeatureIcon width={40} height={40} color={theme.colors.text} />
-              <View>
+              <View style={{flex: 1}}>
                 <Text
                   style={{
                     fontFamily: 'Poppins-SemiBold',
                     fontWeight: '600',
                     fontSize: 16,
                     color: theme.colors.text,
-                  }}>
+                  }}
+                  numberOfLines={2}
+                  adjustsFontSizeToFit={true}>
                   Submit a feature request
                 </Text>
                 <Text
@@ -464,7 +470,9 @@ export default function MainTabs({navigation}) {
                     fontWeight: '300',
                     fontSize: 12,
                     color: theme.colors.text,
-                  }}>
+                  }}
+                  numberOfLines={3}
+                  adjustsFontSizeToFit={true}>
                   Tell us how we could make the product more useful
                 </Text>
               </View>

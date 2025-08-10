@@ -894,7 +894,7 @@ export default function ServerOverview({route, navigation}) {
     {
       label: 'Server Identity',
       icon: <GlobeIcon width={19} height={19} color="#00a1a1" />,
-      navigate: 'https://webdock.io/en/dash/server/',
+      navigate: 'https://webdock.io/en/dash/domains/',
       description:
         'Domain routing. Do this before generating new SSL certificates',
     },

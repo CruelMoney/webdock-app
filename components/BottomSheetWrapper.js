@@ -12,7 +12,7 @@ import {
   useTheme,
 } from 'react-native-paper';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {Pressable} from 'react-native-gesture-handler';
+import {Pressable} from 'react-native';
 import {ErrorBoundary} from './ErrorBoundary';
 
 export default function BottomSheetWrapper({

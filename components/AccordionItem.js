@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, View, SafeAreaView, Text} from 'react-native';
-import {Pressable} from 'react-native-gesture-handler';
+import {Pressable} from 'react-native';
 import {Icon, useTheme} from 'react-native-paper';
 import Animated, {
   interpolate,

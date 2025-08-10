@@ -9,6 +9,7 @@ import {
   Keyboard,
   SectionList,
   InteractionManager,
+  Alert,
 } from 'react-native';
 import {
   IconButton,
@@ -46,6 +47,8 @@ import {getServers} from '../service/servers';
 const initialLayout = {width: Dimensions.get('window').width};
 const layoutHeight = Dimensions.get('window').height - 200;
 export default function NotificationCenter({navigation}) {
+  console.log('NotificationCenter component rendering...');
+
   const [servers, setServers] = useState([]);
   const [events, setEvents] = useState([]);
   const [activeServers, setActiveServers] = useState([]);
@@ -362,15 +365,20 @@ export default function NotificationCenter({navigation}) {
             data={news}
             keyExtractor={(item, index) => `${item.slug || 'item'}-${index}`}
             renderItem={({item}) => (
-              <TouchableOpacity onPress={() => navigation.navigate('News', {})}>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate('WebViewScreen', {
+                    uri: 'https://feedback.webdock.io/changelog/' + item.slug,
+                    token: '',
+                  })
+                }>
                 <NewsItem
                   key={item.id}
                   item={item}
                   onPress={() =>
                     navigation.navigate('WebViewScreen', {
-                      uri:
-                        'https://webdock.io/en/docs/webdock-news/' + item.slug,
-                      token: 'abc123',
+                      uri: 'https://feedback.webdock.io/changelog/' + item.slug,
+                      token: '',
                     })
                   }
                 />
@@ -419,26 +427,23 @@ export default function NotificationCenter({navigation}) {
   const bottomSheetRef = useRef(null);
 
   useEffect(() => {
-    let attempts = 0;
-
-    const trySnap = () => {
-      if (bottomSheetRef.current) {
-        try {
-          bottomSheetRef.current.snapToIndex(0);
-        } catch (e) {
-          Alert.alert('test', e);
-        }
-      }
-
-      // If it hasn't opened yet, try again
-      if (attempts < 5) {
-        attempts++;
-        setTimeout(trySnap, 100); // Retry every 100ms
-      }
-    };
+    console.log(
+      'NotificationCenter mounted, attempting to open bottom sheet...',
+    );
 
     const task = InteractionManager.runAfterInteractions(() => {
-      trySnap(); // try after interactions & layout
+      console.log('InteractionManager task running...');
+      if (bottomSheetRef.current) {
+        console.log('Bottom sheet ref found, attempting to snap...');
+        try {
+          bottomSheetRef.current.snapToIndex(0);
+          console.log('Bottom sheet snapped successfully');
+        } catch (e) {
+          console.error('Failed to open bottom sheet:', e);
+        }
+      } else {
+        console.log('Bottom sheet ref not found');
+      }
     });
 
     return () => {
@@ -457,36 +462,36 @@ export default function NotificationCenter({navigation}) {
   return (
     <>
       <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+        {/* Test view to see if component is rendering */}
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 100,
+            backgroundColor: 'red',
+            zIndex: 9999,
+          }}>
+          <Text style={{color: 'white', fontSize: 20}}>
+            NotificationCenter Test
+          </Text>
+        </View>
         <BottomSheet
           ref={bottomSheetRef}
-          index={-1}
+          index={0}
           snapPoints={snapPoints}
           enablePanDownToClose
-          enableContentPanningGesture={false}
-          enableHandlePanningGesture={false}
-          enableDynamicSizing={false} // ✅ IMPORTANT
-          detached={false} // avoid it floating freely
+          enableContentPanningGesture={true}
+          enableHandlePanningGesture={true}
+          enableDynamicSizing={false}
+          detached={false}
           onChange={handleChange}
-          handleComponent={() => null}
           style={{
-            backgroundColor: 'transparent',
+            backgroundColor: theme.colors.background,
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
             marginBottom: insets.bottom + 20,
-          }}
-          backgroundStyle={{
-            backgroundColor: 'transparent',
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-          }}
-          handleStyle={{
-            backgroundColor: theme.colors.surface,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            elevation: 0,
-          }}
-          handleIndicatorStyle={{
-            backgroundColor: theme.colors.text,
           }}
           backdropComponent={props => (
             <BottomSheetBackdrop
@@ -520,7 +525,10 @@ export default function NotificationCenter({navigation}) {
                 icon="close"
                 size={30}
                 color={theme.colors.text}
-                onPress={() => navigation.goBack()}
+                onPress={() => {
+                  console.log('Close button pressed');
+                  navigation.goBack();
+                }}
                 style={{
                   padding: 0,
                   margin: 0,

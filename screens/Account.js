@@ -224,6 +224,7 @@ export default function Account({navigation}) {
           flexWrap: 'wrap',
           alignItems: 'stretch',
           justifyContent: 'space-between',
+          paddingBottom: 20,
         }}>
         {tabs.map((item, index) => (
           <View

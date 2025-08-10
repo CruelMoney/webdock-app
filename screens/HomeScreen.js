@@ -7,6 +7,7 @@ import {
   View,
   TouchableOpacity,
   Dimensions,
+  RefreshControl,
 } from 'react-native';
 import {
   ActivityIndicator,
@@ -251,6 +252,7 @@ export function HomeScreen({navigation}) {
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
         onRefresh={() => onRefresh()}
+        refreshControl={null}
         ListEmptyComponent={
           servers && servers.length === 0 && !isFetching ? (
             <View

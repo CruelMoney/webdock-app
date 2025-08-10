@@ -216,9 +216,8 @@ export default function Chat({navigation}) {
                 }}>
                 {'\u2022'} Getting hands-on fixes and support from a real human.
                 {'\n'}
-                {'\u2022'}
-                Fixing billing issues, network issues and problems with your
-                server.{'\n'}
+                {'\u2022'} Fixing billing issues, network issues and problems
+                with your server.{'\n'}
                 {'\u2022'} Reporting crashes or otherwise unexpected behavior.
               </Text>
               <View style={{alignSelf: 'flex-start'}}>

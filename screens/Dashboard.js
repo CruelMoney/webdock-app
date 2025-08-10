@@ -232,7 +232,7 @@ export function Dashboard({navigation}) {
           return dateB - dateA;
         };
 
-        setServers(data.sort(sorter).slice(0, 4));
+        setServers(data.sort(sorter).slice(0, 3));
         setIsFetching(false);
         serversCache.current = data;
       });
@@ -666,8 +666,10 @@ export function Dashboard({navigation}) {
                         key={item.id}
                         onPress={() => {
                           navigation.navigate('WebViewScreen', {
-                            uri: item.link,
-                            token: 'abc123',
+                            uri:
+                              'https://feedback.webdock.io/changelog/' +
+                              item.slug,
+                            token: '',
                           });
                         }}>
                         <NewsItem
@@ -676,9 +678,9 @@ export function Dashboard({navigation}) {
                           onPress={() =>
                             navigation.navigate('WebViewScreen', {
                               uri:
-                                'https://webdock.io/en/docs/webdock-news/' +
+                                'https://feedback.webdock.io/changelog/' +
                                 item.slug,
-                              token: 'abc123',
+                              token: '',
                             })
                           }
                         />

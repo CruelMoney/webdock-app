@@ -1,6 +1,7 @@
 import {Image, Text, View} from 'react-native';
 import {Button, Icon, useTheme} from 'react-native-paper';
-import {Pressable, TouchableOpacity} from 'react-native-gesture-handler';
+import {Pressable} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import DeleteIcon from '../assets/delete-icon.svg';
 import ReactNativeModal from 'react-native-modal';
 import React from 'react';

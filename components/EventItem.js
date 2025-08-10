@@ -17,7 +17,7 @@ import ArrowIcon from '../assets/arrow-icon.svg';
 import NormalEventIcon from '../assets/normal-event.svg';
 import DoneEventIcon from '../assets/done-event.svg';
 import ErrorEventIcon from '../assets/error-event.svg';
-import {Pressable} from 'react-native-gesture-handler';
+import {Pressable} from 'react-native';
 import BottomSheet, {BottomSheetModal} from '@gorhom/bottom-sheet';
 const EventItem = ({
   action,
