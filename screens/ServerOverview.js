@@ -942,7 +942,7 @@ export default function ServerOverview({route, navigation}) {
     setEventDetails(event);
     setEventDetailsModal(true);
   };
-  return server ? (
+  return (
     <>
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -979,7 +979,7 @@ export default function ServerOverview({route, navigation}) {
                     }}>
                     Status
                   </Text>
-                  {renderStatusIcon(server.status)}
+                  {renderStatusIcon(server?.status ?? '')}
                 </View>
                 <Divider />
               </>
@@ -1004,7 +1004,7 @@ export default function ServerOverview({route, navigation}) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexDirection: 'row',
-                    display: server.status == 'running' ? 'none' : 'flex',
+                    display: server?.status == 'running' ? 'none' : 'flex',
                     backgroundColor: theme.colors.restartButton.background,
                     borderRadius: 4,
                     padding: 10,
@@ -1033,7 +1033,8 @@ export default function ServerOverview({route, navigation}) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexDirection: 'row',
-                    display: server.status == 'running' ? 'flex' : 'none',
+                    display:
+                      server?.status ?? '' == 'running' ? 'flex' : 'none',
                     backgroundColor: theme.colors.restartButton.background,
                     borderRadius: 4,
                     padding: 10,
@@ -1072,7 +1073,8 @@ export default function ServerOverview({route, navigation}) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexDirection: 'row',
-                    display: server.status == 'running' ? 'flex' : 'none',
+                    display:
+                      server?.status ?? '' == 'running' ? 'flex' : 'none',
                     backgroundColor: 'rgba(217, 75, 75, 0.15)',
                     borderRadius: 4,
                     padding: 10,
@@ -1128,7 +1130,7 @@ export default function ServerOverview({route, navigation}) {
                 Alias
               </Text>
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                {server.aliases.length == 1 ? (
+                {server?.aliases?.length == 1 ? (
                   <TouchableOpacity
                     key={server.aliases[0]}
                     style={{
@@ -1155,7 +1157,7 @@ export default function ServerOverview({route, navigation}) {
                         includeFontPadding: false,
                         color: theme.colors.text,
                       }}>
-                      {server.aliases[0]}
+                      {server?.aliases[0]}
                     </Text>
                   </TouchableOpacity>
                 ) : (
@@ -1165,11 +1167,11 @@ export default function ServerOverview({route, navigation}) {
                       fontSize: 14,
                       color: theme.colors.text,
                     }}>
-                    {server.aliases[0]}
+                    {server?.aliases[0]}
                   </Text>
                 )}
               </View>
-              {server.aliases.length > 1 ? (
+              {server?.aliases?.length > 1 ? (
                 <TouchableOpacity
                   style={{marginTop: 10}}
                   onPress={() => setAliasModal(true)}>
@@ -1179,7 +1181,7 @@ export default function ServerOverview({route, navigation}) {
                       fontSize: 10,
                       color: '#00A1A1',
                     }}>
-                    See {server.aliases.length - 1} more
+                    See {server?.aliases?.length - 1} more
                   </Text>
                 </TouchableOpacity>
               ) : null}
@@ -1215,7 +1217,7 @@ export default function ServerOverview({route, navigation}) {
                   color: theme.colors.text,
                 }}>
                 {'[' +
-                  (server.virtualization === 'container' ? 'LXD' : 'KVM') +
+                  (server?.virtualization === 'container' ? 'LXD' : 'KVM') +
                   '] '}
                 {/* {profiles
                   ? profiles
@@ -1251,7 +1253,7 @@ export default function ServerOverview({route, navigation}) {
               </Text>
               <TouchableOpacity
                 onPress={() => {
-                  Clipboard.setString(server.ipv4);
+                  Clipboard.setString(server?.ipv4 ?? '');
                   Toast.show({
                     type: 'success',
                     position: 'bottom',
@@ -1267,7 +1269,7 @@ export default function ServerOverview({route, navigation}) {
                     includeFontPadding: false,
                     color: theme.colors.text,
                   }}>
-                  {server.ipv4}
+                  {server?.ipv4 ?? ''}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1296,7 +1298,7 @@ export default function ServerOverview({route, navigation}) {
               </Text>
               <TouchableOpacity
                 onPress={() => {
-                  Clipboard.setString(server.ipv6);
+                  Clipboard.setString(server?.ipv6 ?? '');
                   Toast.show({
                     type: 'success',
                     position: 'bottom',
@@ -1312,7 +1314,7 @@ export default function ServerOverview({route, navigation}) {
                     includeFontPadding: false,
                     color: theme.colors.text,
                   }}>
-                  {server.ipv6}
+                  {server?.ipv6 ?? ''}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -2376,7 +2378,7 @@ export default function ServerOverview({route, navigation}) {
           </Text>
           <DataTable style={{height: '80%'}}>
             <FlatList
-              data={server.aliases}
+              data={server?.aliases ?? []}
               renderItem={({item}) => (
                 <DataTable.Row key={item}>
                   <DataTable.Cell>
@@ -2563,10 +2565,6 @@ export default function ServerOverview({route, navigation}) {
         You have running jobs ...
       </Snackbar>
     </>
-  ) : (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <ActivityIndicator size="large" color="#008570" />
-    </View>
   );
 }
 const styles = StyleSheet.create({

@@ -77,7 +77,7 @@ export default function Chat({navigation}) {
     },
   ];
 
-  return account ? (
+  return (
     <ScrollView
       width="100%"
       height="100%"
@@ -134,7 +134,6 @@ export default function Chat({navigation}) {
                 style={{
                   fontFamily: 'Poppins-SemiBold',
                   fontSize: 16,
-                  lineHeight: 16 * 1.2,
                   fontWeight: '600',
                   color: theme.colors.text,
                 }}>
@@ -144,12 +143,12 @@ export default function Chat({navigation}) {
                 style={{
                   fontFamily: 'Poppins-Light',
                   fontSize: 12,
-                  lineHeight: 12 * 1.2,
                   fontWeight: '300',
                   color: theme.colors.text,
                 }}>
                 {'\u2022'} Quick and accurate answers based on our
-                documentation.{'\n'}
+                documentation.
+                {'\n'}
                 {'\u2022'} Helping you choose the right Server Profile and
                 Software.{'\n'}
                 {'\u2022'} Helping with basic troubleshooting which doesn't
@@ -200,7 +199,6 @@ export default function Chat({navigation}) {
                 style={{
                   fontFamily: 'Poppins-SemiBold',
                   fontSize: 16,
-                  lineHeight: 16 * 1.2,
                   fontWeight: '600',
                   color: theme.colors.text,
                 }}>
@@ -210,7 +208,6 @@ export default function Chat({navigation}) {
                 style={{
                   fontFamily: 'Poppins-Light',
                   fontSize: 12,
-                  lineHeight: 12 * 1.2,
                   fontWeight: '300',
                   color: theme.colors.text,
                 }}>
@@ -316,9 +313,5 @@ export default function Chat({navigation}) {
       </View>
       <Spacer size={20} />
     </ScrollView>
-  ) : (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <ActivityIndicator size="large" color="#008570" />
-    </View>
   );
 }

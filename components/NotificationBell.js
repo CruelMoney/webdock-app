@@ -53,7 +53,7 @@ export default function NotificationBell({hasNew}) {
   });
 
   return (
-    <TouchableOpacity onPress={() => {}}>
+    <View>
       <View
         style={{
           width: 28,
@@ -65,6 +65,6 @@ export default function NotificationBell({hasNew}) {
           <NotificationIcon height={28} width={28} color={theme.colors.text} />
         </Animated.View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }

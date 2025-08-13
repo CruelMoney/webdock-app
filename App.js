@@ -109,7 +109,9 @@ export default function App() {
         // …do multiple sync or async tasks
       };
       init().finally(async () => {
-        hideSplash();
+        if ((await AsyncStorage.getItem('userToken')) == null) {
+          hideSplash();
+        }
       });
     }
   }, [loginState]);

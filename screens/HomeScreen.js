@@ -83,6 +83,35 @@ export function HomeScreen({navigation}) {
     }
   };
 
+  // Fetch snapshots for each server after servers are loaded
+  const fetchSnapshots = async () => {
+    try {
+      const userToken = await AsyncStorage.getItem('userToken');
+      const allSnapshots = [];
+
+      for (const server of servers) {
+        try {
+          const allServerSnapshots = await getServerSnapshots(
+            userToken,
+            server.slug,
+          );
+
+          const userSnapshots = allServerSnapshots.filter(
+            snap => snap.type === 'user',
+          );
+
+          allSnapshots.push(...userSnapshots); // spread each into the array
+        } catch (e) {
+          console.error(`Failed to fetch snapshots for ${server.slug}:`, e);
+        }
+      }
+
+      setSnapshots(allSnapshots);
+    } catch (e) {
+      console.error('Failed to fetch snapshots:', e);
+    }
+  };
+
   // Fetch servers on screen focus
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
@@ -102,36 +131,27 @@ export function HomeScreen({navigation}) {
     return unsubscribe;
   }, [navigation]);
 
+  // Initial load - only fetch if no cache exists
+  useEffect(() => {
+    if (!serversCache.current) {
+      fetchServers();
+    } else {
+      // Use cached data immediately
+      setServers(serversCache.current);
+    }
+
+    if (!snapshotsCache.current) {
+      // Only fetch snapshots if we have servers to fetch them for
+      if (servers.length > 0) {
+        fetchSnapshots();
+      }
+    } else {
+      setSnapshots(snapshotsCache.current);
+    }
+  }, []);
+
   // Fetch snapshots for each server after servers are loaded
   useEffect(() => {
-    const fetchSnapshots = async () => {
-      try {
-        const userToken = await AsyncStorage.getItem('userToken');
-        const allSnapshots = [];
-
-        for (const server of servers) {
-          try {
-            const allServerSnapshots = await getServerSnapshots(
-              userToken,
-              server.slug,
-            );
-
-            const userSnapshots = allServerSnapshots.filter(
-              snap => snap.type === 'user',
-            );
-
-            allSnapshots.push(...userSnapshots); // spread each into the array
-          } catch (e) {
-            console.error(`Failed to fetch snapshots for ${server.slug}:`, e);
-          }
-        }
-
-        setSnapshots(allSnapshots);
-      } catch (e) {
-        console.error('Failed to fetch snapshots:', e);
-      }
-    };
-
     if (servers.length > 0) {
       fetchSnapshots();
     }
@@ -251,8 +271,8 @@ export function HomeScreen({navigation}) {
         }
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
-        onRefresh={() => onRefresh()}
-        refreshControl={null}
+        // onRefresh={() => onRefresh()}
+        // refreshControl={null}
         ListEmptyComponent={
           servers && servers.length === 0 && !isFetching ? (
             <View
@@ -296,7 +316,7 @@ export function HomeScreen({navigation}) {
             </View>
           ) : null
         }
-        refreshing={isFetching}
+        // refreshing={isFetching}
         renderItem={({item}) => (
           <>
             <TouchableOpacity

@@ -126,10 +126,6 @@ export function Dashboard({navigation}) {
     };
     copilotEvents.on('stepChange', requestNotification);
 
-    init().finally(async () => {
-      hideSplash();
-      console.log('BootSplash has been hidden successfully');
-    });
     const unsubscribe = navigation.addListener('focus', async () => {
       // 1. Show cached data immediately if available
       if (serversCache.current) setServers(serversCache.current);
@@ -146,6 +142,9 @@ export function Dashboard({navigation}) {
     setTimeout(async () => {
       onBackgroundRefresh();
       await fetchEvents();
+      init().finally(async () => {
+        hideSplash();
+      });
     }, 0);
     return () => {
       copilotEvents.off('stop', listener);

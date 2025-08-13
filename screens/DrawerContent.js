@@ -23,6 +23,8 @@ export function DrawerContent({props, navigation}) {
   const {signOut} = React.useContext(AuthContext);
   const [account, setAccountInfo] = useState();
   const [mainMenu, setMainMenu] = useState();
+  const [isLoading, setIsLoading] = useState(true);
+
   // const activeRouteName = state.routeNames[state.index];
   useEffect(() => {
     (async () => {
@@ -38,13 +40,16 @@ export function DrawerContent({props, navigation}) {
       setTimeout(async () => {
         let userToken = null;
         try {
+          setIsLoading(true);
           userToken = await AsyncStorage.getItem('userToken');
           getAccountInformations(userToken).then(
             data => {
               setAccountInfo(data);
+              setIsLoading(false);
             },
             error => {
               Alert.alert('Error', 'Something went wrong!');
+              setIsLoading(false);
             },
           );
           getMainMenu(userToken).then(async data => {
@@ -71,6 +76,7 @@ export function DrawerContent({props, navigation}) {
           });
         } catch (e) {
           alert(e);
+          setIsLoading(false);
         }
       }, 0);
     })();
@@ -95,12 +101,19 @@ export function DrawerContent({props, navigation}) {
                 <SvgUri
                   width={16}
                   height={16}
-                  uri={'https://webdock.io' + theme.dark?item.icon_dark:item.icon}
+                  uri={
+                    'https://webdock.io' + theme.dark
+                      ? item.icon_dark
+                      : item.icon
+                  }
                 />
               ) : (
                 <Image
                   source={{
-                    uri: 'https://webdock.io' + theme.dark?item.icon_dark:item.icon,
+                    uri:
+                      'https://webdock.io' + theme.dark
+                        ? item.icon_dark
+                        : item.icon,
                   }}
                   style={{width: 16, height: 16, backgroundColor: 'red'}}
                 />
@@ -158,12 +171,19 @@ export function DrawerContent({props, navigation}) {
                       <SvgUri
                         width={20}
                         height={20}
-                        uri={'https://webdock.io' + theme.dark?item.icon_dark:item.icon}
+                        uri={
+                          'https://webdock.io' + theme.dark
+                            ? item.icon_dark
+                            : item.icon
+                        }
                       />
                     ) : (
                       <Image
                         source={{
-                          uri: 'https://webdock.io' + theme.dark?item.icon_dark:item.icon,
+                          uri:
+                            'https://webdock.io' + theme.dark
+                              ? item.icon_dark
+                              : item.icon,
                         }}
                         style={{width: 20, height: 20, backgroundColor: 'red'}}
                       />
@@ -253,7 +273,10 @@ export function DrawerContent({props, navigation}) {
             {item.icon ? (
               <Image
                 source={{
-                  uri: 'https://webdock.io' + theme.dark?item.icon_dark:item.icon,
+                  uri:
+                    'https://webdock.io' + theme.dark
+                      ? item.icon_dark
+                      : item.icon,
                 }}
                 style={{width: 24, height: 24, backgroundColor: 'red'}}
               />
@@ -311,7 +334,7 @@ export function DrawerContent({props, navigation}) {
       token: await AsyncStorage.getItem('userToken'),
     });
   };
-  return account ? (
+  return (
     <>
       <View
         style={{
@@ -323,78 +346,120 @@ export function DrawerContent({props, navigation}) {
         <ScrollView
           showsVerticalScrollIndicator={false}
           style={styles.drawerContent}>
-          <Pressable
-            onPress={() =>
-              openWebView('https://webdock.io/en/dash/editprofile')
-            }
-            style={{
-              padding: 20,
-              backgroundColor: theme.colors.menu.surface,
-              borderRadius: 4,
-            }}>
+          {isLoading ? (
             <View
               style={{
-                display: 'flex',
-                flexDirection: 'row',
+                padding: 20,
+                backgroundColor: theme.colors.surface,
+                borderRadius: 4,
                 alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: 100,
               }}>
-              <View>
-                <Image
-                  source={{
-                    uri: !account.userAvatar
-                      ? 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
-                      : account.userAvatar.startsWith('https://')
-                      ? account.userAvatar
-                      : 'https:' + account.userAvatar,
-                  }}
-                  style={{borderRadius: 58 / 2, width: 58, height: 58}}
-                />
-              </View>
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+              <Text
+                style={{
+                  marginTop: 10,
+                  fontFamily: 'Poppins',
+                  fontSize: 14,
+                  color: theme.colors.text,
+                }}>
+                Loading account information...
+              </Text>
+            </View>
+          ) : account ? (
+            <Pressable
+              onPress={() =>
+                openWebView('https://webdock.io/en/dash/editprofile')
+              }
+              style={{
+                padding: 20,
+                backgroundColor: theme.colors.menu.surface,
+                borderRadius: 4,
+              }}>
               <View
                 style={{
                   display: 'flex',
-                  flexDirection: 'column',
-                  marginStart: 20,
-                  justifyContent: 'center',
-                  gap: 5,
+                  flexDirection: 'row',
+                  alignItems: 'center',
                 }}>
-                <Text
+                <View>
+                  <Image
+                    source={{
+                      uri: !account.userAvatar
+                        ? 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
+                        : account.userAvatar.startsWith('https://')
+                        ? account.userAvatar
+                        : 'https:' + account.userAvatar,
+                    }}
+                    style={{borderRadius: 58 / 2, width: 58, height: 58}}
+                  />
+                </View>
+                <View
                   style={{
-                    textAlignVertical: 'center',
-                    fontFamily: 'Poppins-Medium',
-                    fontSize: 18,
-                    lineHeight: 18 * 1.2,
-                    fontWeight: '500',
-                    color: theme.colors.text,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    marginStart: 20,
+                    justifyContent: 'center',
+                    gap: 5,
                   }}>
-                  {account.userName}
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: 'Poppins-Medium',
-                    textAlignVertical: 'center',
-                    fontSize: 12,
-                    lineHeight: 12 * 1.2,
-                    fontWeight: '500',
-                    color: '#7c7c7c',
-                  }}>
-                  Credit Balance:
                   <Text
                     style={{
-                      fontFamily: 'Poppins-Regular',
-                      fontSize: 12,
-                      fontWeight: '400',
-                      lineHeight: 12 * 1.2,
-                      color: '#4C9F5A',
+                      textAlignVertical: 'center',
+                      fontFamily: 'Poppins-Medium',
+                      fontSize: 18,
+                      lineHeight: 18 * 1.2,
+                      fontWeight: '500',
+                      color: theme.colors.text,
                     }}>
-                    {' '}
-                    {account.accountBalanceRaw / 100}{' '}
-                    {account.accountBalanceCurrency}
+                    {account.userName}
                   </Text>
-                </Text>
+                  <Text
+                    style={{
+                      fontFamily: 'Poppins-Medium',
+                      textAlignVertical: 'center',
+                      fontSize: 12,
+                      lineHeight: 12 * 1.2,
+                      fontWeight: '500',
+                      color: '#7c7c7c',
+                    }}>
+                    Credit Balance:
+                    <Text
+                      style={{
+                        fontFamily: 'Poppins-Regular',
+                        fontSize: 12,
+                        fontWeight: '400',
+                        lineHeight: 12 * 1.2,
+                        color: '#4C9F5A',
+                      }}>
+                      {' '}
+                      {account.accountBalanceRaw / 100}{' '}
+                      {account.accountBalanceCurrency}
+                    </Text>
+                  </Text>
+                </View>
               </View>
+            </Pressable>
+          ) : (
+            <View
+              style={{
+                padding: 20,
+                backgroundColor: theme.colors.surface,
+                borderRadius: 4,
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: 100,
+              }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins',
+                  fontSize: 14,
+                  color: theme.colors.error,
+                }}>
+                Failed to load account information
+              </Text>
             </View>
-          </Pressable>
+          )}
           <View>
             <MenuLevel0 data={mainMenu} />
           </View>
@@ -462,7 +527,13 @@ export function DrawerContent({props, navigation}) {
             </View>
             <View>
               <IconButton
-                icon={() => <Tiktok width={24} height={24} fill={theme.dark?"white":"#565656"} />}
+                icon={() => (
+                  <Tiktok
+                    width={24}
+                    height={24}
+                    fill={theme.dark ? 'white' : '#565656'}
+                  />
+                )}
                 style={{width: 48, height: 48}}
                 onPress={() =>
                   handlePress('https://www.tiktok.com/@webdock.io')
@@ -501,10 +572,6 @@ export function DrawerContent({props, navigation}) {
         </Text>
       </View>
     </>
-  ) : (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <ActivityIndicator size="large" color="#008570" />
-    </View>
   );
 }
 
