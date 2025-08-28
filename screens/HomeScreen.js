@@ -96,9 +96,8 @@ export function HomeScreen({navigation}) {
             server.slug,
           );
 
-          const userSnapshots = allServerSnapshots.filter(
-            snap => snap.type === 'user',
-          );
+          const userSnapshots =
+            allServerSnapshots ?? [].filter(snap => snap.type === 'user');
 
           allSnapshots.push(...userSnapshots); // spread each into the array
         } catch (e) {
@@ -129,7 +128,7 @@ export function HomeScreen({navigation}) {
       }
     });
     return unsubscribe;
-  }, [navigation]);
+  }, []);
 
   // Initial load - only fetch if no cache exists
   useEffect(() => {
@@ -271,7 +270,8 @@ export function HomeScreen({navigation}) {
         }
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
-        // onRefresh={() => onRefresh()}
+        onRefresh={() => onRefresh()}
+        refreshing={false}
         // refreshControl={null}
         ListEmptyComponent={
           servers && servers.length === 0 && !isFetching ? (

@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {
   StyleSheet,
   View,
@@ -82,6 +82,7 @@ import EmptyList from '../components/EmptyList';
 import EventItem from '../components/EventItem';
 import {getInstantMetrics} from '../service/serverMetrics';
 import {setGlobalCallbackId} from '../service/storageEvents';
+import {useFocusEffect} from '@react-navigation/native';
 
 export default function ServerOverview({route, navigation}) {
   const serverCache = useRef({});
@@ -93,92 +94,101 @@ export default function ServerOverview({route, navigation}) {
   const [server, setServer] = React.useState();
   const [events, setEvents] = React.useState([]);
   const [metrics, setMetrics] = React.useState([]);
+  const [isFetching, setIsFetching] = React.useState(false);
   React.useLayoutEffect(() => {
     if (route.params?.slug) {
       navigation.setOptions({title: route.params.slug});
     }
   }, [navigation, route.params?.slug]);
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', async () => {
-      const slug = route.params.slug;
-      let userToken = null;
-      try {
-        userToken = await AsyncStorage.getItem('userToken');
-        // 1. Show cached data immediately if available
-        if (serverCache.current[slug]) setServer(serverCache.current[slug]);
-        if (metricsCache.current[slug]) setMetrics(metricsCache.current[slug]);
-        if (eventsCache.current[slug]) setEvents(eventsCache.current[slug]);
+  const requestSeq = useRef(0);
+  const loadForSlug = useCallback(
+    async (slug, callbackId) => {
+      const myReq = ++requestSeq.current;
+      setIsFetching(true);
 
-        // 2. Always fetch fresh data and update cache/state
-        getServerBySlug(userToken, slug).then(data => {
-          setServer(data);
-          serverCache.current[slug] = data;
-          getAllProfiles(data.location);
-        });
+      // Reset UI to avoid stale flashes
+      setServer(null);
+      setMetrics(null);
+      setEvents([]);
+
+      // Show cached values for THIS slug (if any)
+      if (serverCache.current[slug]) setServer(serverCache.current[slug]);
+      if (metricsCache.current[slug]) setMetrics(metricsCache.current[slug]);
+      if (eventsCache.current[slug]) setEvents(eventsCache.current[slug]);
+
+      try {
+        const userToken = await AsyncStorage.getItem('userToken');
+
+        // non-blocking lookups
         getAllLocations();
         getAllImages();
-        getInstantMetrics(userToken, slug).then(data => {
-          setMetrics(data);
-          metricsCache.current[slug] = data;
-        });
-        if (route.params.callbackId) {
-          getEventsByCallbackId(userToken, route.params.callbackId).then(
-            data => {
-              setEvents(data);
-              eventsCache.current[slug] = data;
-            },
-          );
-        } else {
-          getAllEventsBySlug(userToken, slug).then(data => {
-            setEvents(data.slice(0, 3));
-            eventsCache.current[slug] = data.slice(0, 3);
-          });
-        }
+
+        // fetch in parallel
+        const serverP = getServerBySlug(userToken, slug);
+        const metricsP = getInstantMetrics(userToken, slug);
+        const eventsP = callbackId
+          ? getEventsByCallbackId(userToken, callbackId)
+          : getAllEventsBySlug(userToken, slug).then(list => list.slice(0, 3));
+
+        const [serverData, metricsData, eventsData] = await Promise.all([
+          serverP,
+          metricsP,
+          eventsP,
+        ]);
+
+        // drop if a newer request started
+        if (requestSeq.current !== myReq) return;
+
+        // cache + update UI
+        serverCache.current[slug] = serverData;
+        metricsCache.current[slug] = metricsData;
+        eventsCache.current[slug] = eventsData;
+
+        setServer(serverData);
+        setMetrics(metricsData);
+        setEvents(eventsData);
+
+        // dependent fetch
+        getAllProfiles(serverData.location);
       } catch (e) {
         alert(e);
+      } finally {
+        if (requestSeq.current === myReq) setIsFetching(false);
       }
-    });
-    return unsubscribe;
-  }, [route]);
+    },
+    [], // keep empty; request guard prevents stale updates
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const {slug, callbackId} = route.params ?? {};
+      if (slug) {
+        loadForSlug(slug, callbackId);
+      }
+      return () => {};
+    }, [route.params?.slug, route.params?.callbackId, loadForSlug]),
+  );
 
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
 
   const onBackgroundRefresh = async () => {
     const slug = route.params.slug;
-    serverCache.current[slug] = null;
-    eventsCache.current[slug] = null;
-    metricsCache.current[slug] = null;
-    let userToken = null;
-    try {
-      userToken = await AsyncStorage.getItem('userToken');
-      getServerBySlug(userToken, slug).then(data => {
-        setServer(data);
-        serverCache.current[slug] = data;
-        getAllProfiles(data.location);
-      });
-      getAllLocations();
-      getAllImages();
-      getInstantMetrics(userToken, slug).then(data => {
-        setMetrics(data);
-        metricsCache.current[slug] = data;
-      });
-      if (route.params.callbackId) {
-        getEventsByCallbackId(userToken, route.params.callbackId).then(data => {
-          setEvents(data);
-          eventsCache.current[slug] = data;
-          setIsLoading(false);
-        });
-      } else {
-        getAllEventsBySlug(userToken, slug).then(data => {
-          setEvents(data.slice(0, 3));
-          eventsCache.current[slug] = data.slice(0, 3);
-          setIsLoading(false);
-        });
-      }
-    } catch (e) {
-      alert(e);
-    }
+    const callbackId = route.params.callbackId;
+
+    // invalidate in-flight requests and clear this slug’s cache
+    requestSeq.current++;
+    delete serverCache.current[slug];
+    delete metricsCache.current[slug];
+    delete eventsCache.current[slug];
+
+    // reset UI immediately
+    setServer(null);
+    setMetrics(null);
+    setEvents([]);
+    setIsFetching(true);
+
+    await loadForSlug(slug, callbackId);
   };
 
   const startThisServer = async slug => {
@@ -496,237 +506,14 @@ export default function ServerOverview({route, navigation}) {
         })
       : '';
   };
-  var currency_symbols = {
-    USD: '$', // US Dollar
-    EUR: '€', // Euro
-    CRC: '₡', // Costa Rican Colón
-    GBP: '£', // British Pound Sterling
-    ILS: '₪', // Israeli New Sheqel
-    INR: '₹', // Indian Rupee
-    JPY: '¥', // Japanese Yen
-    KRW: '₩', // South Korean Won
-    NGN: '₦', // Nigerian Naira
-    PHP: '₱', // Philippine Peso
-    PLN: 'zł', // Polish Zloty
-    PYG: '₲', // Paraguayan Guarani
-    THB: '฿', // Thai Baht
-    UAH: '₴', // Ukrainian Hryvnia
-    VND: '₫', // Vietnamese Dong
-  };
+
   const [isModalVisible, setModalVisible] = useState(false);
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
-  const [selectedPlan, setSelectedPlan] = useState();
-
-  const ExpandableComponent = ({item, onClickFunction}) => {
-    const [layoutHeight, setLayoutHeight] = useState(0);
-
-    useEffect(() => {
-      if (item.isExpanded) {
-        setLayoutHeight(null);
-        setSelectedPlan(item);
-      } else {
-        setLayoutHeight(0);
-      }
-    }, [item.isExpanded]);
-    return (
-      <>
-        <Card
-          style={{
-            borderColor: item.isExpanded ? '#00a1a1' : '#eee',
-            borderWidth: item.isExpanded ? 2 : 1,
-            marginVertical: 10,
-          }}
-          onPress={onClickFunction}>
-          <Card.Title
-            titleStyle={{color: item.isExpanded ? '#00a1a1' : 'black'}}
-            title={item.name}
-            right={() => (
-              <Title style={{color: '#00a1a1', marginRight: 10}}>
-                {currency_symbols[item.price.currency] +
-                  item.price.amount / 100 +
-                  '/mo'}
-              </Title>
-            )}
-          />
-          {item.isExpanded ? <Divider /> : null}
-          {item.isExpanded ? (
-            <Card.Content style={{height: layoutHeight, overflow: 'hidden'}}>
-              <View
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  paddingTop: 10,
-                  paddingHorizontal: 10,
-                }}>
-                <SVGCpu height={30} width={30} color="#787878" />
-                <Paragraph style={{width: '90%', textAlign: 'center'}}>
-                  {item.cpu.cores + ' Cores,' + item.cpu.threads + ' Threads'}
-                </Paragraph>
-              </View>
-              <View
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  paddingTop: 10,
-                  paddingHorizontal: 10,
-                }}>
-                <View>
-                  <SVGRam height={30} width={30} color="#787878" />
-                </View>
-                <Paragraph style={{width: '90%', textAlign: 'center'}}>
-                  {Math.round(item.ram * 0.001048576 * 100) / 100 + ' GB RAM'}
-                </Paragraph>
-              </View>
-
-              <View
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  paddingTop: 10,
-                  paddingHorizontal: 10,
-                }}>
-                <SVGStorage height={30} width={30} color="#787878" />
-                <Paragraph style={{width: '90%', textAlign: 'center'}}>
-                  {Math.round(item.disk * 0.001048576 * 100) / 100 +
-                    ' GB On-Board SSD Drive'}
-                </Paragraph>
-              </View>
-              <View
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  paddingTop: 10,
-                  paddingHorizontal: 10,
-                }}>
-                <Icon name="wifi" size={30} color="#787878" />
-                <Paragraph style={{width: '90%', textAlign: 'center'}}>
-                  1 Gbit/s-Port
-                </Paragraph>
-              </View>
-              <View
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  paddingTop: 10,
-                  paddingHorizontal: 10,
-                }}>
-                <Icon name="location-on" size={30} color="#787878" />
-                <Paragraph style={{width: '90%', textAlign: 'center'}}>
-                  1 dedicated IPv4 address
-                </Paragraph>
-              </View>
-            </Card.Content>
-          ) : null}
-        </Card>
-      </>
-    );
-  };
-
-  const updateLayout = index => {
-    LayoutAnimation.configureNext({
-      duration: 300,
-      create: {
-        type: LayoutAnimation.Types.easeInEaseOut,
-        property: LayoutAnimation.Properties.opacity,
-      },
-      update: {
-        type: LayoutAnimation.Types.easeInEaseOut,
-      },
-    });
-    const array = [...profiles];
-    array.map((value, placeindex) =>
-      placeindex === index
-        ? (array[placeindex]['isExpanded'] = !array[placeindex]['isExpanded'])
-        : (array[placeindex]['isExpanded'] = false),
-    );
-    setProfiles(array);
-  };
-  if (Platform.OS === 'android') {
-    //UIManager.setLayoutAnimationEnabledExperimental(true);
-  }
-  const [itemsCharge, setItemsCharge] = useState();
-  useEffect(() => {
-    if (selectedPlan != null) {
-      setTimeout(async () => {
-        let userToken = null;
-        try {
-          userToken = await AsyncStorage.getItem('userToken');
-          dryRunForServerProfileChange(
-            userToken,
-            route.params.slug,
-            selectedPlan.slug,
-          ).then(data => {
-            if (selectedPlan.slug != server.slug) {
-              setDryRun(data);
-              setItemsCharge([...data.response.chargeSummary.items]);
-            }
-          });
-        } catch (e) {
-          alert(e);
-        }
-      }, 0);
-    }
-  }, [selectedPlan]);
 
   const [checkedBox, setCheckedBox] = useState(false);
 
-  const changeProfile = async () => {
-    let userToken = null;
-    userToken = await AsyncStorage.getItem('userToken');
-    let result = await changeServerProfile(
-      userToken,
-      route.params.slug,
-      selectedPlan.slug,
-    );
-    if (result.status == 202) {
-      try {
-        Toast.show({
-          type: 'success',
-          position: 'bottom',
-          text1: 'Server Profile Change initiated',
-          visibilityTime: 4000,
-          autoHide: true,
-          onPress: () => navigation.navigate('Events'),
-        });
-      } catch (e) {
-        alert(e);
-      }
-      toggleModal();
-    } else if (result.status == 400) {
-      try {
-        Toast.show({
-          type: 'error',
-          position: 'bottom',
-          text1: result.response.message,
-          visibilityTime: 4000,
-          autoHide: true,
-          onPress: () => navigation.navigate('Events'),
-        });
-      } catch (e) {
-        alert(e);
-      }
-    } else if (result.status == 404) {
-      try {
-        Toast.show({
-          type: 'error',
-          position: 'bottom',
-          text1: 'Server not found!',
-          visibilityTime: 4000,
-          autoHide: true,
-          onPress: () => navigation.navigate('Events'),
-        });
-      } catch (e) {
-        alert(e);
-      }
-    }
-  };
   const openUrl = async alias => {
     if (alias != null) {
       if (alias.includes('http://') || alias.includes('https://')) {
@@ -1004,7 +791,8 @@ export default function ServerOverview({route, navigation}) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexDirection: 'row',
-                    display: server?.status == 'running' ? 'none' : 'flex',
+                    display:
+                      (server?.status ?? '') === 'running' ? 'none' : 'flex',
                     backgroundColor: theme.colors.restartButton.background,
                     borderRadius: 4,
                     padding: 10,
@@ -1034,7 +822,7 @@ export default function ServerOverview({route, navigation}) {
                     justifyContent: 'center',
                     flexDirection: 'row',
                     display:
-                      server?.status ?? '' == 'running' ? 'flex' : 'none',
+                      (server?.status ?? '') === 'running' ? 'flex' : 'none',
                     backgroundColor: theme.colors.restartButton.background,
                     borderRadius: 4,
                     padding: 10,
@@ -1074,7 +862,7 @@ export default function ServerOverview({route, navigation}) {
                     justifyContent: 'center',
                     flexDirection: 'row',
                     display:
-                      server?.status ?? '' == 'running' ? 'flex' : 'none',
+                      (server?.status ?? '') === 'running' ? 'flex' : 'none',
                     backgroundColor: 'rgba(217, 75, 75, 0.15)',
                     borderRadius: 4,
                     padding: 10,
@@ -1557,34 +1345,61 @@ export default function ServerOverview({route, navigation}) {
               )}
               keyExtractor={item => item.id}
               ListFooterComponent={
-                <View
-                  style={{
-                    height: 42,
-                    backgroundColor: theme.colors.surface,
-                    borderBottomLeftRadius: 4,
-                    borderBottomRightRadius: 4,
-                    padding: 12,
-                    alignItems: 'flex-end',
-                  }}>
-                  <TouchableOpacity
-                    onPress={() =>
-                      navigation.navigate('Events', {
-                        slug: route.params.slug,
-                        name: route.params.name,
-                      })
-                    }>
-                    <Text
+                <>
+                  {isFetching ? (
+                    <View
                       style={{
-                        fontFamily: 'Poppins-Regular',
-                        fontWeight: '400',
-                        fontSize: 12,
-                        includeFontPadding: false,
-                        color: theme.colors.primaryText,
+                        alignItems: 'center',
+                        padding: 14,
+                        gap: 16,
+                        backgroundColor: theme.colors.surface,
+                        borderBottomLeftRadius: 4,
+                        borderBottomRightRadius: 4,
                       }}>
-                      All events →
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+                      <ActivityIndicator
+                        size="small"
+                        color={theme.colors.primary}
+                      />
+                      <Text
+                        style={{
+                          marginTop: 8,
+                          fontFamily: 'Poppins',
+                          fontSize: 12,
+                          color: theme.colors.primary,
+                        }}>
+                        Loading events...
+                      </Text>
+                    </View>
+                  ) : null}
+                  <View
+                    style={{
+                      height: 42,
+                      backgroundColor: theme.colors.surface,
+                      borderBottomLeftRadius: 4,
+                      borderBottomRightRadius: 4,
+                      padding: 12,
+                      alignItems: 'flex-end',
+                    }}>
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate('Events', {
+                          slug: route.params.slug,
+                          name: route.params.name,
+                        })
+                      }>
+                      <Text
+                        style={{
+                          fontFamily: 'Poppins-Regular',
+                          fontWeight: '400',
+                          fontSize: 12,
+                          includeFontPadding: false,
+                          color: theme.colors.primaryText,
+                        }}>
+                        All events →
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
               }
             />
           )}
@@ -1658,174 +1473,6 @@ export default function ServerOverview({route, navigation}) {
           ))}
         </View>
       </ScrollView>
-      {/* {ChangeProfile} */}
-      <Modal isVisible={isModalVisible} style={{margin: 0}}>
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: 'space-between',
-            flexDirection: 'column',
-          }}
-          style={{backgroundColor: 'white', paddingBottom: 20}}>
-          <View style={styles.content1}>
-            <View style={{width: '100%'}}>
-              <View style={styles.closebutton}>
-                <IconButton
-                  icon="close"
-                  color="black"
-                  size={25}
-                  onPress={toggleModal}
-                />
-              </View>
-
-              <Text style={styles.contentTitle}>
-                Your Current Server Profile
-              </Text>
-            </View>
-            <View style={{padding: 20}}>
-              {profiles
-                ? profiles.map((gr, key) =>
-                    server.profile == gr.slug ? (
-                      <ExpandableComponent
-                        key={gr.slug}
-                        item={gr}
-                        onClickFunction={() => {
-                          updateLayout(key);
-                        }}
-                      />
-                    ) : null,
-                  )
-                : null}
-              <Text style={styles.contentTitle}>
-                Select a New Hardware Profile
-              </Text>
-              {profiles
-                ? profiles.map((gr, key) =>
-                    server.profile != gr.slug ? (
-                      <ExpandableComponent
-                        key={gr.slug}
-                        item={gr}
-                        onClickFunction={() => {
-                          updateLayout(key);
-                        }}
-                      />
-                    ) : null,
-                  )
-                : null}
-              {itemsCharge && selectedPlan ? (
-                selectedPlan.slug != server.profile ? (
-                  <View>
-                    <Text style={styles.contentTitle}>Summary</Text>
-
-                    <DataTable>
-                      <DataTable.Header>
-                        <DataTable.Title>
-                          Name - Profile - Period
-                        </DataTable.Title>
-                        <DataTable.Title numeric>Price</DataTable.Title>
-                      </DataTable.Header>
-
-                      {itemsCharge
-                        ? itemsCharge.map(item => (
-                            <DataTable.Row key={item.text}>
-                              <DataTable.Cell>{item.text}</DataTable.Cell>
-                              <DataTable.Cell numeric>
-                                {item.price.amount / 100 +
-                                  ' ' +
-                                  currency_symbols[item.price.currency]}
-                              </DataTable.Cell>
-                            </DataTable.Row>
-                          ))
-                        : null}
-                    </DataTable>
-                    <DataTable style={{width: '50%', alignSelf: 'flex-end'}}>
-                      <DataTable.Row>
-                        <DataTable.Cell>Subtotal</DataTable.Cell>
-                        <DataTable.Cell numeric>
-                          {dryRun.response.chargeSummary.total.subTotal.amount /
-                            100 +
-                            ' ' +
-                            currency_symbols[
-                              dryRun.response.chargeSummary.total.subTotal
-                                .currency
-                            ]}
-                        </DataTable.Cell>
-                      </DataTable.Row>
-                      <DataTable.Row>
-                        <DataTable.Cell>VAT</DataTable.Cell>
-                        <DataTable.Cell numeric>
-                          {dryRun.response.chargeSummary.total.vat.amount /
-                            100 +
-                            ' ' +
-                            currency_symbols[
-                              dryRun.response.chargeSummary.total.vat.currency
-                            ]}
-                        </DataTable.Cell>
-                      </DataTable.Row>
-                      <DataTable.Row style={{borderColor: 'red'}}>
-                        <DataTable.Cell>
-                          <Text style={{fontWeight: 'bold'}}>Pay now</Text>
-                        </DataTable.Cell>
-                        <DataTable.Cell numeric>
-                          <Text style={{fontWeight: 'bold'}}>
-                            {dryRun.response.chargeSummary.total.total.amount /
-                              100 +
-                              ' ' +
-                              currency_symbols[
-                                dryRun.response.chargeSummary.total.total
-                                  .currency
-                              ]}
-                          </Text>
-                        </DataTable.Cell>
-                      </DataTable.Row>
-                    </DataTable>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        paddingTop: 20,
-                        paddingRight: 20,
-                      }}>
-                      <Checkbox
-                        status={checkedBox ? 'checked' : 'unchecked'}
-                        onPress={() => {
-                          setCheckedBox(!checkedBox);
-                        }}
-                      />
-                      <Text>
-                        I accept the above changes to my server and order in
-                        obligation.
-                      </Text>
-                    </View>
-                  </View>
-                ) : (
-                  <Text>
-                    Please select a new hardware profile above in order to see a
-                    summary of changes.
-                  </Text>
-                )
-              ) : null}
-            </View>
-            <View style={{padding: 20}}>
-              <View
-                style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-                <Button
-                  mode="contained"
-                  disabled={!checkedBox}
-                  icon="send"
-                  style={{width: '100%'}}
-                  theme={{
-                    colors: {
-                      primary: '#008570',
-                    },
-                  }}
-                  onPress={changeProfile}>
-                  Change Profile
-                </Button>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
-      </Modal>
       {/* Start Server Modal */}
       <Modal
         testID={'modal'}

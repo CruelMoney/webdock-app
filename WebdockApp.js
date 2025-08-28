@@ -137,12 +137,16 @@ export default function WebdockApp() {
       totalStepsNumber,
     } = useCopilot();
     return (
-      <View style={styles.tooltip}>
+      <View
+        style={[
+          styles.tooltip,
+          {backgroundColor: theme.dark ? '#1E392B' : '#ffffff'},
+        ]}>
         <View style={{gap: 12}}>
-          <Text style={styles.tooltipTitle}>
+          <Text style={[styles.tooltipTitle, {color: theme.colors.text}]}>
             {currentStep?.text.split('|')[0]}
           </Text>
-          <Text style={styles.tooltipText}>
+          <Text style={[styles.tooltipText, {color: theme.colors.text}]}>
             {currentStep?.text.split('|')[1]}
           </Text>
         </View>
@@ -267,10 +271,12 @@ export default function WebdockApp() {
   return (
     <Provider theme={theme}>
       <StatusBar
+        translucent
         barStyle={theme.dark ? 'light-content' : 'dark-content'}
         backgroundColor={theme.dark ? '#000000' : '#ffffff'} // for Android
       />
       <CopilotProvider
+        tooltipStyle={{backgroundColor: theme.dark ? '#1E392B' : '#ffffff'}}
         tooltipComponent={TooltipComponent}
         stepNumberComponent={() => null}
         animated

@@ -20,6 +20,7 @@ import {
   LayoutAnimation,
   Pressable,
   Share,
+  InteractionManager,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -108,15 +109,20 @@ export function Dashboard({navigation}) {
       setTimeout(() => start(), 500);
     }
   }, [isFirstRun]);
+  const hasRequestedRef = useRef(false);
 
   useEffect(() => {
     const listener = () => {
       // Copilot tutorial finished!
     };
+
     const requestNotification = step => {
       if (step.name === 'openNotificationCenter') {
+        hasRequestedRef.current = true;
         console.log('Requestinguserperms');
-        requestUserPermission();
+        InteractionManager.runAfterInteractions(() => {
+          requestUserPermission();
+        });
       }
     };
 
@@ -143,7 +149,9 @@ export function Dashboard({navigation}) {
       onBackgroundRefresh();
       await fetchEvents();
       init().finally(async () => {
-        hideSplash();
+        setTimeout(() => {
+          hideSplash();
+        }, 3000);
       });
     }, 0);
     return () => {
@@ -493,8 +501,34 @@ export function Dashboard({navigation}) {
                             status={item.status}
                           />
                         </View>
+                        <View style={{height: 1}} />
                       </TouchableOpacity>
                     ))}
+                  {isFetching ? (
+                    <View
+                      style={{
+                        alignItems: 'center',
+                        padding: 14,
+                        gap: 16,
+                        backgroundColor: theme.colors.surface,
+                        borderBottomLeftRadius: 4,
+                        borderBottomRightRadius: 4,
+                      }}>
+                      <ActivityIndicator
+                        size="small"
+                        color={theme.colors.primary}
+                      />
+                      <Text
+                        style={{
+                          marginTop: 8,
+                          fontFamily: 'Poppins',
+                          fontSize: 12,
+                          color: theme.colors.primary,
+                        }}>
+                        Loading servers...
+                      </Text>
+                    </View>
+                  ) : null}
                 </View>
               )}
               {servers ? (
@@ -617,9 +651,63 @@ export function Dashboard({navigation}) {
                       </View>
                     ) : null
                   }
+                  ListFooterComponent={
+                    isFetching ? (
+                      <View
+                        style={{
+                          alignItems: 'center',
+                          padding: 14,
+                          gap: 16,
+                          backgroundColor: theme.colors.surface,
+                          borderBottomLeftRadius: 4,
+                          borderBottomRightRadius: 4,
+                        }}>
+                        <ActivityIndicator
+                          size="small"
+                          color={theme.colors.primary}
+                        />
+                        <Text
+                          style={{
+                            marginTop: 8,
+                            fontFamily: 'Poppins',
+                            fontSize: 12,
+                            color: theme.colors.primary,
+                          }}>
+                          Loading events...
+                        </Text>
+                      </View>
+                    ) : null
+                  }
                   keyExtractor={item => item.id}
                 />
               )}
+              {events ? (
+                events.length > 0 ? (
+                  <View
+                    style={{
+                      height: 42,
+                      backgroundColor: theme.colors.surface,
+                      borderBottomLeftRadius: 4,
+                      borderBottomRightRadius: 4,
+                      padding: 12,
+                      alignItems: 'flex-end',
+                    }}>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate('Servers')}>
+                      <Text
+                        style={{
+                          fontFamily: 'Poppins-Regular',
+                          fontWeight: '400',
+                          fontSize: 12,
+                          includeFontPadding: false,
+                          color: theme.colors.primaryText,
+                        }}>
+                        All notifications →
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : null
+              ) : null}
             </View>
             <View>
               <View
@@ -693,6 +781,33 @@ export function Dashboard({navigation}) {
                   ListEmptyComponent={
                     news && news.length === 0 && !isFetching ? (
                       <EmptyList />
+                    ) : null
+                  }
+                  ListFooterComponent={
+                    isFetching ? (
+                      <View
+                        style={{
+                          alignItems: 'center',
+                          padding: 14,
+                          gap: 16,
+                          backgroundColor: theme.colors.surface,
+                          borderBottomLeftRadius: 4,
+                          borderBottomRightRadius: 4,
+                        }}>
+                        <ActivityIndicator
+                          size="small"
+                          color={theme.colors.primary}
+                        />
+                        <Text
+                          style={{
+                            marginTop: 8,
+                            fontFamily: 'Poppins',
+                            fontSize: 12,
+                            color: theme.colors.primary,
+                          }}>
+                          Loading news...
+                        </Text>
+                      </View>
                     ) : null
                   }
                   keyExtractor={item => item.slug}

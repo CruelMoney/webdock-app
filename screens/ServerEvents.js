@@ -311,8 +311,8 @@ export default function ServerEvents({route, navigation}) {
             data={serverEvents}
             scrollEnabled={false}
             removeClippedSubviews={true}
-            onRefresh={() => onRefresh()}
-            refreshing={isFetching}
+            // onRefresh={() => onRefresh()}
+            // refreshing={isFetching}
             renderItem={({item}) => (
               <View key={item.id}>
                 <EventItem

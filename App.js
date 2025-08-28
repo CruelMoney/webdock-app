@@ -110,7 +110,9 @@ export default function App() {
       };
       init().finally(async () => {
         if ((await AsyncStorage.getItem('userToken')) == null) {
-          hideSplash();
+          setTimeout(() => {
+            hideSplash();
+          }, 3000);
         }
       });
     }

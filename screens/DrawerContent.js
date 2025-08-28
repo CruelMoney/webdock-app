@@ -96,7 +96,7 @@ export function DrawerContent({props, navigation}) {
               alignItems: 'center',
               paddingLeft: 46,
             }}>
-            {item.icon ? (
+            {item.icon != '' ? (
               item.icon.endsWith('.svg') ? (
                 <SvgUri
                   width={16}
@@ -166,7 +166,7 @@ export function DrawerContent({props, navigation}) {
                     justifyContent: 'flex-start',
                     gap: 10,
                   }}>
-                  {item.icon ? (
+                  {item.icon != '' ? (
                     item.icon.endsWith('.svg') ? (
                       <SvgUri
                         width={20}
@@ -303,30 +303,46 @@ export function DrawerContent({props, navigation}) {
       );
     });
   };
-  const handlePress = url => {
-    // If url already starts with http:// or https://, use as is
-    if (url.includes('https://') || url.includes('http://')) {
-      // do nothing, url is already absolute
-    } else {
-      // Check if URL already contains a domain (including subdomains)
+  const handlePress = async (inputUrl, appScheme) => {
+    let url = inputUrl.trim();
+
+    // If already http/https, keep
+    if (!(url.startsWith('http://') || url.startsWith('https://'))) {
       const hasDomain =
-        /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}/.test(
+        /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+/.test(
           url,
         );
       if (hasDomain) {
-        url = 'https://' + url;
+        url = `https://${url}`;
       } else {
-        url = 'https://webdock.io' + url;
+        if (!url.startsWith('/')) url = '/' + url;
+        url = `https://webdock.io${url}`;
       }
     }
-    Linking.canOpenURL(url).then(supported => {
-      if (supported) {
-        Linking.openURL(url);
-      } else {
-        console.log("Don't know how to open URI: " + url);
+
+    try {
+      // Try app scheme first if provided
+      if (appScheme) {
+        const supported = await Linking.canOpenURL(appScheme);
+        if (supported) {
+          return Linking.openURL(appScheme);
+        }
       }
-    });
+
+      // Then fallback to https:// url
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        return Linking.openURL(url);
+      }
+
+      // Finally open inside your WebViewScreen
+      navigation.navigate('WebViewScreen', {uri: url, token: ''});
+    } catch (err) {
+      console.warn('Failed to open url:', err);
+      navigation.navigate('WebViewScreen', {uri: url, token: ''});
+    }
   };
+
   const openWebView = async url => {
     navigation.navigate('WebViewScreen', {
       uri: url,
@@ -513,7 +529,12 @@ export function DrawerContent({props, navigation}) {
               <IconButton
                 icon="youtube"
                 style={{width: 48, height: 48}}
-                onPress={() => handlePress('https://www.youtube.com/@webdock')}
+                onPress={() =>
+                  handlePress(
+                    'https://youtube.com/@webdock',
+                    'youtube://www.youtube.com/@webdock',
+                  )
+                }
               />
             </View>
             <View>

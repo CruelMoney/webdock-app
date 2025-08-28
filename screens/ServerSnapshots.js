@@ -29,6 +29,7 @@ import {
   TextInput,
   useTheme,
   HelperText,
+  ActivityIndicator,
 } from 'react-native-paper';
 import Modal, {ReactNativeModal} from 'react-native-modal';
 import Toast from 'react-native-toast-message';
@@ -52,6 +53,8 @@ export default function ServerSnapshots({route, navigation}) {
   const serverSnapshotsCache = useRef(null);
   const [serverSnapshots, setServerSnapshots] = useState();
   useEffect(() => {
+    setIsFetching(true);
+
     const unsubscribe = navigation.addListener('focus', async () => {
       if (serverSnapshotsCache.current) {
         setServerSnapshots(serverSnapshotsCache.current);
@@ -66,7 +69,9 @@ export default function ServerSnapshots({route, navigation}) {
           const userToken = await AsyncStorage.getItem('userToken');
           const data = await getServerSnapshots(userToken, route.params.slug);
           setServerSnapshots(data);
+          setIsFetching(false);
         } catch (e) {
+          setIsFetching(false);
           alert(e);
         }
       })();
@@ -389,9 +394,9 @@ export default function ServerSnapshots({route, navigation}) {
             </View>
             <FlatList
               data={serverSnapshots}
-              onRefresh={() => onRefresh()}
+              // onRefresh={() => onRefresh()}
               scrollEnabled={false}
-              refreshing={isFetching}
+              // refreshing={isFetching}
               showsVerticalScrollIndicator={false}
               ListFooterComponent={<View style={{height: 60}}></View>}
               renderItem={({item}) => (

@@ -539,8 +539,8 @@ export default function ServerScripts({route, navigation}) {
               style={{}}
               data={serverScripts}
               showsVerticalScrollIndicator={false}
-              onRefresh={() => onRefresh()}
-              refreshing={isFetching}
+              // onRefresh={() => onRefresh()}
+              // refreshing={isFetching}
               scrollEnabled={false}
               renderItem={({item}) => (
                 <>

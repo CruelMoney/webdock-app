@@ -29,6 +29,7 @@ import {
   useTheme,
   HelperText,
   Checkbox,
+  ActivityIndicator,
 } from 'react-native-paper';
 import {Avatar, Divider} from 'react-native-paper';
 import Toast from 'react-native-toast-message';
@@ -82,6 +83,7 @@ export default function ServerShellUsers({route, navigation}) {
         await fetchShellUsers();
       }
     });
+    setIsFetching(true);
 
     const task = InteractionManager.runAfterInteractions(() => {
       (async () => {
@@ -95,6 +97,7 @@ export default function ServerShellUsers({route, navigation}) {
 
           setShellUsers(shellUsers);
           setPublicKeys(publicKeys);
+          setIsFetching(false);
 
           setkoptions(
             publicKeys.map(item => ({
@@ -244,14 +247,17 @@ export default function ServerShellUsers({route, navigation}) {
     }
   };
   const onBackgroundRefresh = async () => {
+    setIsFetching(true);
     let userToken = null;
     try {
       userToken = await AsyncStorage.getItem('userToken');
       getServerShellUsers(userToken, route.params.slug).then(data => {
         setShellUsers(data);
+        setIsFetching(false);
       });
     } catch (e) {
       alert(e);
+      setIsFetching(false);
     }
   };
   const [isModalVisible, setModalVisible] = useState();
@@ -851,8 +857,8 @@ export default function ServerShellUsers({route, navigation}) {
               data={shellUsers}
               scrollEnabled={false}
               showsVerticalScrollIndicator={false}
-              onRefresh={() => onRefresh()}
-              refreshing={isFetching}
+              // onRefresh={() => onRefresh()}
+              // refreshing={isFetching}
               ListHeaderComponent={
                 isFetching ? (
                   <View

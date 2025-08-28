@@ -136,6 +136,7 @@ export default function MainTabs({navigation}) {
     <>
       <View style={{flex: 1, backgroundColor: theme.colors.background}}>
         <Tab.Navigator
+          backBehavior="history"
           screenOptions={({route, navigation}) => ({
             tabBarInactiveTintColor: theme.colors.text,
             tabBarLabelStyle: {
@@ -334,6 +335,7 @@ export default function MainTabs({navigation}) {
               paddingBottom: 65 + insets.bottom + 20,
             },
           ]}>
+          {/* Create new server */}
           <Pressable
             onPress={() => openWebView('https://webdock.io/en/pricing')}>
             <View style={{flexDirection: 'row', gap: 16}}>
@@ -342,14 +344,16 @@ export default function MainTabs({navigation}) {
                 height={40}
                 color={theme.colors.text}
               />
-              <View>
+              <View style={{flex: 1}}>
                 <Text
                   style={{
                     fontFamily: 'Poppins-SemiBold',
                     fontWeight: '600',
                     fontSize: 16,
                     color: theme.colors.text,
-                  }}>
+                  }}
+                  numberOfLines={2}
+                  adjustsFontSizeToFit={true}>
                   Create new server
                 </Text>
                 <Text
@@ -358,13 +362,17 @@ export default function MainTabs({navigation}) {
                     fontWeight: '300',
                     fontSize: 12,
                     color: theme.colors.text,
-                  }}>
+                  }}
+                  numberOfLines={3}
+                  adjustsFontSizeToFit={true}>
                   Create any VPS server profile you would like
                 </Text>
               </View>
             </View>
           </Pressable>
           <Divider />
+
+          {/* Refer a Friend */}
           <Pressable>
             <View style={{flexDirection: 'row', gap: 16}}>
               <ReferAFriendIcon
@@ -372,7 +380,7 @@ export default function MainTabs({navigation}) {
                 height={40}
                 color={theme.colors.text}
               />
-              <View style={{gap: 20}}>
+              <View style={{gap: 20, flex: 1}}>
                 <View>
                   <Text
                     style={{
@@ -380,7 +388,9 @@ export default function MainTabs({navigation}) {
                       fontWeight: '600',
                       fontSize: 16,
                       color: theme.colors.text,
-                    }}>
+                    }}
+                    numberOfLines={2}
+                    adjustsFontSizeToFit={true}>
                     Refer friends. Earn a 20% Commission.
                   </Text>
                   <Text
@@ -389,10 +399,14 @@ export default function MainTabs({navigation}) {
                       fontWeight: '300',
                       fontSize: 12,
                       color: theme.colors.text,
-                    }}>
+                    }}
+                    numberOfLines={3}
+                    adjustsFontSizeToFit={true}>
                     Your friend will receive a 20% discount too.
                   </Text>
                 </View>
+
+                {/* Buttons */}
                 <View style={{flexDirection: 'row', gap: 12}}>
                   <Button
                     mode="contained"
@@ -443,6 +457,8 @@ export default function MainTabs({navigation}) {
             </View>
           </Pressable>
           <Divider />
+
+          {/* Feature request — already had adjustments */}
           <Pressable
             onPress={() =>
               navigation.navigate('WebViewScreen', {

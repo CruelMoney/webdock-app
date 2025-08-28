@@ -362,15 +362,21 @@ export default function NotificationCenter({navigation}) {
             data={news}
             keyExtractor={(item, index) => `${item.slug || 'item'}-${index}`}
             renderItem={({item}) => (
-              <TouchableOpacity onPress={() => navigation.navigate('News', {})}>
+              <TouchableOpacity
+                key={item.id}
+                onPress={() => {
+                  navigation.navigate('WebViewScreen', {
+                    uri: 'https://feedback.webdock.io/changelog/' + item.slug,
+                    token: '',
+                  });
+                }}>
                 <NewsItem
                   key={item.id}
                   item={item}
                   onPress={() =>
                     navigation.navigate('WebViewScreen', {
-                      uri:
-                        'https://webdock.io/en/docs/webdock-news/' + item.slug,
-                      token: 'abc123',
+                      uri: 'https://feedback.webdock.io/changelog/' + item.slug,
+                      token: '',
                     })
                   }
                 />
@@ -605,7 +611,6 @@ export default function NotificationCenter({navigation}) {
                       backgroundColor: theme.colors.surface,
                     }}
                     contentStyle={{
-                      width: 160,
                       backgroundColor: theme.colors.surface,
                     }}
                     anchor={
