@@ -14,5 +14,6 @@
     "**/Thumbs.db": true,
     "**/.rmv/catalog/**": true,
     "*/_*": false
-  }
+  },
+  "java.compile.nullAnalysis.mode": "disabled"
 }

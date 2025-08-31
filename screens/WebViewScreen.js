@@ -81,7 +81,7 @@ export default function WebViewScreen({navigation}) {
         {loading && (
           <View style={styles.loader}>
             <ActivityIndicator size="large" color="gray" />
-            <Text>Loading... Many links take a couple of seconds loading.</Text>
+            <Text style={{textAlign:'center'}}>Loading... Many links take a couple of seconds loading.</Text>
           </View>
         )}
 
@@ -96,8 +96,6 @@ export default function WebViewScreen({navigation}) {
             style={[
               StyleSheet.absoluteFill,
               {
-                paddingHorizontal: 20,
-                gap: 24,
                 marginBottom: insets.bottom,
               },
             ]}
