@@ -614,13 +614,13 @@ export default function ServerSnapshots({route, navigation}) {
               borderRadius: 4,
               padding: 20,
             }}>
-            <Text style={{fontSize: 12}}>
+            <Text style={{fontSize: 12, color: theme.colors.text}}>
               Name: {selectedSnapshot ? selectedSnapshot.name : null}
             </Text>
-            <Text style={{fontSize: 12}}>
+            <Text style={{fontSize: 12, color: theme.colors.text}}>
               Type: {selectedSnapshot ? selectedSnapshot.type : null}
             </Text>
-            <Text style={{fontSize: 12}}>
+            <Text style={{fontSize: 12, color: theme.colors.text}}>
               Date: {selectedSnapshot ? selectedSnapshot.date : null}
             </Text>
           </View>

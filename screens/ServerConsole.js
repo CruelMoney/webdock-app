@@ -71,7 +71,9 @@ export function ServerConsole({navigation, route}) {
     setLoading(false);
   };
   return (
-    <BottomSheetWrapper title="Web SSH" onClose={() => navigation.goBack()}>
+    <BottomSheetWrapper
+      title={'WebSSH: ' + route.params.slug}
+      onClose={() => navigation.goBack()}>
       <View width="100%" height="100%" style={{backgroundColor: '#F4F8F8'}}>
         <WebView
           userAgent={'Webdock Mobile App WebView v1.0'}

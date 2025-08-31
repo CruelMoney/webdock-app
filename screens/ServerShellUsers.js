@@ -481,7 +481,7 @@ export default function ServerShellUsers({route, navigation}) {
   return (
     <>
       <BottomSheetWrapper
-        title="Shell users"
+        title="SSH Access"
         onClose={() => navigation.goBack()}
         style={{backgroundColor: '#F4F8F8', padding: '8%'}}>
         <View
@@ -1065,7 +1065,7 @@ export default function ServerShellUsers({route, navigation}) {
                     color: theme.colors.text,
                     marginStart: 10,
                   }}>
-                  Connect now in your browser:
+                  Connect now:
                 </Text>
                 <Text
                   style={{

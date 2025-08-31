@@ -534,31 +534,8 @@ export function HomeScreen({navigation}) {
               />
             }>
             <Menu.Item
-              key="desc"
-              title="Oldest first"
-              onPress={() => {
-                sortOrderCache.current = 'desc';
-                sortServers(servers, 'desc');
-                setSortOrder('desc');
-              }}
-              style={{
-                backgroundColor:
-                  sortOrder === 'desc'
-                    ? theme.colors.background
-                    : theme.colors.surface,
-              }}
-              titleStyle={{
-                fontSize: 14,
-                fontFamily: 'Poppins',
-                color:
-                  sortOrder === 'desc'
-                    ? theme.colors.primary
-                    : theme.colors.text,
-              }}
-            />
-            <Menu.Item
               key="asc"
-              title="Newest first"
+              title="Oldest first"
               onPress={() => {
                 sortOrderCache.current = 'asc';
                 sortServers(servers, 'asc');
@@ -575,6 +552,29 @@ export function HomeScreen({navigation}) {
                 fontFamily: 'Poppins',
                 color:
                   sortOrder === 'asc'
+                    ? theme.colors.primary
+                    : theme.colors.text,
+              }}
+            />
+            <Menu.Item
+              key="desc"
+              title="Newest first"
+              onPress={() => {
+                sortOrderCache.current = 'desc';
+                sortServers(servers, 'desc');
+                setSortOrder('desc');
+              }}
+              style={{
+                backgroundColor:
+                  sortOrder === 'desc'
+                    ? theme.colors.background
+                    : theme.colors.surface,
+              }}
+              titleStyle={{
+                fontSize: 14,
+                fontFamily: 'Poppins',
+                color:
+                  sortOrder === 'desc'
                     ? theme.colors.primary
                     : theme.colors.text,
               }}

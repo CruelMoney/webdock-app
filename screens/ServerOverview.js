@@ -647,6 +647,12 @@ export default function ServerOverview({route, navigation}) {
   };
   const tabs = [
     {
+      label: 'SSH Access',
+      icon: <UsersIcon width={19} height={19} color="#00a1a1" />,
+      navigate: 'Shell Users',
+      description: 'Manage your Shell/SFTP Users and deploy SSH Public Keys',
+    },
+    {
       label: 'Server Activity',
       icon: <ActivityIcon width={19} height={19} color="#00a1a1" />,
       navigate: 'Activity',
@@ -658,12 +664,6 @@ export default function ServerOverview({route, navigation}) {
       icon: <ScriptsIcon width={19} height={19} color="#00a1a1" />,
       navigate: 'Scripts',
       description: 'Deploy and Execute Scripts or Files to your server',
-    },
-    {
-      label: 'Shell users',
-      icon: <UsersIcon width={19} height={19} color="#00a1a1" />,
-      navigate: 'Shell Users',
-      description: 'Manage your Shell/SFTP Users and deploy SSH Public Keys',
     },
     {
       label: 'Snapshots',

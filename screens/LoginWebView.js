@@ -1,5 +1,12 @@
 import React, {Component, useEffect, useState} from 'react';
-import {ActivityIndicator, Alert, StyleSheet, Text, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import DeviceInfo from 'react-native-device-info';
 import {AuthContext} from '../components/context';
@@ -59,6 +66,10 @@ export function LoginWebView() {
           headers: {
             'X-Device-Name': deviceName,
           },
+        }}
+        style={{
+          flex: 1,
+          marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
         }}
         javaScriptEnabled={true}
         incognito={true}

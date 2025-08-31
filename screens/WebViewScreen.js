@@ -81,7 +81,10 @@ export default function WebViewScreen({navigation}) {
         {loading && (
           <View style={styles.loader}>
             <ActivityIndicator size="large" color="gray" />
-            <Text>Loading... Many links take a couple of seconds loading.</Text>
+            <Text style={{textAlign: 'center'}}>Loading...</Text>
+            <Text style={{textAlign: 'center'}}>
+              Hang on, some links can take a few seconds to load
+            </Text>
           </View>
         )}
 

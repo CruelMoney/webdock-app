@@ -26,7 +26,7 @@ import AccountPublicKeys from './screens/AccountPublicKeys';
 import WebViewScreen from './screens/WebViewScreen';
 import AccountScripts from './screens/AccountScripts';
 import EditAccountScript from './screens/EditAccountScript';
-import {WebViewWebdockAI} from './screens/WebViewWebdockAI';
+import WebViewWebdockAI from './screens/WebViewWebdockAI';
 import ServerScripts from './screens/ServerScripts';
 import ServerShellUsers from './screens/ServerShellUsers';
 import ServerSnapshots from './screens/ServerSnapshots';
@@ -35,6 +35,7 @@ import ServerActivity from './screens/ServerActivity';
 import NotificationCenter from './screens/NotificationCenter';
 import {ServerConsole} from './screens/ServerConsole';
 import ThemeSwitch from './components/ThemeSwitch';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 export default function WebdockApp() {
   //const [isLoading, setIsLoading] = React.useState(true);
   const [userToken, setUserToken] = React.useState(null);
@@ -268,10 +269,10 @@ export default function WebdockApp() {
           M${x},${y}H${x + width}V${y + height}H${x}V${y}Z`;
     }
   };
+  const insets = useSafeAreaInsets();
   return (
     <Provider theme={theme}>
       <StatusBar
-        translucent
         barStyle={theme.dark ? 'light-content' : 'dark-content'}
         backgroundColor={theme.dark ? '#000000' : '#ffffff'} // for Android
       />
@@ -279,6 +280,7 @@ export default function WebdockApp() {
         tooltipStyle={{backgroundColor: theme.dark ? '#1E392B' : '#ffffff'}}
         tooltipComponent={TooltipComponent}
         stepNumberComponent={() => null}
+        verticalOffset={StatusBar.currentHeight}
         animated
         svgMaskPath={customSvgPath}
         style={{height: '100%'}}
@@ -286,7 +288,10 @@ export default function WebdockApp() {
         <BottomSheetModalProvider>
           <AuthContext.Provider value={authContext}>
             <NavigationContainer
-              style={{backgroundColor: theme.colors.background}}>
+              style={{
+                backgroundColor: theme.colors.background,
+                paddingTop: StatusBar.currentHeight,
+              }}>
               {loginState.userToken !== null ? (
                 <Stack.Navigator>
                   <Stack.Screen
@@ -333,7 +338,11 @@ export default function WebdockApp() {
                   <Stack.Screen
                     name="Webdock AI Assistant"
                     component={WebViewWebdockAI}
-                    options={{}}
+                    options={{
+                      presentation: 'transparentModal',
+                      animation: 'fade',
+                      headerShown: false,
+                    }}
                   />
                   <Stack.Screen
                     name="ServerConsole"

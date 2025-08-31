@@ -15,6 +15,7 @@ import {
   Dimensions,
   Keyboard,
   InteractionManager,
+  Pressable,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -59,7 +60,7 @@ import {setGlobalCallbackId} from '../service/storageEvents';
 export default function ServerScripts({route, navigation}) {
   const serverScriptsCache = React.useRef(null);
 
-  const [serverScripts, setScripts] = useState();
+  const [serverScripts, setScripts] = useState([]);
   const [inputs, setInputs] = React.useState({
     selectedScript: '',
     path: '',
@@ -266,8 +267,8 @@ export default function ServerScripts({route, navigation}) {
   const handleError = (error, input) => {
     setErrors(prevState => ({...prevState, [input]: error}));
   };
-  const [checkedExecutable, setCheckedExecutable] = React.useState(false);
-  const [checkedRunThisNow, setCheckedRunThisNow] = React.useState(false);
+  const [checkedExecutable, setCheckedExecutable] = React.useState(true);
+  const [checkedRunThisNow, setCheckedRunThisNow] = React.useState(true);
 
   const theme = useTheme();
 
@@ -452,37 +453,55 @@ export default function ServerScripts({route, navigation}) {
                   </HelperText>
                 ) : null}
               </View>
-              <View style={{gap: 16, flexDirection: 'row'}}>
-                <Checkbox.Item
-                  labelStyle={{
-                    fontFamily: 'Poppins-Light',
-                    fontSize: 12,
-                    color: theme.colors.text,
-                  }}
-                  position="leading"
-                  style={{paddingHorizontal: 0}}
-                  status={checkedExecutable ? 'checked' : 'unchecked'}
-                  onPress={() => {
-                    setCheckedExecutable(!checkedExecutable);
-                  }}
-                  color={theme.colors.primary}
-                  label="Make file executable"
-                />
-                <Checkbox.Item
-                  labelStyle={{
-                    fontFamily: 'Poppins-Light',
-                    fontSize: 12,
-                    color: theme.colors.text,
-                  }}
-                  position="leading"
-                  style={{paddingHorizontal: 0}}
-                  status={checkedRunThisNow ? 'checked' : 'unchecked'}
-                  onPress={() => {
-                    setCheckedRunThisNow(!checkedRunThisNow);
-                  }}
-                  color={theme.colors.primary}
-                  label="Run script now"
-                />
+              <View
+                style={{gap: 16, flexDirection: 'row', alignItems: 'center'}}>
+                <Pressable
+                  onPress={() => setCheckedExecutable(!checkedExecutable)}
+                  style={{flexDirection: 'row', alignItems: 'center', flex: 1}}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{checked: checkedExecutable}}>
+                  <Checkbox
+                    status={checkedExecutable ? 'checked' : 'unchecked'}
+                    color={theme.colors.primary}
+                    onPress={() => setCheckedExecutable(!checkedExecutable)}
+                  />
+                  <Text
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    style={{
+                      fontFamily: 'Poppins-Light',
+                      fontSize: 12,
+                      color: theme.colors.text,
+                      flexShrink: 1,
+                      includeFontPadding: false,
+                    }}>
+                    Make file executable
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => setCheckedRunThisNow(!checkedRunThisNow)}
+                  style={{flexDirection: 'row', alignItems: 'center', flex: 1}}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{checked: checkedRunThisNow}}>
+                  <Checkbox
+                    status={checkedRunThisNow ? 'checked' : 'unchecked'}
+                    color={theme.colors.primary}
+                    onPress={() => setCheckedRunThisNow(!checkedRunThisNow)}
+                  />
+                  <Text
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    style={{
+                      fontFamily: 'Poppins-Light',
+                      fontSize: 12,
+                      color: theme.colors.text,
+                      flexShrink: 1,
+                      includeFontPadding: false,
+                    }}>
+                    Run script now
+                  </Text>
+                </Pressable>
               </View>
               <View
                 style={{

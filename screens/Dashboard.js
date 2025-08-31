@@ -104,7 +104,7 @@ export function Dashboard({navigation}) {
   }, []);
 
   useEffect(() => {
-    if (isFirstRun) {
+    if (!isFirstRun) {
       // Optional delay to ensure steps are mounted
       setTimeout(() => start(), 500);
     }
