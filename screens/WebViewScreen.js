@@ -99,8 +99,6 @@ export default function WebViewScreen({navigation}) {
             style={[
               StyleSheet.absoluteFill,
               {
-                paddingHorizontal: 20,
-                gap: 24,
                 marginBottom: insets.bottom,
               },
             ]}

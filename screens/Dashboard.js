@@ -359,7 +359,7 @@ export function Dashboard({navigation}) {
             />
             <CopilotStep
               title=""
-              text="Refer a friend|Click the “Refer” button and and start inviting friends and earn credits to use for future payments."
+              text="Refer a friend|Click the “Refer” button and start inviting friends and earn credits to use for future payments."
               order={3}
               name="referAFriend">
               <WalkthroughableView

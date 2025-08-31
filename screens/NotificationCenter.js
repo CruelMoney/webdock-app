@@ -259,7 +259,7 @@ export default function NotificationCenter({navigation}) {
               keyExtractor={(item, index) => `${item.slug || 'item'}-${index}`}
               style={{flexGrow: 1}}
               onRefresh={onBackgroundRefresh}
-              // refreshing={isFetching}
+              refreshing={false}
               showsVerticalScrollIndicator={false}
               stickySectionHeadersEnabled={false}
               contentContainerStyle={{paddingBottom: 20}}
@@ -561,45 +561,31 @@ export default function NotificationCenter({navigation}) {
                     width: '100%',
                     gap: 16,
                   }}>
-                  <View style={{flex: 1, height: 38}}>
-                    <TextInput
-                      mode="flat"
-                      value={undefined}
-                      onChangeText={searchtext => {
-                        onChangeSearch(searchtext);
-                      }}
-                      placeholder="Search"
-                      style={{
-                        height: 38,
-                        backgroundColor: theme.colors.surface,
-                        borderRadius: 4,
-                        paddingVertical: 0,
-                      }}
-                      contentStyle={{
-                        fontSize: 12,
-                        lineHeight: 38,
-                        fontFamily: 'Poppins',
-                        fontWeight: '400',
-                        includeFontPadding: false,
-                      }}
-                      underlineColor="transparent"
-                      left={
-                        <TextInput.Icon
-                          icon="magnify"
-                          color={theme.colors.text}
-                        />
-                      }
-                      theme={{
-                        colors: {
-                          primary: 'transparent',
-                          text: theme.colors.text,
-                          placeholder: theme.colors.text,
-                          background: theme.colors.surface,
-                        },
-                        roundness: 4,
-                      }}
-                    />
-                  </View>
+                    <View style={{flex: 1, height: 38}}>
+                                <TextInput
+                                  mode="flat"
+                                  value={searchQuery}
+                                  onChangeText={searchtext => {
+                                    onChangeSearch(searchtext);
+                                  }}
+                                  placeholder="Search"
+                                  style={{
+                                    height: 40,
+                                    paddingVertical: 0,
+                                    textAlignVertical: 'center',
+                                    includeFontPadding: false,
+                                    textAlign: 'left',
+                                    color: theme.colors.text,
+                                    fontFamily: 'Poppins',
+                                    fontSize: 14,
+                                    backgroundColor: theme.colors.surface,
+                                    borderRadius: 4,
+                                  }}
+                                  underlineColor="transparent"
+                                  left={<TextInput.Icon icon="magnify" color={theme.colors.text} />}
+                                  placeholderTextColor={theme.colors.text + '99'}
+                                />
+                              </View>
 
                   <Menu
                     visible={visible}
