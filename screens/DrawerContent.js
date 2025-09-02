@@ -85,7 +85,7 @@ export function DrawerContent({props, navigation}) {
 
   const MenuLevel2 = ({items, onPress}) => {
     return (
-      <View style={{gap: 4}}>
+      <View style={{gap: 4, paddingTop: 10}}>
         {items.map(item => (
           <Pressable
             key={item.title}
@@ -124,6 +124,7 @@ export function DrawerContent({props, navigation}) {
                 fontSize: 13,
                 fontFamily: 'Poppins-Light',
                 fontWeight: '300',
+                includeFontPadding: false,
               }}>
               {item.title}
             </Text>
@@ -189,7 +190,12 @@ export function DrawerContent({props, navigation}) {
                       />
                     )
                   ) : null}
-                  <Text style={{fontSize: 16, fontFamily: 'Poppins'}}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontFamily: 'Poppins',
+                      includeFontPadding: false,
+                    }}>
                     {item.title}
                   </Text>
                 </View>

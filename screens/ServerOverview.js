@@ -211,7 +211,15 @@ export default function ServerOverview({route, navigation}) {
         setCallbackId(result.headers.get('x-callback-id'));
         await setGlobalCallbackId(result.headers.get('x-callback-id'));
 
-        setVisibleSnack(true);
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Server start initiated',
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () =>
+            navigation.navigate('Events', {callbackId: callbackId}),
+        });
       } catch (e) {
         alert(e);
       }
@@ -265,7 +273,15 @@ export default function ServerOverview({route, navigation}) {
         setCallbackId(result.headers.get('X-Callback-ID'));
         await setGlobalCallbackId(result.headers.get('x-callback-id'));
 
-        setVisibleSnack(true);
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Server shutdown initiated',
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () =>
+            navigation.navigate('Events', {callbackId: callbackId}),
+        });
       } catch (e) {
         alert(e);
       }
@@ -318,7 +334,15 @@ export default function ServerOverview({route, navigation}) {
         setCallbackId(result.headers.get('X-Callback-ID'));
         await setGlobalCallbackId(result.headers.get('x-callback-id'));
 
-        setVisibleSnack(true);
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Server reboot initiated',
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () =>
+            navigation.navigate('Events', {callbackId: callbackId}),
+        });
       } catch (e) {
         alert(e);
       }
@@ -372,7 +396,15 @@ export default function ServerOverview({route, navigation}) {
         setCallbackId(result.headers.get('X-Callback-ID'));
         await setGlobalCallbackId(result.headers.get('x-callback-id'));
 
-        setVisibleSnack(true);
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Server suspend initiated',
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () =>
+            navigation.navigate('Events', {callbackId: callbackId}),
+        });
       } catch (e) {
         alert(e);
       }
@@ -419,7 +451,15 @@ export default function ServerOverview({route, navigation}) {
         setCallbackId(result.headers.get('X-Callback-ID'));
         await setGlobalCallbackId(result.headers.get('x-callback-id'));
 
-        setVisibleSnack(true);
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Server reinstall initiated',
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () =>
+            navigation.navigate('Events', {callbackId: callbackId}),
+        });
       } catch (e) {
         alert(e);
       }
@@ -783,8 +823,14 @@ export default function ServerOverview({route, navigation}) {
                   borderBottomLeftRadius: 4,
                   borderBottomRightRadius: 4,
                   gap: 12,
+                  // display:
+                  //   (server?.status ?? '') === 'stopped' ||
+                  //   (server?.status ?? '') === 'running'
+                  //     ? 'flex'
+                  //     : 'none',
                 }}>
                 <TouchableOpacity
+                  disabled={(server?.status ?? '') !== 'stopped'}
                   onPress={() => setStartModal(true)}
                   style={{
                     width: '50%',
@@ -792,7 +838,7 @@ export default function ServerOverview({route, navigation}) {
                     justifyContent: 'center',
                     flexDirection: 'row',
                     display:
-                      (server?.status ?? '') === 'running' ? 'none' : 'flex',
+                      (server?.status ?? '') === 'stopped' ? 'flex' : 'none',
                     backgroundColor: theme.colors.restartButton.background,
                     borderRadius: 4,
                     padding: 10,
@@ -815,6 +861,7 @@ export default function ServerOverview({route, navigation}) {
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
+                  disabled={(server?.status ?? '') !== 'running'}
                   onPress={() => setRestartModal(true)}
                   style={{
                     width: '50%',
@@ -855,6 +902,7 @@ export default function ServerOverview({route, navigation}) {
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
+                  disabled={(server?.status ?? '') !== 'running'}
                   onPress={() => setStopModal(true)}
                   style={{
                     width: '50%',
@@ -1007,13 +1055,13 @@ export default function ServerOverview({route, navigation}) {
                 {'[' +
                   (server?.virtualization === 'container' ? 'LXD' : 'KVM') +
                   '] '}
-                {/* {profiles
+                {profiles
                   ? profiles
-                      .filter(item => server.profile === item.slug)
+                      .filter(item => (server?.profile ?? '') === item.slug)
                       .map(item => {
                         return item.name;
                       })
-                  : null} */}
+                  : null}
               </Text>
             </View>
             <Divider />
@@ -2119,10 +2167,11 @@ export default function ServerOverview({route, navigation}) {
         swipeDirection={['up', 'left', 'right', 'down']}
         onSwipeComplete={() => setEventDetailsModal(false)}
         style={{justifyContent: 'flex-start', marginHorizontal: 20}}>
-        <View
+        <ScrollView
           style={{
             backgroundColor: 'white',
             borderRadius: 4,
+            flexGrow: 0,
           }}>
           <View
             style={{
@@ -2191,7 +2240,7 @@ export default function ServerOverview({route, navigation}) {
               Okay, thanks
             </Button>
           </View>
-        </View>
+        </ScrollView>
       </Modal>
       {/* Snackbar for event log */}
       <Snackbar

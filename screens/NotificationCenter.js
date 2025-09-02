@@ -561,31 +561,36 @@ export default function NotificationCenter({navigation}) {
                     width: '100%',
                     gap: 16,
                   }}>
-                    <View style={{flex: 1, height: 38}}>
-                                <TextInput
-                                  mode="flat"
-                                  value={searchQuery}
-                                  onChangeText={searchtext => {
-                                    onChangeSearch(searchtext);
-                                  }}
-                                  placeholder="Search"
-                                  style={{
-                                    height: 40,
-                                    paddingVertical: 0,
-                                    textAlignVertical: 'center',
-                                    includeFontPadding: false,
-                                    textAlign: 'left',
-                                    color: theme.colors.text,
-                                    fontFamily: 'Poppins',
-                                    fontSize: 14,
-                                    backgroundColor: theme.colors.surface,
-                                    borderRadius: 4,
-                                  }}
-                                  underlineColor="transparent"
-                                  left={<TextInput.Icon icon="magnify" color={theme.colors.text} />}
-                                  placeholderTextColor={theme.colors.text + '99'}
-                                />
-                              </View>
+                  <View style={{flex: 1, height: 38}}>
+                    <TextInput
+                      mode="flat"
+                      value={searchQuery}
+                      onChangeText={searchtext => {
+                        onChangeSearch(searchtext);
+                      }}
+                      placeholder="Search"
+                      style={{
+                        height: 40,
+                        paddingVertical: 0,
+                        textAlignVertical: 'center',
+                        includeFontPadding: false,
+                        textAlign: 'left',
+                        color: theme.colors.text,
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
+                        backgroundColor: theme.colors.surface,
+                        borderRadius: 4,
+                      }}
+                      underlineColor="transparent"
+                      left={
+                        <TextInput.Icon
+                          icon="magnify"
+                          color={theme.colors.text}
+                        />
+                      }
+                      placeholderTextColor={theme.colors.text + '99'}
+                    />
+                  </View>
 
                   <Menu
                     visible={visible}
@@ -698,10 +703,11 @@ export default function NotificationCenter({navigation}) {
         swipeDirection={['up', 'left', 'right', 'down']}
         onSwipeComplete={() => setEventDetailsModal(false)}
         style={{justifyContent: 'flex-start', marginHorizontal: 20}}>
-        <View
+        <ScrollView
           style={{
             backgroundColor: 'white',
             borderRadius: 4,
+            flexGrow: 0,
           }}>
           <View
             style={{
@@ -771,7 +777,7 @@ export default function NotificationCenter({navigation}) {
               Okay, thanks
             </Button>
           </View>
-        </View>
+        </ScrollView>
       </Modal>
     </>
   );

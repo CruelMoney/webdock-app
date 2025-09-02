@@ -324,7 +324,7 @@ export default function ServerEvents({route, navigation}) {
                   message={item.message}
                   onDetailsPress={() =>
                     openSheet({
-                      message: item.message ?? item.action,
+                      message: !item.message ? item.action : item.message,
                     })
                   }
                 />
@@ -391,10 +391,11 @@ export default function ServerEvents({route, navigation}) {
         swipeDirection={['up', 'left', 'right', 'down']}
         onSwipeComplete={() => setEventDetailsModal(false)}
         style={{justifyContent: 'flex-start', marginHorizontal: 20}}>
-        <View
+        <ScrollView
           style={{
             backgroundColor: 'white',
             borderRadius: 4,
+            flexGrow: 0,
           }}>
           <View
             style={{
@@ -464,7 +465,7 @@ export default function ServerEvents({route, navigation}) {
               Okay, thanks
             </Button>
           </View>
-        </View>
+        </ScrollView>
       </Modal>
     </>
   );

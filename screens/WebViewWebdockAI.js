@@ -43,10 +43,25 @@ export default function WebViewWebdockAI({navigation}) {
           src="https://webdock.io/static/common/js/chatbots-logic.js?v=1.1"
           async>
         </script>
+
       </head>
       <body>
         <div id="bai-cb-container"></div>
       </body>
+              <style>
+        #bai-chat-iframe {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    margin: 0;
+    border-radius: 0 !important;
+    background-color: #fff;
+    transform: none !important;
+}
+        </style>
     </html>
   `;
 
@@ -54,6 +69,64 @@ export default function WebViewWebdockAI({navigation}) {
 
 `;
   const injectedJavaScript = `
+(function () {
+  function ensureViewport() {
+    var meta = document.querySelector('meta[name="viewport"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.name = 'viewport';
+      document.head.appendChild(meta);
+    }
+    meta.content = 'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover';
+  }
+
+  function fitIframe() {
+    var iframe = document.getElementById('bai-chat-iframe');
+    if (!iframe) return false;
+
+    // Make the root elements fill the screen and remove spacing
+    document.documentElement.style.height = '100%';
+    document.body.style.height = '100%';
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    document.body.style.overflow = 'hidden';
+
+    // Create a wrapper that participates in layout (instead of a fixed element)
+    var wrapper = document.getElementById('bai-iframe-wrapper');
+    if (!wrapper) {
+      wrapper = document.createElement('div');
+      wrapper.id = 'bai-iframe-wrapper';
+      wrapper.style.position = 'relative';
+      wrapper.style.width = '100vw';
+      wrapper.style.height = '100dvh';
+      wrapper.style.maxWidth = '100vw';
+      wrapper.style.maxHeight = '100dvh';
+      wrapper.style.overflow = 'hidden';
+      document.body.appendChild(wrapper);
+    }
+
+    // Move the iframe into the wrapper and make it fill it
+    wrapper.appendChild(iframe);
+    iframe.style.position = 'absolute';
+    iframe.style.inset = '0';
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.maxWidth = '100%';
+    iframe.style.maxHeight = '100%';
+    iframe.style.margin = '0';
+    iframe.style.border = '0';
+    iframe.style.transform = 'none';
+    iframe.style.borderRadius = '0';
+    return true;
+  }
+
+  function run() {
+    ensureViewport();
+    if (!fitIframe()) setTimeout(run, 200); // retry until the iframe exists
+  }
+
+  run();
+})()
 
   `;
   const insets = useSafeAreaInsets();

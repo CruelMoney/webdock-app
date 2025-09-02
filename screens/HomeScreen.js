@@ -194,24 +194,33 @@ export function HomeScreen({navigation}) {
   };
 
   const [filteredServers, setFilteredServers] = useState();
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const onChangeSearch = query => setSearchQuery(query);
-  const search = () => {
-    if (searchQuery) {
-      const newData = servers.filter(item => {
-        const itemData = `${item.name.toUpperCase()} 
-                  ${item.location.toUpperCase()} 
-                  ${item.ipv4.toUpperCase()}
-                  ${item.ipv6.toUpperCase()}`;
+  const [searchQuery, setSearchQuery] = useState('');
+  const debounceRef = useRef();
 
-        const textData = searchQuery.toUpperCase();
-
-        return itemData.indexOf(textData) > -1;
-      });
-      setFilteredServers(newData);
-      setRerenderFlatList(!renderStatusIcon);
+  const runSearch = query => {
+    if (!query) {
+      setFilteredServers(servers);
+      return;
     }
+
+    const q = query.toUpperCase();
+    const newData = servers.filter(item => {
+      const itemData = [item.name, item.location, item.ipv4, item.ipv6]
+        .map(v => String(v || '').toUpperCase())
+        .join(' ');
+      return itemData.includes(q);
+    });
+
+    setFilteredServers(newData);
   };
+  const onChangeSearch = text => {
+    setSearchQuery(text);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      runSearch(text); // use the latest value
+    }, 300); // 300ms debounce
+  };
+
   const [rerenderFlatList, setRerenderFlatList] = useState(false);
   const [visible, setVisible] = useState(false);
   const openMenu = () => {
@@ -478,10 +487,7 @@ export function HomeScreen({navigation}) {
             <TextInput
               mode="flat"
               value={searchQuery}
-              onChangeText={searchtext => {
-                onChangeSearch(searchtext);
-                search();
-              }}
+              onChangeText={onChangeSearch}
               placeholder="Search"
               style={{
                 height: 40,

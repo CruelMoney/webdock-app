@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import BottomSheetWrapper from '../components/BottomSheetWrapper';
 import {ScrollView} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useTheme} from 'react-native-paper';
 
 export default function WebViewScreen({navigation}) {
   const route = useRoute();
@@ -17,6 +18,7 @@ export default function WebViewScreen({navigation}) {
   } = route.params;
   const [source, setSource] = useState(null);
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -79,7 +81,15 @@ export default function WebViewScreen({navigation}) {
       style={styles.container}>
       <View style={{flex: 1}}>
         {loading && (
-          <View style={styles.loader}>
+          <View
+            style={{
+              ...StyleSheet.absoluteFillObject,
+              zIndex: 10,
+              backgroundColor: theme.colors.background,
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingHorizontal: 24,
+            }}>
             <ActivityIndicator size="large" color="gray" />
             <Text style={{textAlign: 'center'}}>Loading...</Text>
             <Text style={{textAlign: 'center'}}>

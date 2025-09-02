@@ -104,7 +104,7 @@ export function Dashboard({navigation}) {
   }, []);
 
   useEffect(() => {
-    if (!isFirstRun) {
+    if (isFirstRun) {
       // Optional delay to ensure steps are mounted
       setTimeout(() => start(), 500);
     }
@@ -693,7 +693,7 @@ export function Dashboard({navigation}) {
                       alignItems: 'flex-end',
                     }}>
                     <TouchableOpacity
-                      onPress={() => navigation.navigate('Servers')}>
+                      onPress={() => navigation.navigate('NotificationCenter')}>
                       <Text
                         style={{
                           fontFamily: 'Poppins-Regular',
@@ -828,10 +828,11 @@ export function Dashboard({navigation}) {
           swipeDirection={['up', 'left', 'right', 'down']}
           onSwipeComplete={() => setEventDetailsModal(false)}
           style={{justifyContent: 'flex-start', marginHorizontal: 20}}>
-          <View
+          <ScrollView
             style={{
               backgroundColor: 'white',
               borderRadius: 4,
+              flexGrow: 0,
             }}>
             <View
               style={{
@@ -901,7 +902,7 @@ export function Dashboard({navigation}) {
                 Okay, thanks
               </Button>
             </View>
-          </View>
+          </ScrollView>
         </Modal>
       </SafeAreaView>
     </>

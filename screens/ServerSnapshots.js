@@ -131,7 +131,15 @@ export default function ServerSnapshots({route, navigation}) {
         setCallbackId(result.headers.get('x-callback-id'));
         await setGlobalCallbackId(result.headers.get('x-callback-id'));
 
-        setVisibleSnack(true);
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Snapshot restoration in progress…',
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () =>
+            navigation.navigate('Events', {callbackId: callbackId}),
+        });
       } catch (e) {
         alert(e);
       }
@@ -198,7 +206,15 @@ export default function ServerSnapshots({route, navigation}) {
         setCallbackId(result.headers.get('x-callback-id'));
         await setGlobalCallbackId(result.headers.get('x-callback-id'));
 
-        setVisibleSnack(true);
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Snapshot deletion in progress…',
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () =>
+            navigation.navigate('Events', {callbackId: callbackId}),
+        });
       } catch (e) {
         alert(e);
       }
@@ -237,7 +253,15 @@ export default function ServerSnapshots({route, navigation}) {
       try {
         setCallbackId(result.headers.get('X-Callback-ID'));
         await setGlobalCallbackId(result.headers.get('x-callback-id'));
-        setVisibleSnack(true);
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Snapshot creation initiated',
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () =>
+            navigation.navigate('Events', {callbackId: callbackId}),
+        });
       } catch (e) {
         alert(e);
       }

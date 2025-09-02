@@ -210,7 +210,15 @@ export default function ServerScripts({route, navigation}) {
         setCallbackId(result.headers.get('x-callback-id'));
         await setGlobalCallbackId(result.headers.get('x-callback-id'));
 
-        setVisibleSnack(true);
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Server script execution initiated',
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () =>
+            navigation.navigate('Events', {callbackId: callbackId}),
+        });
       } catch (e) {
         alert(e);
       }

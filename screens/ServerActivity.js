@@ -75,12 +75,16 @@ export default function ServerActivity({route, navigation}) {
               borderRadius: 10,
             }}>
             <Card.Title
-              titleStyle={{fontFamily: 'Raleway-Regular', marginStart: 10}}
+              titleStyle={{
+                fontFamily: 'Poppins-Medium',
+                marginStart: 10,
+                color: '#333333',
+              }}
               title={'Network'}
               right={() => (
                 <Title
                   style={{
-                    fontFamily: 'Raleway-Medium',
+                    fontFamily: 'Poppins-Medium',
                     marginRight: 20,
                     color: '#bdbdbd',
                     includeFontPadding: false,
@@ -143,12 +147,16 @@ export default function ServerActivity({route, navigation}) {
               marginTop: 10,
             }}>
             <Card.Title
-              titleStyle={{fontFamily: 'Raleway-Regular', marginStart: 10}}
+              titleStyle={{
+                fontFamily: 'Poppins-Regular',
+                marginStart: 10,
+                color: '#333333',
+              }}
               title={'Disk'}
               right={() => (
                 <Title
                   style={{
-                    fontFamily: 'Raleway-Medium',
+                    fontFamily: 'Poppins-Medium',
                     marginRight: 20,
                     color: '#bdbdbd',
                     includeFontPadding: false,
@@ -212,7 +220,11 @@ export default function ServerActivity({route, navigation}) {
               marginTop: 10,
             }}>
             <Card.Title
-              titleStyle={{fontFamily: 'Raleway-Regular', marginStart: 10}}
+              titleStyle={{
+                fontFamily: 'Raleway-Regular',
+                marginStart: 10,
+                color: '#333333',
+              }}
               title={'Memory'}
               right={() => (
                 <Title
@@ -277,7 +289,11 @@ export default function ServerActivity({route, navigation}) {
               marginTop: 10,
             }}>
             <Card.Title
-              titleStyle={{fontFamily: 'Raleway-Regular', marginStart: 10}}
+              titleStyle={{
+                fontFamily: 'Raleway-Regular',
+                marginStart: 10,
+                color: '#333333',
+              }}
               title={'CPU'}
               right={() => (
                 <Title
