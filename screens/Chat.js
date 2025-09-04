@@ -1,9 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useContext, useEffect, useState} from 'react';
-import {ActivityIndicator, Image, Switch, Text, View} from 'react-native';
+import {ActivityIndicator, Image, Pressable, Switch, Text, View} from 'react-native';
 import {
   FlatList,
-  Pressable,
   ScrollView,
   TouchableOpacity,
 } from 'react-native-gesture-handler';

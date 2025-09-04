@@ -512,9 +512,9 @@ export default function ServerShellUsers({route, navigation}) {
                   dense={true}
                   onChangeText={text => handleOnchange(text, 'username')}
                   underlineColorAndroid="transparent"
-                  activeUnderlineColor="transparent"
+                  underlineStyle={{display:'none'}}
                   underlineColor="transparent"
-                  cursorColor="#fff"
+                  activeUnderlineColor={theme.colors.text}
                   theme={{
                     colors: {
                       background: '#fff',
@@ -560,9 +560,9 @@ export default function ServerShellUsers({route, navigation}) {
                   dense={true}
                   onChangeText={text => handleOnchange(text, 'password')}
                   underlineColorAndroid="transparent"
-                  activeUnderlineColor="transparent"
+                  underlineStyle={{display:'none'}}
                   underlineColor="transparent"
-                  cursorColor="#fff"
+                  activeUnderlineColor={theme.colors.text}
                   theme={{
                     colors: {
                       background: '#fff',
@@ -607,9 +607,9 @@ export default function ServerShellUsers({route, navigation}) {
                   dense={true}
                   onChangeText={text => handleOnchange(text, 'group')}
                   underlineColorAndroid="transparent"
-                  activeUnderlineColor="transparent"
+                  underlineStyle={{display:'none'}}
                   underlineColor="transparent"
-                  cursorColor="#fff"
+                  activeUnderlineColor={theme.colors.text}
                   theme={{
                     colors: {
                       background: '#fff',
@@ -654,9 +654,9 @@ export default function ServerShellUsers({route, navigation}) {
                   dense={true}
                   onChangeText={text => handleOnchange(text, 'shell')}
                   underlineColorAndroid="transparent"
-                  activeUnderlineColor="transparent"
+                  underlineStyle={{display:'none'}}
                   underlineColor="transparent"
-                  cursorColor="#fff"
+                  activeUnderlineColor={theme.colors.text}
                   theme={{
                     colors: {
                       background: '#fff',
@@ -872,14 +872,14 @@ export default function ServerShellUsers({route, navigation}) {
                     }}>
                     <ActivityIndicator
                       size="small"
-                      color={theme.colors.primary}
+                      color={theme.colors.primaryText}
                     />
                     <Text
                       style={{
                         marginTop: 8,
                         fontFamily: 'Poppins',
                         fontSize: 12,
-                        color: theme.colors.primary,
+                        color: theme.colors.primaryText,
                       }}>
                       Loading shell users...
                     </Text>

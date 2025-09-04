@@ -276,14 +276,14 @@ export default function NotificationCenter({navigation}) {
                     }}>
                     <ActivityIndicator
                       size="small"
-                      color={theme.colors.primary}
+                      color={theme.colors.primaryText}
                     />
                     <Text
                       style={{
                         marginTop: 8,
                         fontFamily: 'Poppins',
                         fontSize: 12,
-                        color: theme.colors.primary,
+                        color: theme.colors.primaryText,
                       }}>
                       Loading events...
                     </Text>
@@ -383,8 +383,35 @@ export default function NotificationCenter({navigation}) {
                 <View style={{height: 12}} />
               </TouchableOpacity>
             )}
+            ListHeaderComponent={
+                isFetching ? (
+                  <View
+                    style={{
+                      alignItems: 'center',
+                      padding: 14,
+                      gap: 16,
+                      backgroundColor: theme.colors.surface,
+                      borderBottomLeftRadius: 4,
+                      borderBottomRightRadius: 4,
+                    }}>
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.primaryText}
+                    />
+                    <Text
+                      style={{
+                        marginTop: 8,
+                        fontFamily: 'Poppins',
+                        fontSize: 12,
+                        color: theme.colors.primaryText,
+                      }}>
+                      Loading news...
+                    </Text>
+                  </View>
+                ) : null
+              }
             ListEmptyComponent={
-              news?.length === 0 ? (
+              news?.length === 0 && !isFetching ? (
                 <View
                   style={{
                     padding: 14,
@@ -700,10 +727,16 @@ export default function NotificationCenter({navigation}) {
       <Modal
         testID={'modal'}
         isVisible={eventDetailsModal}
-        swipeDirection={['up', 'left', 'right', 'down']}
         onSwipeComplete={() => setEventDetailsModal(false)}
-        style={{justifyContent: 'flex-start', marginHorizontal: 20}}>
+        propagateSwipe={true}
+        style={{justifyContent: 'flex-start', marginHorizontal: 20,marginTop: insets.top}}>
+                <View
+        style={{
+          borderRadius: 8,
+        }}
+      >
         <ScrollView
+        showsVerticalScrollIndicator={false}
           style={{
             backgroundColor: 'white',
             borderRadius: 4,
@@ -760,8 +793,9 @@ export default function NotificationCenter({navigation}) {
             </Text>
             <Button
               mode="contained"
-              textColor={theme.colors.text}
+                textColor="black"
               compact
+            
               style={{
                 borderRadius: 4,
                 minWidth: 0,
@@ -778,6 +812,7 @@ export default function NotificationCenter({navigation}) {
             </Button>
           </View>
         </ScrollView>
+        </View>
       </Modal>
     </>
   );

@@ -264,13 +264,13 @@ export function HomeScreen({navigation}) {
                 borderBottomLeftRadius: 4,
                 borderBottomRightRadius: 4,
               }}>
-              <ActivityIndicator size="small" color={theme.colors.primary} />
+              <ActivityIndicator size="small" color={theme.colors.primaryText} />
               <Text
                 style={{
                   marginTop: 8,
                   fontFamily: 'Poppins',
                   fontSize: 12,
-                  color: theme.colors.primary,
+                  color: theme.colors.primaryText,
                 }}>
                 Loading servers...
               </Text>
@@ -408,13 +408,13 @@ export function HomeScreen({navigation}) {
                 borderBottomLeftRadius: 4,
                 borderBottomRightRadius: 4,
               }}>
-              <ActivityIndicator size="small" color={theme.colors.primary} />
+              <ActivityIndicator size="small" color={theme.colors.primaryText} />
               <Text
                 style={{
                   marginTop: 8,
                   fontFamily: 'Poppins',
                   fontSize: 12,
-                  color: theme.colors.primary,
+                  color: theme.colors.primaryText,
                 }}>
                 Loading snapshots...
               </Text>
@@ -539,6 +539,29 @@ export function HomeScreen({navigation}) {
                 onPress={openMenu}
               />
             }>
+              <Menu.Item
+              key="desc"
+              title="Newest first"
+              onPress={() => {
+                sortOrderCache.current = 'desc';
+                sortServers(servers, 'desc');
+                setSortOrder('desc');
+              }}
+              style={{
+                backgroundColor:
+                  sortOrder === 'desc'
+                    ? theme.colors.background
+                    : theme.colors.surface,
+              }}
+              titleStyle={{
+                fontSize: 14,
+                fontFamily: 'Poppins',
+                color:
+                  sortOrder === 'desc'
+                    ? theme.colors.primaryText
+                    : theme.colors.text,
+              }}
+            />
             <Menu.Item
               key="asc"
               title="Oldest first"
@@ -558,33 +581,11 @@ export function HomeScreen({navigation}) {
                 fontFamily: 'Poppins',
                 color:
                   sortOrder === 'asc'
-                    ? theme.colors.primary
+                    ? theme.colors.primaryText
                     : theme.colors.text,
               }}
             />
-            <Menu.Item
-              key="desc"
-              title="Newest first"
-              onPress={() => {
-                sortOrderCache.current = 'desc';
-                sortServers(servers, 'desc');
-                setSortOrder('desc');
-              }}
-              style={{
-                backgroundColor:
-                  sortOrder === 'desc'
-                    ? theme.colors.background
-                    : theme.colors.surface,
-              }}
-              titleStyle={{
-                fontSize: 14,
-                fontFamily: 'Poppins',
-                color:
-                  sortOrder === 'desc'
-                    ? theme.colors.primary
-                    : theme.colors.text,
-              }}
-            />
+            
             <Menu.Item
               key="alphabetical"
               title="Alphabetical"
@@ -604,7 +605,7 @@ export function HomeScreen({navigation}) {
                 fontFamily: 'Poppins',
                 color:
                   sortOrder === 'alphabetical'
-                    ? theme.colors.primary
+                    ? theme.colors.primaryText
                     : theme.colors.text,
               }}
             />

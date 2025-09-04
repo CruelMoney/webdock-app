@@ -51,6 +51,7 @@ import BottomSheet, {
   BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 let stopFetchMore = true;
 const ListFooterComponent = () => (
@@ -265,6 +266,7 @@ export default function ServerEvents({route, navigation}) {
   const [eventDetailsModal, setEventDetailsModal] = useState(false);
   const [eventDetails, setEventDetails] = useState(false);
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
 
   const openSheet = event => {
     setEventDetails(event);
@@ -367,14 +369,14 @@ export default function ServerEvents({route, navigation}) {
                   }}>
                   <ActivityIndicator
                     size="small"
-                    color={theme.colors.primary}
+                    color={theme.colors.primaryText}
                   />
                   <Text
                     style={{
                       marginTop: 8,
                       fontFamily: 'Poppins',
                       fontSize: 12,
-                      color: theme.colors.primary,
+                      color: theme.colors.primaryText,
                     }}>
                     Loading events...
                   </Text>
@@ -388,15 +390,21 @@ export default function ServerEvents({route, navigation}) {
       <Modal
         testID={'modal'}
         isVisible={eventDetailsModal}
-        swipeDirection={['up', 'left', 'right', 'down']}
         onSwipeComplete={() => setEventDetailsModal(false)}
-        style={{justifyContent: 'flex-start', marginHorizontal: 20}}>
-        <ScrollView
-          style={{
-            backgroundColor: 'white',
-            borderRadius: 4,
-            flexGrow: 0,
-          }}>
+                propagateSwipe={true}
+                style={{justifyContent: 'flex-start', marginHorizontal: 20,marginTop: insets.top}}>
+                        <View
+                style={{
+                  borderRadius: 8,
+                }}
+              >
+                <ScrollView
+                showsVerticalScrollIndicator={false}
+                  style={{
+                    backgroundColor: 'white',
+                    borderRadius: 4,
+                    flexGrow: 0,
+                  }}>
           <View
             style={{
               backgroundColor: '#022213',
@@ -466,6 +474,7 @@ export default function ServerEvents({route, navigation}) {
             </Button>
           </View>
         </ScrollView>
+        </View>
       </Modal>
     </>
   );

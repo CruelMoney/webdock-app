@@ -336,9 +336,9 @@ export default function ServerSnapshots({route, navigation}) {
                   dense={true}
                   onChangeText={text => handleOnchange(text, 'name')}
                   underlineColorAndroid="transparent"
-                  activeUnderlineColor="transparent"
+                  underlineStyle={{display:'none'}}
                   underlineColor="transparent"
-                  cursorColor="#fff"
+                  activeUnderlineColor={theme.colors.text}
                   theme={{
                     colors: {
                       background: '#fff',
@@ -452,14 +452,14 @@ export default function ServerSnapshots({route, navigation}) {
                     }}>
                     <ActivityIndicator
                       size="small"
-                      color={theme.colors.primary}
+                      color={theme.colors.primaryText}
                     />
                     <Text
                       style={{
                         marginTop: 8,
                         fontFamily: 'Poppins',
                         fontSize: 12,
-                        color: theme.colors.primary,
+                        color: theme.colors.primaryText,
                       }}>
                       Loading snapshots...
                     </Text>

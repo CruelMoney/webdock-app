@@ -19,6 +19,8 @@ import {
   setUserNickname,
 } from 'react-native-crisp-chat-sdk';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from 'react-native-paper';
 
 // ...
 export function LoginWebView() {
@@ -56,6 +58,8 @@ export function LoginWebView() {
   const hideSpinner = () => {
     setLoading(false);
   };
+  const insets = useSafeAreaInsets();
+  const theme = useTheme();
   return (
     <>
       <WebView
@@ -69,7 +73,8 @@ export function LoginWebView() {
         }}
         style={{
           flex: 1,
-          marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+          backgroundColor: "#E8EFE8",
+          paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : insets.top,
         }}
         javaScriptEnabled={true}
         incognito={true}

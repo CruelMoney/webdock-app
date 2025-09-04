@@ -231,9 +231,9 @@ export default function AccountPublicKeys({navigation}) {
                   dense={true}
                   onChangeText={text => handleOnchange(text, 'name')}
                   underlineColorAndroid="transparent"
-                  activeUnderlineColor="transparent"
+                  underlineStyle={{display:'none'}}
                   underlineColor="transparent"
-                  cursorColor="#fff"
+                  activeUnderlineColor={theme.colors.text}
                   theme={{
                     colors: {
                       background: '#fff',
@@ -276,9 +276,9 @@ export default function AccountPublicKeys({navigation}) {
                   dense={true}
                   multiline
                   underlineColorAndroid="transparent"
-                  activeUnderlineColor="transparent"
+                  underlineStyle={{display:'none'}}
                   underlineColor="transparent"
-                  cursorColor="#fff"
+                  activeUnderlineColor={theme.colors.text}
                   theme={{
                     colors: {
                       background: '#fff',

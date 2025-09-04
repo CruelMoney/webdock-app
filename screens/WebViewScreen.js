@@ -41,6 +41,14 @@ export default function WebViewScreen({navigation}) {
             )}&destination=${destination}&user_id=${
               accountInfo.userId
             }&secret=bf34eaa48c2643bb9bec16e8f46d88d8`,
+            headers: {
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+              'Accept-Language': 'en-US,en;q=0.9',
+              'Accept-Encoding': 'gzip, deflate, br',
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache',
+              'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1 WebdockMobileApp/2.0',
+            },
           });
         } else {
           if (!isActive) return;
@@ -49,6 +57,12 @@ export default function WebViewScreen({navigation}) {
             uri,
             headers: {
               Authorization: `Bearer ${token}`,
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+              'Accept-Language': 'en-US,en;q=0.9',
+              'Accept-Encoding': 'gzip, deflate, br',
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache',
+              'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1 WebdockMobileApp/2.0',
             },
           });
         }
@@ -89,10 +103,11 @@ export default function WebViewScreen({navigation}) {
               justifyContent: 'center',
               alignItems: 'center',
               paddingHorizontal: 24,
+              gap:5
             }}>
             <ActivityIndicator size="large" color="gray" />
-            <Text style={{textAlign: 'center'}}>Loading...</Text>
-            <Text style={{textAlign: 'center'}}>
+            <Text style={{textAlign: 'center',color: theme.colors.text}}>Loading...</Text>
+            <Text style={{textAlign: 'center',color: theme.colors.text}}>
               Hang on, some links can take a few seconds to load
             </Text>
           </View>
@@ -105,6 +120,7 @@ export default function WebViewScreen({navigation}) {
         ) : (
           <WebView
             userAgent={'Webdock Mobile App WebView v2.0'}
+            originWhitelist={['*']}
             source={source}
             style={[
               StyleSheet.absoluteFill,
@@ -112,6 +128,11 @@ export default function WebViewScreen({navigation}) {
                 marginBottom: insets.bottom,
               },
             ]}
+            allowFileAccessFromFileURLs
+            allowingReadAccessToURL={Platform.OS === 'ios' ? undefined : undefined}
+            javaScriptEnabled
+            domStorageEnabled
+            cacheEnabled={false}
             onLoadEnd={handleLoadEnd}
             onError={handleError}
             nestedScrollEnabled={true}

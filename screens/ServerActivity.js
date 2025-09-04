@@ -108,13 +108,13 @@ export default function ServerActivity({route, navigation}) {
                       data: metrics?.cpu?.usageSamplings
                         ?.slice(-8)
                         ?.map(item => item.amount) ?? [0],
-                      color: (opacity = 1) => `rgba(0, 161, 161, ${opacity})`,
+                      color: (opacity = 1) => `rgba(1,255,72, ${opacity})`,
                     },
                     {
                       data: metrics?.network?.ingressSamplings
                         ?.slice(-8)
                         ?.map(item => item.amount + 10) ?? [0],
-                      color: (opacity = 1) => `rgba(158, 158, 158, ${opacity})`,
+                      color: (opacity = 0.04) => `rgba(1,255,72, 0.04)`,
                     },
                   ],
                   labels: metrics?.cpu?.usageSamplings
@@ -180,7 +180,7 @@ export default function ServerActivity({route, navigation}) {
                       data: metrics?.disk?.samplings
                         ?.slice(-8)
                         ?.map(item => item.amount) ?? [0],
-                      color: (opacity = 1) => `rgba(0, 161, 161, ${opacity})`,
+                      color: (opacity = 1) => `rgba(1,255,72, ${opacity})`,
                     },
                   ],
                   labels: metrics?.disk?.samplings
@@ -196,7 +196,7 @@ export default function ServerActivity({route, navigation}) {
                   color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                   labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                   style: {borderRadius: 16},
-                  fillShadowGradient: `rgba(0, 161, 161, 1)`,
+                  fillShadowGradient: `rgba(1,255,72, 1)`,
                   fillShadowGradientOpacity: 1,
                   propsForBackgroundLines: {
                     strokeWidth: 1,
@@ -221,7 +221,7 @@ export default function ServerActivity({route, navigation}) {
             }}>
             <Card.Title
               titleStyle={{
-                fontFamily: 'Raleway-Regular',
+                fontFamily: 'Poppins-Regular',
                 marginStart: 10,
                 color: '#333333',
               }}
@@ -229,7 +229,7 @@ export default function ServerActivity({route, navigation}) {
               right={() => (
                 <Title
                   style={{
-                    fontFamily: 'Raleway-Medium',
+                    fontFamily: 'Poppins-Medium',
                     marginRight: 20,
                     color: '#bdbdbd',
                     includeFontPadding: false,
@@ -255,7 +255,7 @@ export default function ServerActivity({route, navigation}) {
                       data: metrics?.memory?.usageSamplings
                         ?.slice(-8)
                         ?.map(item => item.amount) ?? [0],
-                      color: (opacity = 1) => `rgba(0, 161, 161, ${opacity})`,
+                      color: (opacity = 1) => `rgba(1,255,72, ${opacity})`,
                     },
                   ],
                   labels: metrics?.memory?.usageSamplings
@@ -290,7 +290,7 @@ export default function ServerActivity({route, navigation}) {
             }}>
             <Card.Title
               titleStyle={{
-                fontFamily: 'Raleway-Regular',
+                fontFamily: 'Poppins-Regular',
                 marginStart: 10,
                 color: '#333333',
               }}
@@ -298,7 +298,7 @@ export default function ServerActivity({route, navigation}) {
               right={() => (
                 <Title
                   style={{
-                    fontFamily: 'Raleway-Medium',
+                    fontFamily: 'Poppins-Medium',
                     marginRight: 20,
                     color: '#bdbdbd',
                     includeFontPadding: false,
@@ -324,13 +324,13 @@ export default function ServerActivity({route, navigation}) {
                       data: metrics?.network?.egressSamplings
                         ?.slice(-8)
                         ?.map(item => item.amount) ?? [0],
-                      color: (opacity = 1) => `rgba(0, 161, 161, ${opacity})`,
+                      color: (opacity = 1) => `rgba(1,255,72, ${opacity})`,
                     },
                     {
                       data: metrics?.processes?.processesSamplings
                         ?.slice(-8)
                         ?.map(item => item.amount + 10) ?? [0],
-                      color: (opacity = 1) => `rgba(158, 158, 158, ${opacity})`,
+                      color: (opacity = 1) => `rgba(1,255,72,0.04)`,
                     },
                   ],
                   labels: metrics?.network?.ingressSamplings

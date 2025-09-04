@@ -76,6 +76,7 @@ import CallbackStatusWatcher from '../components/CallbackStatusWatcher';
 import requestUserPermission from '../service/notifications';
 import EventItem from '../components/EventItem';
 import {hideSplash, showSplash} from 'react-native-splash-view';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ONBOARDING_KEY = 'hasShownCopilot';
 
@@ -297,6 +298,7 @@ export function Dashboard({navigation}) {
   const WalkthroughableView = walkthroughable(Pressable);
 
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
 
   const onShare = async () => {
     try {
@@ -516,14 +518,14 @@ export function Dashboard({navigation}) {
                       }}>
                       <ActivityIndicator
                         size="small"
-                        color={theme.colors.primary}
+                        color={theme.colors.primaryText}
                       />
                       <Text
                         style={{
                           marginTop: 8,
                           fontFamily: 'Poppins',
                           fontSize: 12,
-                          color: theme.colors.primary,
+                          color: theme.colors.primaryText,
                         }}>
                         Loading servers...
                       </Text>
@@ -664,14 +666,14 @@ export function Dashboard({navigation}) {
                         }}>
                         <ActivityIndicator
                           size="small"
-                          color={theme.colors.primary}
+                          color={theme.colors.primaryText}
                         />
                         <Text
                           style={{
                             marginTop: 8,
                             fontFamily: 'Poppins',
                             fontSize: 12,
-                            color: theme.colors.primary,
+                            color: theme.colors.primaryText,
                           }}>
                           Loading events...
                         </Text>
@@ -796,14 +798,14 @@ export function Dashboard({navigation}) {
                         }}>
                         <ActivityIndicator
                           size="small"
-                          color={theme.colors.primary}
+                          color={theme.colors.primaryText}
                         />
                         <Text
                           style={{
                             marginTop: 8,
                             fontFamily: 'Poppins',
                             fontSize: 12,
-                            color: theme.colors.primary,
+                            color: theme.colors.primaryText,
                           }}>
                           Loading news...
                         </Text>
@@ -825,15 +827,21 @@ export function Dashboard({navigation}) {
         <Modal
           testID={'modal'}
           isVisible={eventDetailsModal}
-          swipeDirection={['up', 'left', 'right', 'down']}
           onSwipeComplete={() => setEventDetailsModal(false)}
-          style={{justifyContent: 'flex-start', marginHorizontal: 20}}>
-          <ScrollView
-            style={{
-              backgroundColor: 'white',
-              borderRadius: 4,
-              flexGrow: 0,
-            }}>
+        propagateSwipe={true}
+        style={{justifyContent: 'flex-start', marginHorizontal: 20,marginTop: insets.top}}>
+                <View
+        style={{
+          borderRadius: 8,
+        }}
+      >
+        <ScrollView
+        showsVerticalScrollIndicator={false}
+          style={{
+            backgroundColor: 'white',
+            borderRadius: 4,
+            flexGrow: 0,
+          }}>
             <View
               style={{
                 backgroundColor: '#022213',
@@ -903,6 +911,7 @@ export function Dashboard({navigation}) {
               </Button>
             </View>
           </ScrollView>
+          </View>
         </Modal>
       </SafeAreaView>
     </>

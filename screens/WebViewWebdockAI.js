@@ -127,7 +127,6 @@ export default function WebViewWebdockAI({navigation}) {
 
   run();
 })()
-
   `;
   const insets = useSafeAreaInsets();
   const bottomSheetRef = useRef(null);
@@ -265,7 +264,16 @@ export default function WebViewWebdockAI({navigation}) {
             onLoadEnd={hideSpinner}
             onMessage={event => {
               console.log('[WebView]', event.nativeEvent.data);
-            }}
+              try {
+                  const msg = JSON.parse(event.nativeEvent.data);
+                  if (msg.type === 'close') {
+                    navigation.goBack();   // or bottomSheetRef.current?.close()
+                  }
+                } catch (e) {
+                  console.warn('Invalid message', event.nativeEvent.data);
+                }
+              }
+            }
             onError={e => console.warn('[WebView Error]', e.nativeEvent)}
             onHttpError={e =>
               console.warn('[WebView HTTP Error]', e.nativeEvent)

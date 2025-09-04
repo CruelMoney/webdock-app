@@ -83,6 +83,7 @@ import EventItem from '../components/EventItem';
 import {getInstantMetrics} from '../service/serverMetrics';
 import {setGlobalCallbackId} from '../service/storageEvents';
 import {useFocusEffect} from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ServerOverview({route, navigation}) {
   const serverCache = useRef({});
@@ -769,6 +770,9 @@ export default function ServerOverview({route, navigation}) {
     setEventDetails(event);
     setEventDetailsModal(true);
   };
+
+    const insets = useSafeAreaInsets();
+  
   return (
     <>
       <ScrollView
@@ -1406,14 +1410,14 @@ export default function ServerOverview({route, navigation}) {
                       }}>
                       <ActivityIndicator
                         size="small"
-                        color={theme.colors.primary}
+                        color={theme.colors.primaryText}
                       />
                       <Text
                         style={{
                           marginTop: 8,
                           fontFamily: 'Poppins',
                           fontSize: 12,
-                          color: theme.colors.primary,
+                          color: theme.colors.primaryText,
                         }}>
                         Loading events...
                       </Text>
@@ -2164,10 +2168,16 @@ export default function ServerOverview({route, navigation}) {
       <Modal
         testID={'modal'}
         isVisible={eventDetailsModal}
-        swipeDirection={['up', 'left', 'right', 'down']}
         onSwipeComplete={() => setEventDetailsModal(false)}
-        style={{justifyContent: 'flex-start', marginHorizontal: 20}}>
+        propagateSwipe={true}
+        style={{justifyContent: 'flex-start', marginHorizontal: 20,marginTop: insets.top}}>
+                <View
+        style={{
+          borderRadius: 8,
+        }}
+      >
         <ScrollView
+        showsVerticalScrollIndicator={false}
           style={{
             backgroundColor: 'white',
             borderRadius: 4,
@@ -2220,10 +2230,10 @@ export default function ServerOverview({route, navigation}) {
                 padding: 16,
               }}>
               {eventDetails.message}
-            </Text>
+              </Text>
             <Button
               mode="contained"
-              textColor={theme.colors.text}
+                textColor="black"
               compact
               style={{
                 borderRadius: 4,
@@ -2241,6 +2251,7 @@ export default function ServerOverview({route, navigation}) {
             </Button>
           </View>
         </ScrollView>
+        </View>
       </Modal>
       {/* Snackbar for event log */}
       <Snackbar

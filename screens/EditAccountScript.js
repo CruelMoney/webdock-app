@@ -153,9 +153,9 @@ export default function EditAccountScript({navigation, route}) {
               dense={true}
               onChangeText={text => handleOnchange(text, 'name')}
               underlineColorAndroid="transparent"
-              activeUnderlineColor="transparent"
-              underlineColor="transparent"
-              cursorColor="#fff"
+                  underlineStyle={{display:'none'}}
+                  underlineColor="transparent"
+                  activeUnderlineColor={theme.colors.text}
               theme={{
                 colors: {
                   background: '#fff',
@@ -197,9 +197,9 @@ export default function EditAccountScript({navigation, route}) {
               dense={true}
               onChangeText={text => handleOnchange(text, 'filename')}
               underlineColorAndroid="transparent"
-              activeUnderlineColor="transparent"
-              underlineColor="transparent"
-              cursorColor="#fff"
+                  underlineStyle={{display:'none'}}
+                  underlineColor="transparent"
+                  activeUnderlineColor={theme.colors.text}
               theme={{
                 colors: {
                   background: '#fff',
@@ -242,9 +242,9 @@ export default function EditAccountScript({navigation, route}) {
               dense={true}
               multiline
               underlineColorAndroid="transparent"
-              activeUnderlineColor="transparent"
-              underlineColor="transparent"
-              cursorColor="#fff"
+                  underlineStyle={{display:'none'}}
+                  underlineColor="transparent"
+                  activeUnderlineColor={theme.colors.text}
               theme={{
                 colors: {
                   background: '#fff',

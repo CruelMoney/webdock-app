@@ -244,9 +244,9 @@ export default function AccountScripts({navigation}) {
                   dense={true}
                   onChangeText={text => handleOnchange(text, 'name')}
                   underlineColorAndroid="transparent"
-                  activeUnderlineColor="transparent"
+                  underlineStyle={{display:'none'}}
                   underlineColor="transparent"
-                  cursorColor="#fff"
+                  activeUnderlineColor={theme.colors.text}
                   theme={{
                     colors: {
                       background: '#fff',
@@ -288,9 +288,9 @@ export default function AccountScripts({navigation}) {
                   dense={true}
                   onChangeText={text => handleOnchange(text, 'filename')}
                   underlineColorAndroid="transparent"
-                  activeUnderlineColor="transparent"
+                  underlineStyle={{display:'none'}}
                   underlineColor="transparent"
-                  cursorColor="#fff"
+                  activeUnderlineColor={theme.colors.text}
                   theme={{
                     colors: {
                       background: '#fff',
@@ -336,9 +336,9 @@ export default function AccountScripts({navigation}) {
                   dense={true}
                   multiline
                   underlineColorAndroid="transparent"
-                  activeUnderlineColor="transparent"
+                  underlineStyle={{display:'none'}}
                   underlineColor="transparent"
-                  cursorColor="#fff"
+                  activeUnderlineColor={theme.colors.text}
                   theme={{
                     colors: {
                       background: '#fff',

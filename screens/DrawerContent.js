@@ -378,13 +378,13 @@ export function DrawerContent({props, navigation}) {
                 justifyContent: 'center',
                 minHeight: 100,
               }}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
+              <ActivityIndicator size="large" color={theme.colors.primaryText} />
               <Text
                 style={{
                   marginTop: 10,
                   fontFamily: 'Poppins',
                   fontSize: 14,
-                  color: theme.colors.text,
+                  color: theme.colors.primaryText,
                 }}>
                 Loading account information...
               </Text>
