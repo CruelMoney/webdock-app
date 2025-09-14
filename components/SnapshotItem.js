@@ -55,7 +55,7 @@ const SnapshotItem = ({item}) => {
               color: '#8F8F8F',
               includeFontPadding: false,
             }}>
-            {item.type} snapshot
+            {item.serverSlug} snapshot
           </Text>
         </View>
       </View>

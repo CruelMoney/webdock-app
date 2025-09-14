@@ -384,32 +384,32 @@ export default function NotificationCenter({navigation}) {
               </TouchableOpacity>
             )}
             ListHeaderComponent={
-                isFetching ? (
-                  <View
+              isFetching ? (
+                <View
+                  style={{
+                    alignItems: 'center',
+                    padding: 14,
+                    gap: 16,
+                    backgroundColor: theme.colors.surface,
+                    borderBottomLeftRadius: 4,
+                    borderBottomRightRadius: 4,
+                  }}>
+                  <ActivityIndicator
+                    size="small"
+                    color={theme.colors.primaryText}
+                  />
+                  <Text
                     style={{
-                      alignItems: 'center',
-                      padding: 14,
-                      gap: 16,
-                      backgroundColor: theme.colors.surface,
-                      borderBottomLeftRadius: 4,
-                      borderBottomRightRadius: 4,
+                      marginTop: 8,
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      color: theme.colors.primaryText,
                     }}>
-                    <ActivityIndicator
-                      size="small"
-                      color={theme.colors.primaryText}
-                    />
-                    <Text
-                      style={{
-                        marginTop: 8,
-                        fontFamily: 'Poppins',
-                        fontSize: 12,
-                        color: theme.colors.primaryText,
-                      }}>
-                      Loading news...
-                    </Text>
-                  </View>
-                ) : null
-              }
+                    Loading news...
+                  </Text>
+                </View>
+              ) : null
+            }
             ListEmptyComponent={
               news?.length === 0 && !isFetching ? (
                 <View
@@ -729,89 +729,91 @@ export default function NotificationCenter({navigation}) {
         isVisible={eventDetailsModal}
         onSwipeComplete={() => setEventDetailsModal(false)}
         propagateSwipe={true}
-        style={{justifyContent: 'flex-start', marginHorizontal: 20,marginTop: insets.top}}>
-                <View
         style={{
-          borderRadius: 8,
-        }}
-      >
-        <ScrollView
-        showsVerticalScrollIndicator={false}
+          justifyContent: 'flex-start',
+          marginHorizontal: 20,
+          marginTop: insets.top,
+        }}>
+        <View
           style={{
-            backgroundColor: 'white',
-            borderRadius: 4,
-            flexGrow: 0,
+            borderRadius: 8,
           }}>
-          <View
+          <ScrollView
+            showsVerticalScrollIndicator={false}
             style={{
-              backgroundColor: theme.colors.accent,
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              borderTopStartRadius: 4,
-              borderTopEndRadius: 4,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              backgroundColor: 'white',
+              borderRadius: 4,
+              flexGrow: 0,
             }}>
-            <Text
+            <View
               style={{
-                fontFamily: 'Poppins-Medium',
-                fontSize: 16,
-                color: 'white',
-                includeFontPadding: false,
+                backgroundColor: theme.colors.accent,
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderTopStartRadius: 4,
+                borderTopEndRadius: 4,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
               }}>
-              Event details
-            </Text>
-            <IconButton
-              icon="close"
-              size={24}
-              iconColor="white"
-              onPress={() => setEventDetailsModal(false)}
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Medium',
+                  fontSize: 16,
+                  color: 'white',
+                  includeFontPadding: false,
+                }}>
+                Event details
+              </Text>
+              <IconButton
+                icon="close"
+                size={24}
+                iconColor="white"
+                onPress={() => setEventDetailsModal(false)}
+                style={{
+                  padding: 0,
+                  margin: 0,
+                }}
+              />
+            </View>
+            <View
               style={{
-                padding: 0,
-                margin: 0,
-              }}
-            />
-          </View>
-          <View
-            style={{
-              padding: 12,
-              gap: 12,
-            }}>
-            <Text
-              style={{
-                fontFamily: 'Poppins-Regular',
-                fontSize: 10,
-                color: 'black',
-                borderColor: '#000000',
-                borderStyle: 'dashed',
-                borderWidth: 1,
-                borderRadius: 4,
-                padding: 16,
+                padding: 12,
+                gap: 12,
               }}>
-              {eventDetails.message}
-            </Text>
-            <Button
-              mode="contained"
+              <Text
+                style={{
+                  fontFamily: 'Poppins-Regular',
+                  fontSize: 10,
+                  color: 'black',
+                  borderColor: '#000000',
+                  borderStyle: 'dashed',
+                  borderWidth: 1,
+                  borderRadius: 4,
+                  padding: 16,
+                }}>
+                {eventDetails.message}
+              </Text>
+              <Button
+                mode="contained"
                 textColor="black"
-              compact
-            
-              style={{
-                borderRadius: 4,
-                minWidth: 0,
-                paddingHorizontal: 8,
-              }}
-              labelStyle={{
-                fontFamily: 'Poppins-SemiBold',
-                fontSize: 12,
-                lineHeight: 12 * 1.2,
-                fontWeight: '600',
-              }}
-              onPress={() => setEventDetailsModal(false)}>
-              Okay, thanks
-            </Button>
-          </View>
-        </ScrollView>
+                compact
+                style={{
+                  borderRadius: 4,
+                  minWidth: 0,
+                  paddingHorizontal: 8,
+                }}
+                labelStyle={{
+                  fontFamily: 'Poppins-SemiBold',
+                  fontSize: 12,
+                  lineHeight: 12 * 1.2,
+                  fontWeight: '600',
+                }}
+                onPress={() => setEventDetailsModal(false)}>
+                Okay, thanks
+              </Button>
+            </View>
+          </ScrollView>
         </View>
       </Modal>
     </>

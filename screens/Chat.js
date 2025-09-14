@@ -1,16 +1,24 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useContext, useEffect, useState} from 'react';
-import {ActivityIndicator, Image, Pressable, Switch, Text, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  Switch,
+  Text,
+  View,
+} from 'react-native';
 import {
   FlatList,
   ScrollView,
   TouchableOpacity,
 } from 'react-native-gesture-handler';
-import MenuIcon from '../assets/menu-icon.svg';
-import PubicKeyIcon from '../assets/public-key-icon.svg';
+import ContactUsIcon from '../assets/contact-us-icon.svg';
+import AppGuideIcon from '../assets/app-guide-icon.svg';
 import AIBotIcon from '../assets/ai-bot.svg';
 import ChatIcon from '../assets/chat-icon.svg';
-import ScriptsIcon from '../assets/scripts-icon.svg';
+import DocsIcon from '../assets/docs-icon.svg';
+import FAQIcon from '../assets/faq-icon.svg';
 import {getAccountInformations} from '../service/accountInformations';
 import {Button, useTheme} from 'react-native-paper';
 import Spacer from '../components/Spacer';
@@ -40,9 +48,7 @@ export default function Chat({navigation}) {
     // {"label":"General","icon":<UserIcon width={30} height={30} color="#00a1a1" />,"navigate":"AccountInfo"},
     {
       label: 'Docs',
-      icon: (
-        <PubicKeyIcon width={12} height={12} color={theme.colors.background} />
-      ),
+      icon: <DocsIcon width={20} height={20} />,
       description:
         'You should be able to find out easily how everything is put together and why',
       navigate: 'https://webdock.io/en/docs',
@@ -51,25 +57,19 @@ export default function Chat({navigation}) {
       label: 'Webdock FAQ',
       description:
         'Click here to access our page outlining the most Frequently Asked Questions',
-      icon: (
-        <ScriptsIcon width={12} height={12} color={theme.colors.background} />
-      ),
+      icon: <FAQIcon width={20} height={20} />,
       navigate:
         'https://webdock.io/en/docs/webdock-control-panel/frequently-asked-questions-faq',
     },
     {
       label: 'Contact us',
-      icon: (
-        <PubicKeyIcon width={12} height={12} color={theme.colors.background} />
-      ),
+      icon: <ContactUsIcon width={20} height={20} />,
       description: 'Be in touch with Webdock Support',
       navigate: 'https://webdock.io/en/support/contact',
     },
     {
       label: 'App guide',
-      icon: (
-        <PubicKeyIcon width={12} height={12} color={theme.colors.background} />
-      ),
+      icon: <AppGuideIcon width={20} height={20} />,
       description: 'how to get started with our Mobile App for iOS and Android',
       navigate:
         'https://webdock.io/en/docs/webdock-control-panel/mobile-app-guides',

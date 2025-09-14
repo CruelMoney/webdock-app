@@ -273,17 +273,20 @@ export default function WebdockApp() {
   return (
     <Provider theme={theme}>
       <StatusBar
+        translucent
         barStyle={theme.dark ? 'light-content' : 'dark-content'}
         backgroundColor={theme.dark ? '#000000' : '#ffffff'} // for Android
       />
       <CopilotProvider
-        tooltipStyle={{backgroundColor: theme.dark ? '#1E392B' : '#ffffff'}}
+        tooltipStyle={{
+          backgroundColor: theme.dark ? '#1E392B' : '#ffffff',
+          marginTop: insets.top,
+        }}
         tooltipComponent={TooltipComponent}
         stepNumberComponent={() => null}
-        verticalOffset={StatusBar.currentHeight}
+        style={{paddingTop: insets.top, height: '100%'}}
         animated
         svgMaskPath={customSvgPath}
-        style={{height: '100%'}}
         overlay="svg">
         <BottomSheetModalProvider>
           <AuthContext.Provider value={authContext}>

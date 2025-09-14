@@ -29,8 +29,9 @@ export default function AccordionItem({
     withTiming(isExpanded.value ? 1 : 0, {duration}),
   );
 
+  // FIX 1: use maxHeight instead of height to avoid cutoff
   const animatedHeight = useAnimatedStyle(() => ({
-    height: withTiming(isExpanded.value ? contentHeight.value : 0, {
+    maxHeight: withTiming(isExpanded.value ? contentHeight.value : 0, {
       duration,
     }),
   }));
@@ -51,7 +52,10 @@ export default function AccordionItem({
   }));
 
   const toggleAccordion = () => {
-    isExpanded.value = !isExpanded.value;
+    const next = !isExpanded.value;
+    isExpanded.value = next;
+    // FIX 2: re-measure on expand to refresh target height
+    if (next) setRenderKey(prev => prev + 1);
   };
 
   const theme = useTheme();
@@ -60,12 +64,15 @@ export default function AccordionItem({
   useEffect(() => {
     setRenderKey(prev => prev + 1);
   }, [children]);
+
+  // Keep runOnUI as requested
   useEffect(() => {
     runOnUI(() => {
       'worklet';
       isExpanded.value = expanded;
     })();
   }, [expanded]);
+
   return (
     <SafeAreaView>
       <Pressable onPress={toggleAccordion}>
@@ -124,7 +131,8 @@ export default function AccordionItem({
           if (h > 0) {
             runOnUI(() => {
               'worklet';
-              contentHeight.value = h;
+              // tiny buffer to avoid rounding-off cutoffs
+              contentHeight.value = h + 1;
             })();
           }
         }}>
@@ -137,6 +145,7 @@ export default function AccordionItem({
 const styles = StyleSheet.create({
   animatedView: {
     overflow: 'hidden',
+    minHeight: 0, // guard for collapse layout quirks
   },
   measuringView: {
     position: 'absolute',

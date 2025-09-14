@@ -95,11 +95,14 @@ export function HomeScreen({navigation}) {
             userToken,
             server.slug,
           );
-
           const userSnapshots =
-            allServerSnapshots ?? [].filter(snap => snap.type === 'user');
+            allServerSnapshots?.filter(s => s?.type === 'user') ?? [];
+          const enriched = userSnapshots.map(s => ({
+            ...s,
+            serverSlug: server.slug,
+          }));
 
-          allSnapshots.push(...userSnapshots); // spread each into the array
+          allSnapshots.push(...enriched);
         } catch (e) {
           console.error(`Failed to fetch snapshots for ${server.slug}:`, e);
         }
@@ -264,7 +267,10 @@ export function HomeScreen({navigation}) {
                 borderBottomLeftRadius: 4,
                 borderBottomRightRadius: 4,
               }}>
-              <ActivityIndicator size="small" color={theme.colors.primaryText} />
+              <ActivityIndicator
+                size="small"
+                color={theme.colors.primaryText}
+              />
               <Text
                 style={{
                   marginTop: 8,
@@ -374,7 +380,7 @@ export function HomeScreen({navigation}) {
         onRefresh={() => onRefresh()}
         ListEmptyComponent={
           snapshots ? (
-            snapshots.length == 0 ? (
+            snapshots.length == 0 && !isFetching ? (
               <View
                 style={{
                   padding: 14,
@@ -408,7 +414,10 @@ export function HomeScreen({navigation}) {
                 borderBottomLeftRadius: 4,
                 borderBottomRightRadius: 4,
               }}>
-              <ActivityIndicator size="small" color={theme.colors.primaryText} />
+              <ActivityIndicator
+                size="small"
+                color={theme.colors.primaryText}
+              />
               <Text
                 style={{
                   marginTop: 8,
@@ -539,7 +548,7 @@ export function HomeScreen({navigation}) {
                 onPress={openMenu}
               />
             }>
-              <Menu.Item
+            <Menu.Item
               key="desc"
               title="Newest first"
               onPress={() => {
@@ -585,7 +594,7 @@ export function HomeScreen({navigation}) {
                     : theme.colors.text,
               }}
             />
-            
+
             <Menu.Item
               key="alphabetical"
               title="Alphabetical"

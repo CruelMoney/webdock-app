@@ -76,7 +76,7 @@ import CallbackStatusWatcher from '../components/CallbackStatusWatcher';
 import requestUserPermission from '../service/notifications';
 import EventItem from '../components/EventItem';
 import {hideSplash, showSplash} from 'react-native-splash-view';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const ONBOARDING_KEY = 'hasShownCopilot';
 
@@ -828,89 +828,92 @@ export function Dashboard({navigation}) {
           testID={'modal'}
           isVisible={eventDetailsModal}
           onSwipeComplete={() => setEventDetailsModal(false)}
-        propagateSwipe={true}
-        style={{justifyContent: 'flex-start', marginHorizontal: 20,marginTop: insets.top}}>
-                <View
-        style={{
-          borderRadius: 8,
-        }}
-      >
-        <ScrollView
-        showsVerticalScrollIndicator={false}
+          propagateSwipe={true}
           style={{
-            backgroundColor: 'white',
-            borderRadius: 4,
-            flexGrow: 0,
+            justifyContent: 'flex-start',
+            marginHorizontal: 20,
+            marginTop: insets.top,
           }}>
-            <View
+          <View
+            style={{
+              borderRadius: 8,
+            }}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
               style={{
-                backgroundColor: '#022213',
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                borderTopStartRadius: 4,
-                borderTopEndRadius: 4,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
+                backgroundColor: 'white',
+                borderRadius: 4,
+                flexGrow: 0,
               }}>
-              <Text
+              <View
                 style={{
-                  fontFamily: 'Poppins-Medium',
-                  fontSize: 16,
-                  color: 'white',
-                  includeFontPadding: false,
+                  backgroundColor: '#022213',
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  borderTopStartRadius: 4,
+                  borderTopEndRadius: 4,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                 }}>
-                Event details
-              </Text>
-              <IconButton
-                icon="close"
-                size={24}
-                iconColor="white"
-                onPress={() => setEventDetailsModal(false)}
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-Medium',
+                    fontSize: 16,
+                    color: 'white',
+                    includeFontPadding: false,
+                  }}>
+                  Event details
+                </Text>
+                <IconButton
+                  icon="close"
+                  size={24}
+                  iconColor="white"
+                  onPress={() => setEventDetailsModal(false)}
+                  style={{
+                    padding: 0,
+                    margin: 0,
+                  }}
+                />
+              </View>
+              <View
                 style={{
-                  padding: 0,
-                  margin: 0,
-                }}
-              />
-            </View>
-            <View
-              style={{
-                padding: 12,
-                gap: 12,
-              }}>
-              <Text
-                style={{
-                  fontFamily: 'Poppins',
-                  fontSize: 12,
-                  borderColor: '#000000',
-                  borderStyle: 'dashed',
-                  borderWidth: 1,
-                  borderRadius: 4,
-                  padding: 16,
-                  color: 'black',
+                  padding: 12,
+                  gap: 12,
                 }}>
-                {eventDetails.message ?? 'No event message provided'}
-              </Text>
-              <Button
-                mode="contained"
-                textColor="black"
-                compact
-                style={{
-                  borderRadius: 4,
-                  minWidth: 0,
-                  paddingHorizontal: 8,
-                }}
-                labelStyle={{
-                  fontFamily: 'Poppins-SemiBold',
-                  fontSize: 12,
-                  lineHeight: 12 * 1.2,
-                  fontWeight: '600',
-                }}
-                onPress={() => setEventDetailsModal(false)}>
-                Okay, thanks
-              </Button>
-            </View>
-          </ScrollView>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    borderColor: '#000000',
+                    borderStyle: 'dashed',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    padding: 16,
+                    color: 'black',
+                  }}>
+                  {eventDetails.message ?? 'No event message provided'}
+                </Text>
+                <Button
+                  mode="contained"
+                  textColor="black"
+                  compact
+                  style={{
+                    borderRadius: 4,
+                    minWidth: 0,
+                    paddingHorizontal: 8,
+                  }}
+                  labelStyle={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontSize: 12,
+                    lineHeight: 12 * 1.2,
+                    fontWeight: '600',
+                  }}
+                  onPress={() => setEventDetailsModal(false)}>
+                  Okay, thanks
+                </Button>
+              </View>
+            </ScrollView>
           </View>
         </Modal>
       </SafeAreaView>

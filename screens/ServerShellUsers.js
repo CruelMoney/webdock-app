@@ -512,7 +512,7 @@ export default function ServerShellUsers({route, navigation}) {
                   dense={true}
                   onChangeText={text => handleOnchange(text, 'username')}
                   underlineColorAndroid="transparent"
-                  underlineStyle={{display:'none'}}
+                  underlineStyle={{display: 'none'}}
                   underlineColor="transparent"
                   activeUnderlineColor={theme.colors.text}
                   theme={{
@@ -560,7 +560,7 @@ export default function ServerShellUsers({route, navigation}) {
                   dense={true}
                   onChangeText={text => handleOnchange(text, 'password')}
                   underlineColorAndroid="transparent"
-                  underlineStyle={{display:'none'}}
+                  underlineStyle={{display: 'none'}}
                   underlineColor="transparent"
                   activeUnderlineColor={theme.colors.text}
                   theme={{
@@ -607,7 +607,7 @@ export default function ServerShellUsers({route, navigation}) {
                   dense={true}
                   onChangeText={text => handleOnchange(text, 'group')}
                   underlineColorAndroid="transparent"
-                  underlineStyle={{display:'none'}}
+                  underlineStyle={{display: 'none'}}
                   underlineColor="transparent"
                   activeUnderlineColor={theme.colors.text}
                   theme={{
@@ -654,7 +654,7 @@ export default function ServerShellUsers({route, navigation}) {
                   dense={true}
                   onChangeText={text => handleOnchange(text, 'shell')}
                   underlineColorAndroid="transparent"
-                  underlineStyle={{display:'none'}}
+                  underlineStyle={{display: 'none'}}
                   underlineColor="transparent"
                   activeUnderlineColor={theme.colors.text}
                   theme={{
@@ -901,7 +901,9 @@ export default function ServerShellUsers({route, navigation}) {
                         fontFamily: 'Poppins',
                         fontSize: 14,
                       }}>
-                      You do not have any shell user yet.
+                      You do not have any shell users added to this server yet.
+                      Add a shell user in order to connect with SSH directly in
+                      our app.
                     </Text>
                   </View>
                 ) : null
