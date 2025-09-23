@@ -202,17 +202,9 @@ export function DrawerContent({props, navigation}) {
                 {hasChildren && (
                   <Text>
                     {isExpanded ? (
-                      <Icon
-                        source="chevron-up"
-                        size={18}
-                        color={theme.colors.primary}
-                      />
+                      <Icon source="chevron-up" size={18} color="black" />
                     ) : (
-                      <Icon
-                        source="chevron-down"
-                        size={18}
-                        color={theme.colors.primary}
-                      />
+                      <Icon source="chevron-down" size={18} color="black" />
                     )}
                   </Text>
                 )}
@@ -378,7 +370,10 @@ export function DrawerContent({props, navigation}) {
                 justifyContent: 'center',
                 minHeight: 100,
               }}>
-              <ActivityIndicator size="large" color={theme.colors.primaryText} />
+              <ActivityIndicator
+                size="large"
+                color={theme.colors.primaryText}
+              />
               <Text
                 style={{
                   marginTop: 10,

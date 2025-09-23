@@ -8,11 +8,13 @@ import {ScrollView} from 'react-native-gesture-handler';
 import BackIcon from '../assets/back-icon.svg';
 import {Card, Title, useTheme} from 'react-native-paper';
 import BottomSheetWrapper from '../components/BottomSheetWrapper';
+import {Circle, G, Path} from 'react-native-svg';
+
 export default function ServerActivity({route, navigation}) {
   const [metrics, setMetrics] = useState();
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      // onBackgroundRefresh(); // still preserved if needed
+      // onBackgroundRefresh();
     });
 
     const task = InteractionManager.runAfterInteractions(() => {
@@ -28,10 +30,11 @@ export default function ServerActivity({route, navigation}) {
     });
 
     return () => {
-      task.cancel(); // ✅ Cancel deferred task if component unmounts
-      unsubscribe(); // ✅ Clean up navigation listener
+      task.cancel();
+      unsubscribe();
     };
   }, [route, navigation]);
+
   const formatDate = timestamp => {
     if (!timestamp) return '';
     const date = new Date(timestamp.replace(/ /g, 'T'));
@@ -47,6 +50,7 @@ export default function ServerActivity({route, navigation}) {
       date.getMinutes(),
     ).padStart(2, '0')}`;
   };
+
   const theme = useTheme();
   const width = Dimensions.get('window').width * 0.9;
 
@@ -89,7 +93,9 @@ export default function ServerActivity({route, navigation}) {
                     color: '#bdbdbd',
                     includeFontPadding: false,
                   }}>
-                  {formatDate(metrics?.cpu?.usageSamplings?.at(-1)?.timestamp)}
+                  {formatDate(
+                    metrics?.network?.egressSamplings?.at(-1)?.timestamp,
+                  )}
                 </Title>
               )}
             />
@@ -104,20 +110,25 @@ export default function ServerActivity({route, navigation}) {
                 height={220}
                 data={{
                   datasets: [
+                    // Network out (first dataset)
+
                     {
-                      data: metrics?.cpu?.usageSamplings
+                      data: metrics?.network?.egressSamplings
                         ?.slice(-8)
                         ?.map(item => item.amount) ?? [0],
-                      color: (opacity = 1) => `rgba(1,255,72, ${opacity})`,
+                      // borderColor (line)
+                      color: (opacity = 1) => `rgba(1,175,53,${opacity})`, // borderColor
                     },
+                    // Network in (second dataset)
                     {
                       data: metrics?.network?.ingressSamplings
                         ?.slice(-8)
-                        ?.map(item => item.amount + 10) ?? [0],
-                      color: (opacity = 0.04) => `rgba(1,255,72, 0.04)`,
+                        ?.map(item => item.amount) ?? [0],
+                      // borderColor (line)
+                      color: () => `rgba(220,220,220,1)`, // borderColor
                     },
                   ],
-                  labels: metrics?.cpu?.usageSamplings
+                  labels: metrics?.network?.egressSamplings
                     ?.slice(-8)
                     ?.map(item => formatTime(item.timestamp)) ?? [null],
                   legend: ['Network out (MiB)', 'Network in (MiB)'],
@@ -130,8 +141,11 @@ export default function ServerActivity({route, navigation}) {
                   color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                   labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                   style: {borderRadius: 16},
+                  // global fallback only; per-dataset handled in decorator
                   propsForDots: {r: '6', strokeWidth: '2', stroke: 'white'},
+                  useShadowColorFromDataset: true,
                 }}
+                withShadow={true} // avoid default single-fill shadow
                 style={{borderRadius: 16}}
               />
             </Card.Content>
@@ -180,7 +194,7 @@ export default function ServerActivity({route, navigation}) {
                       data: metrics?.disk?.samplings
                         ?.slice(-8)
                         ?.map(item => item.amount) ?? [0],
-                      color: (opacity = 1) => `rgba(1,255,72, ${opacity})`,
+                      color: (opacity = 1) => `rgba(1,255,72,${opacity})`,
                     },
                   ],
                   labels: metrics?.disk?.samplings
@@ -196,8 +210,10 @@ export default function ServerActivity({route, navigation}) {
                   color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                   labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                   style: {borderRadius: 16},
-                  fillShadowGradient: `rgba(1,255,72, 1)`,
-                  fillShadowGradientOpacity: 1,
+                  fillShadowGradient: `rgba(1,175,53,1)`,
+                  fillShadowGradientFromOpacity: 1,
+                  fillShadowGradientTo: 'rgba(1,175,53,1)',
+                  fillShadowGradientToOpacity: 1,
                   propsForBackgroundLines: {
                     strokeWidth: 1,
                     stroke: '#e3e3e3',
@@ -205,7 +221,7 @@ export default function ServerActivity({route, navigation}) {
                   },
                 }}
                 style={{borderRadius: 16}}
-                showBarTops
+                showBarTops={false}
               />
             </Card.Content>
           </Card>
@@ -255,7 +271,7 @@ export default function ServerActivity({route, navigation}) {
                       data: metrics?.memory?.usageSamplings
                         ?.slice(-8)
                         ?.map(item => item.amount) ?? [0],
-                      color: (opacity = 1) => `rgba(1,255,72, ${opacity})`,
+                      color: (opacity = 1) => `rgba(1,175,53,${opacity})`,
                     },
                   ],
                   labels: metrics?.memory?.usageSamplings
@@ -272,7 +288,9 @@ export default function ServerActivity({route, navigation}) {
                   labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                   style: {borderRadius: 16},
                   propsForDots: {r: '6', strokeWidth: '2', stroke: 'white'},
+                  useShadowColorFromDataset: true,
                 }}
+                withShadow={true}
                 style={{borderRadius: 16}}
                 fromZero
               />
@@ -324,13 +342,19 @@ export default function ServerActivity({route, navigation}) {
                       data: metrics?.network?.egressSamplings
                         ?.slice(-8)
                         ?.map(item => item.amount) ?? [0],
-                      color: (opacity = 1) => `rgba(1,255,72, ${opacity})`,
+                      color: (opacity = 1) => `rgba(1,175,53,${opacity})`, // borderColor
+                      fillShadowGradient: 'rgba(1,175,53,1)',
+                      fillShadowGradientFromOpacity: 1,
+                      fillShadowGradientToOpacity: 1,
                     },
                     {
                       data: metrics?.processes?.processesSamplings
                         ?.slice(-8)
                         ?.map(item => item.amount + 10) ?? [0],
-                      color: (opacity = 1) => `rgba(1,255,72,0.04)`,
+                      color: () => `rgba(220,220,220,1)`, // borderColor
+                      fillShadowGradient: 'transparent',
+                      fillShadowGradientFromOpacity: 0,
+                      fillShadowGradientToOpacity: 0,
                     },
                   ],
                   labels: metrics?.network?.ingressSamplings
@@ -347,7 +371,9 @@ export default function ServerActivity({route, navigation}) {
                   labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                   style: {borderRadius: 16},
                   propsForDots: {r: '6', strokeWidth: '2', stroke: 'white'},
+                  useShadowColorFromDataset: true,
                 }}
+                withShadow={true}
                 style={{borderRadius: 16}}
                 fromZero
               />
@@ -362,7 +388,8 @@ export default function ServerActivity({route, navigation}) {
             backgroundColor: theme.colors.background,
             paddingHorizontal: 20,
             gap: 24,
-          }}></View>
+          }}
+        />
       )}
     </BottomSheetWrapper>
   );

@@ -1,6 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import {Animated, Easing, View, TouchableOpacity} from 'react-native';
 import NotificationIcon from '../assets/notification-bell.svg';
+import NotificationNormalIcon from '../assets/notification-bell-normal.svg';
 import {useTheme} from 'react-native-paper';
 import {useEventStatus} from './CallbackStatusWatcher';
 import {onBellRing} from '../service/storageEvents';
@@ -62,7 +63,8 @@ export default function NotificationBell({hasNew}) {
           justifyContent: 'center',
         }}>
         <Animated.View style={{transform: [{rotateZ: rotate}]}}>
-          <NotificationIcon height={28} width={28} color={theme.colors.text} />
+          { hasNew ? <NotificationIcon height={28} width={28} color={theme.colors.text} /> :           
+          <NotificationNormalIcon height={28} width={28} color={theme.colors.text} />}
         </Animated.View>
       </View>
     </View>

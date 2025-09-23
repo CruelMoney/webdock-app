@@ -430,7 +430,7 @@ export function HomeScreen({navigation}) {
             </View>
           ) : null
         }
-        refreshing={isFetching}
+        refreshing={false}
         renderItem={({item}) => (
           <>
             <SnapshotItem item={item} />
