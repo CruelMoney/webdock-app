@@ -85,6 +85,7 @@ export function HomeScreen({navigation}) {
 
   // Fetch snapshots for each server after servers are loaded
   const fetchSnapshots = async () => {
+    setSnapshotsFetching(true);
     try {
       const userToken = await AsyncStorage.getItem('userToken');
       const allSnapshots = [];
@@ -107,9 +108,12 @@ export function HomeScreen({navigation}) {
           console.error(`Failed to fetch snapshots for ${server.slug}:`, e);
         }
       }
+      setSnapshotsFetching(false);
 
       setSnapshots(allSnapshots);
     } catch (e) {
+      setSnapshotsFetching(false);
+
       console.error('Failed to fetch snapshots:', e);
     }
   };
@@ -186,9 +190,11 @@ export function HomeScreen({navigation}) {
   };
 
   const [isFetching, setIsFetching] = useState(false);
+  const [snapshotsFetching, setSnapshotsFetching] = useState(false);
   const onRefresh = async () => {
     setIsFetching(true);
     await fetchServers();
+    await fetchSnapshots();
     setIsFetching(false);
   };
   const [isModalVisible, setModalVisible] = useState();
@@ -380,7 +386,7 @@ export function HomeScreen({navigation}) {
         onRefresh={() => onRefresh()}
         ListEmptyComponent={
           snapshots ? (
-            snapshots.length == 0 && !isFetching ? (
+            snapshots.length == 0 && !snapshotsFetching ? (
               <View
                 style={{
                   padding: 14,
@@ -404,7 +410,7 @@ export function HomeScreen({navigation}) {
           ) : null
         }
         ListHeaderComponent={
-          isFetching ? (
+          snapshotsFetching ? (
             <View
               style={{
                 alignItems: 'center',
