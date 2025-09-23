@@ -336,7 +336,7 @@ export default function ServerSnapshots({route, navigation}) {
                   dense={true}
                   onChangeText={text => handleOnchange(text, 'name')}
                   underlineColorAndroid="transparent"
-                  underlineStyle={{display:'none'}}
+                  underlineStyle={{display: 'none'}}
                   underlineColor="transparent"
                   activeUnderlineColor={theme.colors.text}
                   theme={{
@@ -382,7 +382,6 @@ export default function ServerSnapshots({route, navigation}) {
                   labelStyle={{
                     fontFamily: 'Poppins-SemiBold',
                     fontSize: 14,
-                    lineHeight: 14 * 1.2,
                     fontWeight: '600',
                   }}
                   onPress={validate}>
