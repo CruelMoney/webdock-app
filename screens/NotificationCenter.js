@@ -6,26 +6,20 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
-  Keyboard,
   SectionList,
   InteractionManager,
+  Alert,
 } from 'react-native';
 import {
   IconButton,
   Button,
-  Divider,
-  HelperText,
-  Snackbar,
-  Checkbox,
   Menu,
   TextInput,
   useTheme,
   ActivityIndicator,
-  Provider,
-  Portal,
 } from 'react-native-paper';
-import {SceneMap, TabBar, TabView} from 'react-native-tab-view';
-import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
+import {TabBar, TabView} from 'react-native-tab-view';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import EventItem from '../components/EventItem';
 import NewsItem from '../components/NewsItem';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -34,19 +28,46 @@ import {getEvents} from '../service/events';
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetFlatList,
-  BottomSheetScrollView,
   BottomSheetSectionList,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import ThumbsUp from '../assets/thumbs-up.svg';
 import Modal from 'react-native-modal';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {getServers} from '../service/servers';
 
 const initialLayout = {width: Dimensions.get('window').width};
-const layoutHeight = Dimensions.get('window').height - 200;
+
+// === Cache constants (JS) ===
+const CACHE_VERSION = 1;
+const NEWS_CACHE_KEY = `notification_center_news_v${CACHE_VERSION}`;
+const EVENTS_CACHE_KEY = `notification_center_events_v${CACHE_VERSION}`;
+const NEWS_TTL_MS = 60 * 60 * 1000; // 60 minutes
+const EVENTS_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+async function loadCache(key) {
+  try {
+    const raw = await AsyncStorage.getItem(key);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+async function saveCache(key, data) {
+  try {
+    const envelope = {savedAt: Date.now(), data};
+    await AsyncStorage.setItem(key, JSON.stringify(envelope));
+  } catch {
+    // ignore cache write failures
+  }
+}
+
+function isFresh(savedAt, ttlMs) {
+  return Date.now() - savedAt < ttlMs;
+}
+
 export default function NotificationCenter({navigation}) {
-  const [servers, setServers] = useState([]);
   const [events, setEvents] = useState([]);
   const [activeServers, setActiveServers] = useState([]);
   const [selectedFilter, setSelectedFilter] = useState('all');
@@ -58,52 +79,103 @@ export default function NotificationCenter({navigation}) {
     {key: 'events', title: 'Events'},
     {key: 'news', title: 'News'},
   ]);
-  const [searchQuery, setSearchQuery] = React.useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const onChangeSearch = query => setSearchQuery(query);
 
   const [isFetching, setIsFetching] = useState(false);
-  const [rerenderFlatList, setRerenderFlatList] = useState(false);
+
+  const newsFreshRef = useRef(false);
+  const eventsFreshRef = useRef(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const hydrateFromCache = async () => {
+      const [newsCache, eventsCache] = await Promise.all([
+        loadCache(NEWS_CACHE_KEY),
+        loadCache(EVENTS_CACHE_KEY),
+      ]);
+
+      if (isMounted && newsCache?.data) {
+        setNews(newsCache.data);
+        newsFreshRef.current = isFresh(newsCache.savedAt, NEWS_TTL_MS);
+      }
+      if (isMounted && eventsCache?.data) {
+        setEvents(eventsCache.data);
+        eventsFreshRef.current = isFresh(eventsCache.savedAt, EVENTS_TTL_MS);
+      }
+    };
+
+    hydrateFromCache();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      onBackgroundRefresh();
+      onBackgroundRefresh({respectFreshness: true});
     });
 
     const task = InteractionManager.runAfterInteractions(() => {
-      onBackgroundRefresh();
+      onBackgroundRefresh({respectFreshness: true});
     });
 
     return () => {
       task.cancel();
       unsubscribe();
     };
-  }, [navigation]);
-  const onBackgroundRefresh = async () => {
+  }, [navigation, index]);
+
+  const onBackgroundRefresh = async ({respectFreshness = false} = {}) => {
     try {
+      const shouldFetchNews = !respectFreshness || !newsFreshRef.current;
+      const shouldFetchEvents = !respectFreshness || !eventsFreshRef.current;
+
+      if (!shouldFetchNews && !shouldFetchEvents) return;
+
       setIsFetching(true);
       const userToken = await AsyncStorage.getItem('userToken');
 
-      const [newsData, eventsData, activeServersData] = await Promise.all([
-        getNews(userToken),
-        getEvents(userToken, 1),
-        getServers(userToken),
-      ]);
+      const serversPromise = getServers(userToken)
+        .then(res => setActiveServers(res))
+        .catch(() => {});
 
-      setNews(newsData.results);
-      setEvents(eventsData);
-      setActiveServers(activeServersData); // 🔁 Save active servers
-      setIsFetching(false);
+      const newsPromise = shouldFetchNews
+        ? getNews(userToken)
+            .then(newsData => {
+              const list = newsData?.results ?? [];
+              setNews(list);
+              saveCache(NEWS_CACHE_KEY, list);
+              newsFreshRef.current = true;
+            })
+            .catch(() => {})
+        : Promise.resolve();
+
+      const eventsPromise = shouldFetchEvents
+        ? getEvents(userToken, 1)
+            .then(eventsData => {
+              const list = eventsData ?? [];
+              setEvents(list);
+              saveCache(EVENTS_CACHE_KEY, list);
+              eventsFreshRef.current = true;
+            })
+            .catch(() => {})
+        : Promise.resolve();
+
+      await Promise.all([serversPromise, newsPromise, eventsPromise]);
     } catch (e) {
-      alert(e);
+      // keep old/cached state
+    } finally {
       setIsFetching(false);
     }
   };
+
   const formatDateGroup = inputDate => {
     const date = new Date(inputDate);
     const now = new Date();
 
     const isToday = date.toDateString() === now.toDateString();
-
     const yesterday = new Date();
     yesterday.setDate(now.getDate() - 1);
     const isYesterday = date.toDateString() === yesterday.toDateString();
@@ -112,22 +184,20 @@ export default function NotificationCenter({navigation}) {
     if (isYesterday) return 'Yesterday';
 
     const isSameYear = date.getFullYear() === now.getFullYear();
-
     const options = {
       month: 'long',
       day: 'numeric',
       ...(isSameYear ? {} : {year: 'numeric'}),
     };
-
     return new Intl.DateTimeFormat('en-US', options).format(date);
   };
+
   const getProcessedEvents = () => {
     let processed = [...events];
 
-    // 🔍 Apply search filter if any
     if (searchQuery?.length > 0) {
+      const text = searchQuery.toLowerCase();
       processed = processed.filter(event => {
-        const text = searchQuery.toLowerCase();
         return (
           event.message?.toLowerCase().includes(text) ||
           event.action?.toLowerCase().includes(text)
@@ -135,13 +205,11 @@ export default function NotificationCenter({navigation}) {
       });
     }
 
-    // ✅ Apply active server filtering if toggled
     if (selectedFilter === 'activeOnly' && activeServers.length > 0) {
       const activeSlugs = new Set(activeServers.map(s => s.slug));
       processed = processed.filter(event => activeSlugs.has(event.serverSlug));
     }
 
-    // ⬆️ Sort: Active servers first
     const activeSlugs = new Set(activeServers.map(s => s.slug));
     processed.sort((a, b) => {
       const aActive = activeSlugs.has(a.serverSlug) ? 0 : 1;
@@ -152,17 +220,16 @@ export default function NotificationCenter({navigation}) {
     return processed;
   };
 
-  const groupByFormattedDate = events => {
+  const groupByFormattedDate = items => {
     const grouped = {};
-
-    events.forEach(event => {
+    items.forEach(event => {
       const dateLabel = formatDateGroup(event.startTime);
       if (!grouped[dateLabel]) grouped[dateLabel] = [];
       grouped[dateLabel].push(event);
     });
-
     return Object.entries(grouped).map(([title, data]) => ({title, data}));
   };
+
   const [eventDetailsModal, setEventDetailsModal] = useState(false);
   const [eventDetails, setEventDetails] = useState(false);
 
@@ -170,68 +237,10 @@ export default function NotificationCenter({navigation}) {
     setEventDetails(event);
     setEventDetailsModal(true);
   };
+
   const renderScene = ({route}) => {
     switch (route.key) {
       case 'alerts':
-        // <BottomSheetFlatList
-        //   data={
-        //     searchQuery
-        //       ? searchQuery.length === 0
-        //         ? servers
-        //         : filteredServers
-        //       : servers
-        //   }
-        //   keyExtractor={(item, index) => `${item.slug || 'item'}-${index}`}
-        //   refreshing={isFetching}
-        //   onRefresh={onBackgroundRefresh}
-        //   style={{flex: 1}}
-        //   contentContainerStyle={{paddingBottom: 20}}
-        //   ListEmptyComponent={
-        //     <View
-        //       style={{
-        //         paddingVertical: 24,
-        //         backgroundColor: theme.colors.surface,
-        //         gap: 11,
-        //         justifyContent: 'center',
-        //         alignItems: 'center',
-        //       }}>
-        //       <Text style={{textAlign: 'center', color: theme.colors.text}}>
-        //         Nice Job!
-        //       </Text>
-        //       <Text style={{textAlign: 'center', color: theme.colors.text}}>
-        //         You have no notifications.
-        //       </Text>
-        //       <ThumbsUp color={theme.colors.text} />
-        //     </View>
-        //   }
-        //   renderItem={({item}) => (
-        //     <TouchableOpacity
-        //       onPress={() =>
-        //         navigation.navigate('ServerManagement', {
-        //           slug: item.slug,
-        //           name: item.name,
-        //           description: item.description,
-        //           notes: item.notes,
-        //           nextActionDate: item.nextActionDate,
-        //         })
-        //       }>
-        //       <View>
-        //         <ServerItem
-        //           title={item.name}
-        //           alias={item.aliases[0]}
-        //           dc={item.location}
-        //           virtualization={item.virtualization}
-        //           profile={item.profile}
-        //           ipv4={item.ipv4}
-        //           status={item.status}
-        //         />
-        //         <View style={{height: 10}} />
-        //       </View>
-        //     </TouchableOpacity>
-        //   )}
-        //   extraData={rerenderFlatList}
-        //   showsVerticalScrollIndicator={false}
-        // />
         return (
           <View
             style={{
@@ -258,7 +267,7 @@ export default function NotificationCenter({navigation}) {
               sections={groupByFormattedDate(getProcessedEvents())}
               keyExtractor={(item, index) => `${item.slug || 'item'}-${index}`}
               style={{flexGrow: 1}}
-              onRefresh={onBackgroundRefresh}
+              onRefresh={() => onBackgroundRefresh({respectFreshness: false})}
               refreshing={false}
               showsVerticalScrollIndicator={false}
               stickySectionHeadersEnabled={false}
@@ -433,6 +442,8 @@ export default function NotificationCenter({navigation}) {
             }
             contentContainerStyle={{paddingBottom: 20}}
             showsVerticalScrollIndicator={false}
+            onRefresh={() => onBackgroundRefresh({respectFreshness: false})}
+            refreshing={false}
           />
         );
       default:
@@ -441,15 +452,12 @@ export default function NotificationCenter({navigation}) {
   };
 
   const [visible, setVisible] = useState(false);
-  const openMenu = () => {
-    setVisible(true);
-  };
-  const closeMenu = () => {
-    setVisible(false);
-  };
+  const openMenu = () => setVisible(true);
+  const closeMenu = () => setVisible(false);
   const theme = useTheme();
 
   const bottomSheetRef = useRef(null);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     let attempts = 0;
@@ -459,19 +467,17 @@ export default function NotificationCenter({navigation}) {
         try {
           bottomSheetRef.current.snapToIndex(0);
         } catch (e) {
-          Alert.alert('test', e);
+          Alert.alert('test', String(e));
         }
       }
-
-      // If it hasn't opened yet, try again
       if (attempts < 5) {
         attempts++;
-        setTimeout(trySnap, 100); // Retry every 100ms
+        setTimeout(trySnap, 100);
       }
     };
 
     const task = InteractionManager.runAfterInteractions(() => {
-      trySnap(); // try after interactions & layout
+      trySnap();
     });
 
     return () => {
@@ -479,13 +485,12 @@ export default function NotificationCenter({navigation}) {
     };
   }, []);
 
-  const handleChange = index => {
-    if (index === -1) {
+  const handleChange = i => {
+    if (i === -1) {
       navigation.goBack();
     }
   };
   const snapPoints = ['93%'];
-  const insets = useSafeAreaInsets();
 
   return (
     <>
@@ -497,8 +502,8 @@ export default function NotificationCenter({navigation}) {
           enablePanDownToClose
           enableContentPanningGesture={false}
           enableHandlePanningGesture={false}
-          enableDynamicSizing={false} // ✅ IMPORTANT
-          detached={false} // avoid it floating freely
+          enableDynamicSizing={false}
+          detached={false}
           onChange={handleChange}
           handleComponent={() => null}
           style={{
@@ -554,10 +559,7 @@ export default function NotificationCenter({navigation}) {
                 size={30}
                 color={theme.colors.text}
                 onPress={() => navigation.goBack()}
-                style={{
-                  padding: 0,
-                  margin: 0,
-                }}
+                style={{padding: 0, margin: 0}}
               />
               <Text
                 style={{
@@ -568,8 +570,9 @@ export default function NotificationCenter({navigation}) {
                 }}>
                 Notification center
               </Text>
-              <View style={{width: 30, height: 30}}></View>
+              <View style={{width: 30, height: 30}} />
             </View>
+
             <View
               style={{
                 width: '100%',
@@ -592,9 +595,7 @@ export default function NotificationCenter({navigation}) {
                     <TextInput
                       mode="flat"
                       value={searchQuery}
-                      onChangeText={searchtext => {
-                        onChangeSearch(searchtext);
-                      }}
+                      onChangeText={setSearchQuery}
                       placeholder="Search"
                       style={{
                         height: 40,
@@ -628,9 +629,7 @@ export default function NotificationCenter({navigation}) {
                       borderRadius: 4,
                       backgroundColor: theme.colors.surface,
                     }}
-                    contentStyle={{
-                      backgroundColor: theme.colors.surface,
-                    }}
+                    contentStyle={{backgroundColor: theme.colors.surface}}
                     anchor={
                       <IconButton
                         style={{
@@ -724,6 +723,7 @@ export default function NotificationCenter({navigation}) {
           </BottomSheetView>
         </BottomSheet>
       </View>
+
       <Modal
         testID={'modal'}
         isVisible={eventDetailsModal}
@@ -734,17 +734,10 @@ export default function NotificationCenter({navigation}) {
           marginHorizontal: 20,
           marginTop: insets.top,
         }}>
-        <View
-          style={{
-            borderRadius: 8,
-          }}>
+        <View style={{borderRadius: 8}}>
           <ScrollView
             showsVerticalScrollIndicator={false}
-            style={{
-              backgroundColor: 'white',
-              borderRadius: 4,
-              flexGrow: 0,
-            }}>
+            style={{backgroundColor: 'white', borderRadius: 4, flexGrow: 0}}>
             <View
               style={{
                 backgroundColor: theme.colors.accent,
@@ -770,17 +763,10 @@ export default function NotificationCenter({navigation}) {
                 size={24}
                 iconColor="white"
                 onPress={() => setEventDetailsModal(false)}
-                style={{
-                  padding: 0,
-                  margin: 0,
-                }}
+                style={{padding: 0, margin: 0}}
               />
             </View>
-            <View
-              style={{
-                padding: 12,
-                gap: 12,
-              }}>
+            <View style={{padding: 12, gap: 12}}>
               <Text
                 style={{
                   fontFamily: 'Poppins-Regular',
@@ -792,17 +778,13 @@ export default function NotificationCenter({navigation}) {
                   borderRadius: 4,
                   padding: 16,
                 }}>
-                {eventDetails.message}
+                {eventDetails?.message}
               </Text>
               <Button
                 mode="contained"
                 textColor="black"
                 compact
-                style={{
-                  borderRadius: 4,
-                  minWidth: 0,
-                  paddingHorizontal: 8,
-                }}
+                style={{borderRadius: 4, minWidth: 0, paddingHorizontal: 8}}
                 labelStyle={{
                   fontFamily: 'Poppins-SemiBold',
                   fontSize: 12,
@@ -819,9 +801,7 @@ export default function NotificationCenter({navigation}) {
     </>
   );
 }
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
+  container: {flex: 1, backgroundColor: 'white'},
 });

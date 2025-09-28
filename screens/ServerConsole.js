@@ -14,11 +14,13 @@ import {getPing} from '../service/ping';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import BackIcon from '../assets/back-icon.svg';
 import BottomSheetWrapper from '../components/BottomSheetWrapper';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 // ...
 export function ServerConsole({navigation, route}) {
   const [deviceName, setDeviceName] = useState();
   const {signIn} = React.useContext(AuthContext);
+  const insets = useSafeAreaInsets();
   const deviceWidthPx = Dimensions.get('window').width;
   const [token, setToken] = useState('');
   const desiredWidth = 600;
@@ -70,6 +72,20 @@ export function ServerConsole({navigation, route}) {
   const hideSpinner = () => {
     setLoading(false);
   };
+  const winH = Dimensions.get('window').height;
+
+  function getSheetHeight(firstSnap) {
+    if (typeof firstSnap === 'number') return firstSnap;
+    if (typeof firstSnap === 'string' && firstSnap.endsWith('%')) {
+      const pct = parseFloat(firstSnap) || 0;
+      return winH * (pct / 100);
+    }
+    return 0; // fallback
+  }
+
+  const sheetH = getSheetHeight('93%'); // or your current snap point
+  const gap = Math.max(winH - sheetH, 0); // tweak to your BottomSheetWrapper’s footer/handle height
+  const bottomOffset = Math.max(insets.bottom, gap);
   return (
     <BottomSheetWrapper
       title={'WebSSH: ' + route.params.slug}
@@ -84,11 +100,40 @@ export function ServerConsole({navigation, route}) {
               '/' +
               route.params.username +
               '?token=' +
-              route.params.token,
+              route.params.token +
+              '&fromApp=true',
             headers: {
               'X-Device-Name': deviceName,
             },
           }}
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              // Lift the webview so the bottom sheet doesn't cover it
+              bottom: bottomOffset,
+            },
+          ]}
+          {...(Platform.OS === 'ios'
+            ? {
+                contentInset: {
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: bottomOffset,
+                },
+                scrollIndicatorInsets: {
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: bottomOffset,
+                },
+                contentInsetAdjustmentBehavior: 'never',
+              }
+            : {})}
           //style={{resizeMode: 'cover'}}
           //scalesPageToFit={false}
           javaScriptEnabled={true}

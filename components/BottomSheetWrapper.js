@@ -90,6 +90,7 @@ export default function BottomSheetWrapper({
         )}>
         <BottomSheetScrollView
           contentContainerStyle={{
+            marginBottom: insets.bottom,
             backgroundColor: theme.colors.background,
             flexGrow: 1,
             borderTopLeftRadius: 20,
@@ -98,6 +99,7 @@ export default function BottomSheetWrapper({
           }}
           style={{
             flex: 1,
+            marginBottom: insets.bottom,
             flexDirection: 'column',
             padding: 0,
             margin: 0,
