@@ -1,7 +1,7 @@
 export async function getMainMenu(api_key) {
   try {
     let request = await fetch(
-      'https://webdock.io/en/app_data/getMainMenu?secret=bf34eaa48c2643bb9bec16e8f46d88d8',
+      'https://app.webdock.io/en/app_data/getMainMenu?secret=bf34eaa48c2643bb9bec16e8f46d88d8',
       {
         method: 'GET',
         headers: {

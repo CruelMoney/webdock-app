@@ -103,7 +103,7 @@ export async function provisionAServer(
 export async function getServerSlugStatus(name) {
   try {
     let request = await fetch(
-      'https://webdock.io/tools/getServerSlug?name=' + name,
+      'https://app.webdock.io/tools/getServerSlug?name=' + name,
       {
         method: 'GET',
         headers: {
@@ -122,7 +122,7 @@ export async function getServerSlugStatus(name) {
 export async function getServerIcon(slug) {
   try {
     let request = await fetch(
-      'https://webdock.io/en/app_data/getServerIcon?slug=' +
+      'https://app.webdock.io/en/app_data/getServerIcon?slug=' +
         slug +
         '&secret=bf34eaa48c2643bb9bec16e8f46d88d8',
       {

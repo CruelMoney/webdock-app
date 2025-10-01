@@ -43,7 +43,7 @@ export default function WebViewScreen({navigation}) {
           if (!isActive) return;
 
           setSource({
-            uri: `https://webdock.io/en/app_data/appLoginRedirectUser${separator}app_token=${encodeURIComponent(
+            uri: `https://app.webdock.io/en/app_data/appLoginRedirectUser${separator}app_token=${encodeURIComponent(
               token,
             )}&destination=${destination}&user_id=${
               accountInfo.userId

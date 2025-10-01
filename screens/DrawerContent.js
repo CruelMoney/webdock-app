@@ -102,18 +102,16 @@ export function DrawerContent({props, navigation}) {
                   width={16}
                   height={16}
                   uri={
-                    'https://webdock.io' + theme.dark
-                      ? item.icon_dark
-                      : item.icon
+                    'https://app.webdock.io' +
+                    (theme.dark ? item.icon_dark : item.icon)
                   }
                 />
               ) : (
                 <Image
                   source={{
                     uri:
-                      'https://webdock.io' + theme.dark
-                        ? item.icon_dark
-                        : item.icon,
+                      'https://app.webdock.io' +
+                      (theme.dark ? item.icon_dark : item.icon),
                   }}
                   style={{width: 16, height: 16, backgroundColor: 'red'}}
                 />
@@ -173,18 +171,16 @@ export function DrawerContent({props, navigation}) {
                         width={20}
                         height={20}
                         uri={
-                          'https://webdock.io' + theme.dark
-                            ? item.icon_dark
-                            : item.icon
+                          'https://app.webdock.io' +
+                          (theme.dark ? item.icon_dark : item.icon)
                         }
                       />
                     ) : (
                       <Image
                         source={{
                           uri:
-                            'https://webdock.io' + theme.dark
-                              ? item.icon_dark
-                              : item.icon,
+                            'https://app.webdock.io' +
+                            (theme.dark ? item.icon_dark : item.icon),
                         }}
                         style={{width: 20, height: 20, backgroundColor: 'red'}}
                       />
