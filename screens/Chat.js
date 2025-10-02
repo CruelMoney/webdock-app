@@ -51,7 +51,7 @@ export default function Chat({navigation}) {
       icon: <DocsIcon width={20} height={20} />,
       description:
         'You should be able to find out easily how everything is put together and why',
-      navigate: 'https://webdock.io/en/docs',
+      navigate: 'https://app.webdock.io/en/docs',
     },
     {
       label: 'Webdock FAQ',
@@ -59,20 +59,20 @@ export default function Chat({navigation}) {
         'Click here to access our page outlining the most Frequently Asked Questions',
       icon: <FAQIcon width={20} height={20} />,
       navigate:
-        'https://webdock.io/en/docs/webdock-control-panel/frequently-asked-questions-faq',
+        'https://app.webdock.io/en/docs/webdock-control-panel/frequently-asked-questions-faq',
     },
     {
       label: 'Contact us',
       icon: <ContactUsIcon width={20} height={20} />,
       description: 'Be in touch with Webdock Support',
-      navigate: 'https://webdock.io/en/support/contact',
+      navigate: 'https://app.webdock.io/en/support/contact',
     },
     {
       label: 'App guide',
       icon: <AppGuideIcon width={20} height={20} />,
       description: 'how to get started with our Mobile App for iOS and Android',
       navigate:
-        'https://webdock.io/en/docs/webdock-control-panel/mobile-app-guides',
+        'https://app.webdock.io/en/docs/webdock-control-panel/mobile-app-guides',
     },
   ];
 

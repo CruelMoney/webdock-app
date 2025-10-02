@@ -259,7 +259,7 @@ export function LogInScreen({navigation}) {
           )}
         </View>
         <TouchableOpacity
-          onPress={() => Linking.openURL('https://webdock.io/en/signup')}>
+          onPress={() => Linking.openURL('https://app.webdock.io/en/signup')}>
           <Text style={{textAlign: 'center'}}>
             Don't have an account yet?{' '}
             <Text style={{color: '#009387', marginTop: 15}}>Sign up here!</Text>

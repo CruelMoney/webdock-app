@@ -174,7 +174,7 @@ export default function AccountInfo({navigation}) {
             <TouchableOpacity
               onPress={() =>
                 handleClick(
-                  'https://webdock.io/en/docs/webdock/billing-pricing',
+                  'https://app.webdock.io/en/docs/webdock/billing-pricing',
                 )
               }
               style={{display: 'flex', flexDirection: 'row', marginTop: 20}}>

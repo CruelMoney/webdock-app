@@ -36,14 +36,14 @@ export default function ScanQRCode({navigation}){
           <Text style={styles.centerText}>
             Go to{' '}
             <TouchableOpacity onPress={()=>{
-                Linking.canOpenURL("https://webdock.io/en/dash/profile").then(supported => {
+                Linking.canOpenURL("https://app.webdock.io/en/dash/profile").then(supported => {
                     if (supported) {
-                      Linking.openURL("https://webdock.io/en/dash/profile");
+                      Linking.openURL("https://app.webdock.io/en/dash/profile");
                     } else {
-                      console.log("Don't know how to open URI: " + "https://webdock.io/en/dash/profile");
+                      console.log("Don't know how to open URI: " + "https://app.webdock.io/en/dash/profile");
                     }
                   });
-            }}><Text style={styles.textBold}>https://webdock.io/en/dash/profile</Text></TouchableOpacity> on
+            }}><Text style={styles.textBold}>https://app.webdock.io/en/dash/profile</Text></TouchableOpacity> on
             your computer and scan the QR code on API & Integrations section.
           </Text>
         }

@@ -431,7 +431,7 @@ export function Step1({navigation, route}) {
         <SectionTitle
           title="Platform"
           question="Which should i choose?"
-          questionUrl="https://webdock.io/tools/provision_info/platform?lang=en_US&fromApp=true"
+          questionUrl="https://app.webdock.io/tools/provision_info/platform?lang=en_US&fromApp=true"
         />
         <View
           style={{
@@ -458,7 +458,7 @@ export function Step1({navigation, route}) {
         <SectionTitle
           title="Virtualization"
           question="Which should i choose?"
-          questionUrl="https://webdock.io/tools/provision_info/virtualization?lang=en_US&fromApp=true"
+          questionUrl="https://app.webdock.io/tools/provision_info/virtualization?lang=en_US&fromApp=true"
         />
         <View
           style={{
@@ -484,7 +484,7 @@ export function Step1({navigation, route}) {
         <SectionTitle
           title="Location"
           question="Which should i choose?"
-          questionUrl="https://webdock.io/tools/provision_info/location?lang=en_US&fromApp=true"
+          questionUrl="https://app.webdock.io/tools/provision_info/location?lang=en_US&fromApp=true"
         />
         <View
           style={{
@@ -512,7 +512,7 @@ export function Step1({navigation, route}) {
           <SectionTitle
             title="Profile"
             question="Which should i choose?"
-            questionUrl="https://webdock.io/tools/provision_info/profile?lang=en_US&fromApp=true"
+            questionUrl="https://app.webdock.io/tools/provision_info/profile?lang=en_US&fromApp=true"
           />
         </View>
         {profiles
@@ -646,7 +646,7 @@ export function Step2({route, navigation}) {
         <SectionTitle
           title="Image"
           question="Which should i choose?"
-          questionUrl="https://webdock.io/tools/provision_info/image?lang=en_US&fromApp=true"
+          questionUrl="https://app.webdock.io/tools/provision_info/image?lang=en_US&fromApp=true"
         />
         <Card
           style={{

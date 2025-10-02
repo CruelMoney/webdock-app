@@ -40,7 +40,7 @@ export default function WebViewWebdockAI({navigation}) {
           domain="webdock.io">
         </script>
         <script
-          src="https://webdock.io/static/common/js/chatbots-logic.js?v=1.1"
+          src="https://app.webdock.io/static/common/js/chatbots-logic.js?v=1.1"
           async>
         </script>
 
@@ -250,7 +250,7 @@ export default function WebViewWebdockAI({navigation}) {
             originWhitelist={['*']}
             userAgent={'Webdock Mobile App WebView v1.0'}
             source={{
-              uri: 'https://webdock.io/static/aichat/',
+              uri: 'https://app.webdock.io/static/aichat/',
               headers: {'X-Device-Name': deviceName},
             }}
             javaScriptEnabled={true}

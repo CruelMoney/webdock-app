@@ -95,7 +95,7 @@ export function ServerConsole({navigation, route}) {
           userAgent={'Webdock Mobile App WebView v1.0'}
           source={{
             uri:
-              ' https://webdock.io/en/webssh/' +
+              ' https://app.webdock.io/en/webssh/' +
               route.params.slug +
               '/' +
               route.params.username +

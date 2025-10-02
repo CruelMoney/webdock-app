@@ -236,7 +236,7 @@ export function DrawerContent({props, navigation}) {
         }
       } else {
         // URL is a relative path, prepend the base domain
-        url = 'https://webdock.io' + url;
+        url = 'https://app.webdock.io' + url;
       }
       Linking.canOpenURL(url).then(supported => {
         if (supported) {
@@ -268,9 +268,9 @@ export function DrawerContent({props, navigation}) {
               <Image
                 source={{
                   uri:
-                    'https://webdock.io' + theme.dark
+                    'https://app.webdock.io' + (theme.dark
                       ? item.icon_dark
-                      : item.icon,
+                      : item.icon),
                 }}
                 style={{width: 24, height: 24, backgroundColor: 'red'}}
               />
@@ -310,7 +310,7 @@ export function DrawerContent({props, navigation}) {
         url = `https://${url}`;
       } else {
         if (!url.startsWith('/')) url = '/' + url;
-        url = `https://webdock.io${url}`;
+        url = `https://app.webdock.io${url}`;
       }
     }
 
@@ -383,7 +383,7 @@ export function DrawerContent({props, navigation}) {
           ) : account ? (
             <Pressable
               onPress={() =>
-                openWebView('https://webdock.io/en/dash/editprofile')
+                openWebView('https://app.webdock.io/en/dash/editprofile')
               }
               style={{
                 padding: 20,
@@ -529,7 +529,6 @@ export function DrawerContent({props, navigation}) {
                 onPress={() =>
                   handlePress(
                     'https://youtube.com/@webdock',
-                    'youtube://www.youtube.com/@webdock',
                   )
                 }
               />

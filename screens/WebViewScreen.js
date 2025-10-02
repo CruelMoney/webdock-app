@@ -38,7 +38,7 @@ export default function WebViewScreen({navigation}) {
           const separator = uri.includes('?') ? '&' : '?';
           const accountInfoRaw = await AsyncStorage.getItem('accountInfo');
           const accountInfo = JSON.parse(accountInfoRaw || '{}');
-          const destination = uri.replace('https://webdock.io', '');
+          const destination = uri.replace('https://app.webdock.io', '');
 
           if (!isActive) return;
 

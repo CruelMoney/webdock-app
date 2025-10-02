@@ -334,7 +334,7 @@ export default function AccountPublicKeys({navigation}) {
                   <Pressable
                     onPress={() =>
                       handleClick(
-                        'https://webdock.io/en/docs/webdock-control-panel/shell-users-and-sudo/set-up-an-ssh-key',
+                        'https://app.webdock.io/en/docs/webdock-control-panel/shell-users-and-sudo/set-up-an-ssh-key',
                       )
                     }>
                     <Text

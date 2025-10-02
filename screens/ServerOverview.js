@@ -716,13 +716,13 @@ export default function ServerOverview({route, navigation}) {
     {
       label: 'Upgrade/Downgrade',
       icon: <DashboardIcon width={19} height={19} color="#00a1a1" />,
-      navigate: 'https://webdock.io/en/dash/changeprofile/',
+      navigate: 'https://app.webdock.io/en/dash/changeprofile/',
       description: 'Upgrade or Downgrade your server hardware',
     },
     {
       label: 'Server Identity',
       icon: <GlobeIcon width={19} height={19} color="#00a1a1" />,
-      navigate: 'https://webdock.io/en/dash/domains/',
+      navigate: 'https://app.webdock.io/en/dash/domains/',
       description:
         'Domain routing. Do this before generating new SSL certificates',
     },

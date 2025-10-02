@@ -465,7 +465,7 @@ export function Dashboard({navigation}) {
                           fontWeight: '600',
                         }}
                         onPress={() =>
-                          openWebView('https://webdock.io/en/pricing')
+                          openWebView('https://app.webdock.io/en/pricing')
                         }>
                         Create a Server
                       </Button>

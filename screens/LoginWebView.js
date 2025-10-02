@@ -66,7 +66,7 @@ export function LoginWebView() {
         userAgent={'Webdock Mobile App WebView v1.0'}
         source={{
           uri:
-            'https://webdock.io/en/login?fromApp=true&deviceName=' + deviceName,
+            'https://app.webdock.io/en/login?fromApp=true&deviceName=' + deviceName,
           headers: {
             'X-Device-Name': deviceName,
           },

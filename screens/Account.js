@@ -77,14 +77,14 @@ export default function Account({navigation}) {
       icon: <CogsIcon width={20} height={20} color={'white'} />,
       description:
         'Edit your profile info here like name, address and much more.',
-      navigate: 'https://webdock.io/en/dash/editprofile',
+      navigate: 'https://app.webdock.io/en/dash/editprofile',
     },
     {
       label: 'Team',
       description:
         'Invite somebody to join your Team and work on a specific server.',
       icon: <TeamIcon width={20} height={20} color={'white'} />,
-      navigate: 'https://webdock.io/en/dash/manageteam',
+      navigate: 'https://app.webdock.io/en/dash/manageteam',
     },
     {
       label: 'Notification settings',
@@ -109,7 +109,7 @@ export default function Account({navigation}) {
       label: 'Legal documents',
       description: 'Read all our legal documents here.',
       icon: <LegalDocsIcon width={20} height={20} color={'white'} />,
-      navigate: 'https://webdock.io/en/dash/profile%23legalDocuments',
+      navigate: 'https://app.webdock.io/en/dash/profile%23legalDocuments',
     },
   ];
   const {isDark, toggleTheme} = useContext(ThemeContext);
@@ -178,7 +178,7 @@ export default function Account({navigation}) {
           }}>
           <Pressable
             onPress={() =>
-              openWebView('https://webdock.io/en/dash/editprofile')
+              openWebView('https://app.webdock.io/en/dash/editprofile')
             }
             style={{
               display: 'flex',

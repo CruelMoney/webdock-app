@@ -337,7 +337,7 @@ export default function MainTabs({navigation}) {
           ]}>
           {/* Create new server */}
           <Pressable
-            onPress={() => openWebView('https://webdock.io/en/pricing')}>
+            onPress={() => openWebView('https://app.webdock.io/en/pricing')}>
             <View style={{flexDirection: 'row', gap: 16}}>
               <CreateServerIcon
                 width={40}
@@ -448,7 +448,7 @@ export default function MainTabs({navigation}) {
                       color: theme.colors.text,
                     }}
                     onPress={() =>
-                      openWebView('https://webdock.io/en/dash/refer-friend')
+                      openWebView('https://app.webdock.io/en/dash/refer-friend')
                     }>
                     Read more
                   </Button>

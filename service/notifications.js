@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
 import {PermissionsAndroid, Platform} from 'react-native';
 
-const API_ENDPOINT = 'https://webdock.io/en/app_data/savePushToken';
+const API_ENDPOINT = 'https://app.webdock.io/en/app_data/savePushToken';
 
 export default async function requestUserPermission() {
   if (Platform.OS === 'android' && Platform.Version >= 33) {

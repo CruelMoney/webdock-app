@@ -331,7 +331,7 @@ export function HomeScreen({navigation}) {
                   lineHeight: 12 * 1.2,
                   fontWeight: '600',
                 }}
-                onPress={() => openWebView('https://webdock.io/en/pricing')}>
+                onPress={() => openWebView('https://app.webdock.io/en/pricing')}>
                 Create a Server
               </Button>
             </View>
