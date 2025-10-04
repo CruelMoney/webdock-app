@@ -219,8 +219,10 @@ export default function ServerActivity({route, navigation}) {
                     stroke: '#e3e3e3',
                     strokeDasharray: '0',
                   },
+                  barPercentage: 1.5 - (metrics?.disk?.samplings.length * 0.1)
                 }}
-                style={{borderRadius: 16}}
+                style={{ borderRadius: 16 }} 
+                barPercentage={0.6}
                 showBarTops={false}
               />
             </Card.Content>

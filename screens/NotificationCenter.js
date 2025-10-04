@@ -17,6 +17,7 @@ import {
   TextInput,
   useTheme,
   ActivityIndicator,
+  Provider,
 } from 'react-native-paper';
 import {TabBar, TabView} from 'react-native-tab-view';
 import {TouchableOpacity} from 'react-native-gesture-handler';
@@ -494,6 +495,7 @@ export default function NotificationCenter({navigation}) {
 
   return (
     <>
+    <Provider theme={theme}>
       <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
         <BottomSheet
           ref={bottomSheetRef}
@@ -619,7 +621,6 @@ export default function NotificationCenter({navigation}) {
                       placeholderTextColor={theme.colors.text + '99'}
                     />
                   </View>
-
                   <Menu
                     visible={visible}
                     onDismiss={closeMenu}
@@ -798,6 +799,7 @@ export default function NotificationCenter({navigation}) {
           </ScrollView>
         </View>
       </Modal>
+      </Provider>
     </>
   );
 }
