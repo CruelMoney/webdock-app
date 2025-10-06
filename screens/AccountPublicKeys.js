@@ -458,7 +458,7 @@ export default function AccountPublicKeys({navigation}) {
         style={{justifyContent: 'flex-end', margin: 0}}>
         <View
           style={{
-            backgroundColor: 'white',
+            backgroundColor: theme.colors.surface,
             padding: 24,
             borderTopStartRadius: 20,
             borderTopEndRadius: 20,
