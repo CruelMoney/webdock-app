@@ -198,9 +198,17 @@ export function DrawerContent({props, navigation}) {
                 {hasChildren && (
                   <Text>
                     {isExpanded ? (
-                      <Icon source="chevron-up" size={18} color="black" />
+                      <Icon
+                        source="chevron-up"
+                        size={18}
+                        color={theme.colors.text}
+                      />
                     ) : (
-                      <Icon source="chevron-down" size={18} color="black" />
+                      <Icon
+                        source="chevron-down"
+                        size={18}
+                        color={theme.colors.text}
+                      />
                     )}
                   </Text>
                 )}
@@ -268,9 +276,8 @@ export function DrawerContent({props, navigation}) {
               <Image
                 source={{
                   uri:
-                    'https://app.webdock.io' + (theme.dark
-                      ? item.icon_dark
-                      : item.icon),
+                    'https://app.webdock.io' +
+                    (theme.dark ? item.icon_dark : item.icon),
                 }}
                 style={{width: 24, height: 24, backgroundColor: 'red'}}
               />
@@ -299,7 +306,7 @@ export function DrawerContent({props, navigation}) {
   };
   const handlePress = async (inputUrl, appScheme) => {
     let url = inputUrl.trim();
-
+    console.log(url);
     // If already http/https, keep
     if (!(url.startsWith('http://') || url.startsWith('https://'))) {
       const hasDomain =
@@ -313,27 +320,22 @@ export function DrawerContent({props, navigation}) {
         url = `https://app.webdock.io${url}`;
       }
     }
+    console.log(url);
 
     try {
-      // Try app scheme first if provided
-      if (appScheme) {
-        const supported = await Linking.canOpenURL(appScheme);
-        if (supported) {
-          return Linking.openURL(appScheme);
-        }
-      }
-
       // Then fallback to https:// url
       const supported = await Linking.canOpenURL(url);
+      console.log(supported);
+
       if (supported) {
-        return Linking.openURL(url);
+        Linking.openURL(url);
+      } else {
+        Linking.openURL(url);
       }
 
       // Finally open inside your WebViewScreen
-      navigation.navigate('WebViewScreen', {uri: url, token: ''});
     } catch (err) {
       console.warn('Failed to open url:', err);
-      navigation.navigate('WebViewScreen', {uri: url, token: ''});
     }
   };
 
@@ -526,11 +528,7 @@ export function DrawerContent({props, navigation}) {
               <IconButton
                 icon="youtube"
                 style={{width: 48, height: 48}}
-                onPress={() =>
-                  handlePress(
-                    'https://youtube.com/@webdock',
-                  )
-                }
+                onPress={() => handlePress('https://m.youtube.com/@webdock/')}
               />
             </View>
             <View>
@@ -553,7 +551,7 @@ export function DrawerContent({props, navigation}) {
                 )}
                 style={{width: 48, height: 48}}
                 onPress={() =>
-                  handlePress('https://www.tiktok.com/@webdock.io')
+                  handlePress('https://www.tiktok.com/@webdock.io/')
                 }
               />
             </View>
@@ -571,7 +569,7 @@ export function DrawerContent({props, navigation}) {
                 icon="facebook"
                 style={{width: 48, height: 48}}
                 onPress={() =>
-                  handlePress('https://www.facebook.com/webdockio')
+                  handlePress('https://www.facebook.com/webdockio/')
                 }
               />
             </View>

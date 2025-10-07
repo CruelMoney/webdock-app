@@ -29,9 +29,22 @@
     </activity>
   </application>
   <queries>
+    <!-- Allow checking if YouTube app is installed -->
     <intent>
-      <action android:name="android.intent.action.VIEW" />
-      <data android:scheme="https" />
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="youtube" />
     </intent>
-  </queries>
+
+    <!-- Optional: allow checks for browser fallback -->
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="https" />
+    </intent>
+
+    <!-- If you open Play Store, maps, etc., add their schemes too -->
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="market" />
+    </intent>
+</queries>
 </manifest>

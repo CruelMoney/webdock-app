@@ -7,7 +7,7 @@ import React, {
   useImperativeHandle,
   useState,
 } from 'react';
-import {View, Text, StyleSheet, Share} from 'react-native';
+import {View, Text, StyleSheet, Share, InteractionManager} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -48,6 +48,7 @@ import ServerOverview from './ServerOverview';
 import {requestUserPermission} from '../service/notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NotificationBell from '../components/NotificationBell';
+import {getMainMenu} from '../service/menu';
 const Tab = createBottomTabNavigator();
 
 function RotatingTabIcon({isOpen, onPress}) {
@@ -83,7 +84,8 @@ export default function MainTabs({navigation}) {
   const bottomSheetRef = useRef(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const {copilotEvents} = useCopilot();
-
+  //hide create server
+  const {showCreateServer, setShowCreateServer} = useState(true);
   const toggleSheet = useCallback(() => {
     if (sheetOpen) {
       bottomSheetRef.current?.close(); // close sheet
@@ -101,7 +103,25 @@ export default function MainTabs({navigation}) {
   const theme = useTheme();
   const WalkthroughablePressable = walkthroughable(Pressable);
   const WalkthroughableView = walkthroughable(View);
-  useEffect(() => {}, []);
+
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
+      (async () => {
+        const userToken = await AsyncStorage.getItem('userToken');
+        getMainMenu(userToken).then(async data => {
+          console.log(data);
+          if (data.show_create_server != null) {
+            console.log(data);
+            setShowCreateServer(data.show_create_server);
+          }
+        });
+      })();
+    });
+
+    return () => {
+      task.cancel();
+    };
+  }, []);
 
   const openWebView = async url => {
     navigation.navigate('WebViewScreen', {
@@ -337,6 +357,7 @@ export default function MainTabs({navigation}) {
           ]}>
           {/* Create new server */}
           <Pressable
+            style={showCreateServer ? {} : {display: 'none'}}
             onPress={() => openWebView('https://app.webdock.io/en/pricing')}>
             <View style={{flexDirection: 'row', gap: 16}}>
               <CreateServerIcon
