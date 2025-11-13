@@ -85,7 +85,7 @@ export default function MainTabs({navigation}) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const {copilotEvents} = useCopilot();
   //hide create server
-  const {showCreateServer, setShowCreateServer} = useState(true);
+  const [showCreateServer, setShowCreateServer] = useState("true");
   const toggleSheet = useCallback(() => {
     if (sheetOpen) {
       bottomSheetRef.current?.close(); // close sheet
@@ -104,24 +104,36 @@ export default function MainTabs({navigation}) {
   const WalkthroughablePressable = walkthroughable(Pressable);
   const WalkthroughableView = walkthroughable(View);
 
-  useEffect(() => {
-    const task = InteractionManager.runAfterInteractions(() => {
-      (async () => {
-        const userToken = await AsyncStorage.getItem('userToken');
-        getMainMenu(userToken).then(async data => {
-          console.log(data);
-          if (data.show_create_server != null) {
-            console.log(data);
-            setShowCreateServer(data.show_create_server);
-          }
-        });
-      })();
-    });
+useEffect(() => {
+  let isActive = true;
 
-    return () => {
-      task.cancel();
-    };
-  }, []);
+  (async () => {
+    try {
+      const userToken = await AsyncStorage.getItem('userToken');
+      if (!userToken) return;
+
+      const data = await getMainMenu(userToken);
+      console.log('getMainMenu result:', data);
+
+      if (data && data.show_create_server != null) { // handles both null and undefined
+        const showCreateServerValue = String(!!data.show_create_server);
+        await AsyncStorage.setItem('SHOW_CREATE_SERVER', showCreateServerValue);
+
+        if (isActive) {
+          setShowCreateServer(showCreateServerValue);
+          console.log('SHOW_CREATE_SERVER saved:', showCreateServerValue);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading main menu:', err);
+    }
+  })();
+
+  return () => {
+    isActive = false; // avoid state updates after unmount
+  };
+}, []);
+
 
   const openWebView = async url => {
     navigation.navigate('WebViewScreen', {
@@ -356,8 +368,7 @@ export default function MainTabs({navigation}) {
             },
           ]}>
           {/* Create new server */}
-          <Pressable
-            style={showCreateServer ? {} : {display: 'none'}}
+          { showCreateServer==="true" ? <Pressable
             onPress={() => openWebView('https://app.webdock.io/en/pricing')}>
             <View style={{flexDirection: 'row', gap: 16}}>
               <CreateServerIcon
@@ -390,7 +401,8 @@ export default function MainTabs({navigation}) {
                 </Text>
               </View>
             </View>
-          </Pressable>
+          </Pressable>:null}
+
           <Divider />
 
           {/* Refer a Friend */}

@@ -113,7 +113,7 @@ export function DrawerContent({props, navigation}) {
                       'https://app.webdock.io' +
                       (theme.dark ? item.icon_dark : item.icon),
                   }}
-                  style={{width: 16, height: 16, backgroundColor: 'red'}}
+                  style={{width: 16, height: 16}}
                 />
               )
             ) : null}
@@ -182,7 +182,7 @@ export function DrawerContent({props, navigation}) {
                             'https://app.webdock.io' +
                             (theme.dark ? item.icon_dark : item.icon),
                         }}
-                        style={{width: 20, height: 20, backgroundColor: 'red'}}
+                        style={{width: 20, height: 20}}
                       />
                     )
                   ) : null}
@@ -272,16 +272,27 @@ export function DrawerContent({props, navigation}) {
               gap: 10,
               paddingVertical: 12,
             }}>
-            {item.icon ? (
-              <Image
-                source={{
-                  uri:
-                    'https://app.webdock.io' +
-                    (theme.dark ? item.icon_dark : item.icon),
-                }}
-                style={{width: 24, height: 24, backgroundColor: 'red'}}
-              />
-            ) : null}
+            {item.icon != '' ? (
+                    item.icon.endsWith('.svg') ? (
+                      <SvgUri
+                        width={20}
+                        height={20}
+                        uri={
+                          'https://app.webdock.io' +
+                          (theme.dark ? item.icon_dark : item.icon)
+                        }
+                      />
+                    ) : (
+                      <Image
+                        source={{
+                          uri:
+                            'https://app.webdock.io' +
+                            (theme.dark ? item.icon_dark : item.icon),
+                        }}
+                        style={{width: 20, height: 20}}
+                      />
+                    )
+                  ) : null}
             <Text
               style={{
                 fontSize: 22,

@@ -24,6 +24,7 @@ export default function WebViewScreen({navigation}) {
     enablePullToRefresh = false,
   } = route.params;
   const [source, setSource] = useState(null);
+  const [showCreateServer, setShowCreateServer] = useState("true");
   const insets = useSafeAreaInsets();
   const theme = useTheme();
 
@@ -34,6 +35,7 @@ export default function WebViewScreen({navigation}) {
 
     const buildSource = async () => {
       try {
+        setShowCreateServer(await AsyncStorage.getItem("SHOW_CREATE_SERVER"));
         if (tokenType === 'query') {
           const separator = uri.includes('?') ? '&' : '?';
           const accountInfoRaw = await AsyncStorage.getItem('accountInfo');
@@ -84,6 +86,7 @@ export default function WebViewScreen({navigation}) {
 
     buildSource();
 
+
     return () => {
       isActive = false; // Prevent setting state if unmounted
     };
@@ -118,6 +121,8 @@ export default function WebViewScreen({navigation}) {
       title=""
       onClose={() => navigation.goBack()}
       style={styles.container}>
+                  {(Platform.OS === 'ios' && showCreateServer === "true") ?
+
       <View style={{flex: 1}}>
         {loading && (
           <View
@@ -144,8 +149,8 @@ export default function WebViewScreen({navigation}) {
           <View style={styles.error}>
             <Text style={{color: 'red'}}>Error loading page: {error}</Text>
           </View>
-        ) : (
-          <WebView
+        ) : 
+            <WebView
             userAgent={'Webdock Mobile App WebView v2.0'}
             originWhitelist={['*']}
             source={source}
@@ -189,8 +194,10 @@ export default function WebViewScreen({navigation}) {
                 }
               : {})}
           />
-        )}
+          
+          }
       </View>
+      :<Text style={{flex: 1,textAlign:'center'}}>This feature will be available soon.</Text>}
     </BottomSheetWrapper>
   );
 }
