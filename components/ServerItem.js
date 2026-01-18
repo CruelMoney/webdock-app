@@ -5,7 +5,7 @@ import {useTheme} from 'react-native-paper';
 import ArrowIcon from '../assets/arrow-icon.svg';
 import {getServerIcon} from '../service/servers';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import FastImage from 'react-native-fast-image';
+import {Image} from 'expo-image';
 import {serverIconResponseCache} from '../service/serverIconCache';
 
 function ServerItem({title, alias, dc, profile, ipv4, status, slug}) {
@@ -64,7 +64,7 @@ function ServerItem({title, alias, dc, profile, ipv4, status, slug}) {
       if (serverIconResponseCache[slug]) {
         const cachedIcon = fixUrl(serverIconResponseCache[slug].icon);
         if (mounted && cachedIcon !== icon) {
-          FastImage.preload([{uri: cachedIcon}]);
+          Image.prefetch(cachedIcon);
           setIcon(cachedIcon);
         }
         return;
@@ -76,7 +76,7 @@ function ServerItem({title, alias, dc, profile, ipv4, status, slug}) {
 
         const fixed = fixUrl(response.icon);
         if (mounted && fixed !== icon) {
-          FastImage.preload([{uri: fixed}]);
+          Image.prefetch(fixed);
           setIcon(fixed);
         }
       } catch (error) {
@@ -100,13 +100,10 @@ function ServerItem({title, alias, dc, profile, ipv4, status, slug}) {
           padding: 14,
         }}>
         {/* Icon */}
-        <FastImage
-          source={{
-            uri: icon,
-            priority: FastImage.priority.normal,
-            cache: FastImage.cacheControl.immutable,
-          }}
+        <Image
+          source={{uri: icon}}
           style={{borderRadius: 4, width: 42, height: 42, marginRight: 12}}
+          cachePolicy="memory-disk"
         />
 
         {/* Text Content */}

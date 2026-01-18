@@ -1,41 +1,36 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import {NavigationContainer} from '@react-navigation/native';
-import React, {useContext, useEffect, useState} from 'react';
-import {Button, Provider} from 'react-native-paper';
+import { NavigationContainer } from '@react-navigation/native';
+import React, { useContext, useEffect, useState } from 'react';
+import { Button, Provider } from 'react-native-paper';
 // import SplashScreen from 'react-native-splash-screen';
-import Toast from 'react-native-toast-message';
-import {AuthContext} from './components/context';
-import OfflineNotice from './components/OfflineNotice';
-import {RootStack} from './screens/RootStack';
-import MainTabs from './screens/MainTabs';
-import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
-import {ThemeContext} from './components/ThemeContext';
-import CrispChat, {
-  configure,
-  setUserEmail,
-  setUserNickname,
-  setUserPhone,
-  setTokenId,
-  resetSession,
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { StatusBar, StyleSheet, Text, View } from 'react-native';
+import { CopilotProvider, useCopilot } from 'react-native-copilot';
+import {
+  configure
 } from 'react-native-crisp-chat-sdk';
-import {CopilotProvider, useCopilot} from 'react-native-copilot';
-import {StatusBar, StyleSheet, Text, View} from 'react-native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
+import { AuthContext } from './components/context';
+import OfflineNotice from './components/OfflineNotice';
+import { ThemeContext } from './components/ThemeContext';
+import ThemeSwitch from './components/ThemeSwitch';
 import AccountPublicKeys from './screens/AccountPublicKeys';
-import WebViewScreen from './screens/WebViewScreen';
 import AccountScripts from './screens/AccountScripts';
 import EditAccountScript from './screens/EditAccountScript';
-import WebViewWebdockAI from './screens/WebViewWebdockAI';
+import MainTabs from './screens/MainTabs';
+import NotificationCenter from './screens/NotificationCenter';
+import { RootStack } from './screens/RootStack';
+import ServerActivity from './screens/ServerActivity';
+import { ServerConsole } from './screens/ServerConsole';
+import ServerEvents from './screens/ServerEvents';
 import ServerScripts from './screens/ServerScripts';
 import ServerShellUsers from './screens/ServerShellUsers';
 import ServerSnapshots from './screens/ServerSnapshots';
-import ServerEvents from './screens/ServerEvents';
-import ServerActivity from './screens/ServerActivity';
-import NotificationCenter from './screens/NotificationCenter';
-import {ServerConsole} from './screens/ServerConsole';
-import ThemeSwitch from './components/ThemeSwitch';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import WebViewScreen from './screens/WebViewScreen';
+import WebViewWebdockAI from './screens/WebViewWebdockAI';
 export default function WebdockApp() {
   //const [isLoading, setIsLoading] = React.useState(true);
   const [userToken, setUserToken] = React.useState(null);
@@ -93,7 +88,7 @@ export default function WebdockApp() {
       } catch (e) {
         alert(e);
       }
-      dispatch({type: 'LOGOUT'});
+      dispatch({ type: 'LOGOUT' });
     },
   }));
 
@@ -113,7 +108,7 @@ export default function WebdockApp() {
       } catch (e) {
         alert(e);
       }
-      dispatch({type: 'RETRIEVE_TOKEN', token: userToken});
+      dispatch({ type: 'RETRIEVE_TOKEN', token: userToken });
     }, 0);
   }, []);
 
@@ -123,7 +118,7 @@ export default function WebdockApp() {
     }
   }, [loginState]);
 
-  const {theme, isDark, toggleTheme} = useContext(ThemeContext);
+  const { theme, isDark, toggleTheme } = useContext(ThemeContext);
 
   const TooltipComponent = () => {
     const {
@@ -141,13 +136,13 @@ export default function WebdockApp() {
       <View
         style={[
           styles.tooltip,
-          {backgroundColor: theme.dark ? '#1E392B' : '#ffffff'},
+          { backgroundColor: theme.dark ? '#1E392B' : '#ffffff' },
         ]}>
-        <View style={{gap: 12}}>
-          <Text style={[styles.tooltipTitle, {color: theme.colors.text}]}>
+        <View style={{ gap: 12 }}>
+          <Text style={[styles.tooltipTitle, { color: theme.colors.text }]}>
             {currentStep?.text.split('|')[0]}
           </Text>
-          <Text style={[styles.tooltipText, {color: theme.colors.text}]}>
+          <Text style={[styles.tooltipText, { color: theme.colors.text }]}>
             {currentStep?.text.split('|')[1]}
           </Text>
         </View>
@@ -160,7 +155,7 @@ export default function WebdockApp() {
                   label: 'Light mode',
                   icon: 'white-balance-sunny',
                 },
-                {key: 'dark', label: 'Dark mode', icon: 'weather-night'},
+                { key: 'dark', label: 'Dark mode', icon: 'weather-night' },
               ]}
               onToggle={value => toggleTheme(value)}
               selectedOption={theme.dark ? 1 : 0}
@@ -170,14 +165,14 @@ export default function WebdockApp() {
         {/* <Pagination currentStep={currentStep} /> */}
         <View style={styles.buttons}>
           <View style={styles.container}>
-            {Array.from({length: totalStepsNumber}).map((_, index) => {
+            {Array.from({ length: totalStepsNumber }).map((_, index) => {
               const isFilled = index + 1 == currentStepNumber;
               return (
                 <View
                   key={index}
                   style={[
                     styles.dot,
-                    isFilled ? {backgroundColor: 'black'} : styles.dotEmpty,
+                    isFilled ? { backgroundColor: 'black' } : styles.dotEmpty,
                   ]}
                 />
               );
@@ -284,7 +279,7 @@ export default function WebdockApp() {
         }}
         tooltipComponent={TooltipComponent}
         stepNumberComponent={() => null}
-        style={{paddingTop: insets.top, height: '100%'}}
+        style={{ paddingTop: insets.top, height: '100%' }}
         animated
         svgMaskPath={customSvgPath}
         overlay="svg">
@@ -300,7 +295,7 @@ export default function WebdockApp() {
                   <Stack.Screen
                     name="Root"
                     component={MainTabs}
-                    options={{headerShown: false}}
+                    options={{ headerShown: false }}
                   />
                   <Stack.Screen
                     name="WebViewScreen"
@@ -414,11 +409,11 @@ export default function WebdockApp() {
               ) : (
                 <RootStack />
               )}
-              <OfflineNotice style={{zIndex: 200000}} />
-              <Toast style={{zIndex: 200000}} />
+              <OfflineNotice style={{ zIndex: 200000 }} />
+              <Toast style={{ zIndex: 200000 }} />
             </NavigationContainer>
-            <OfflineNotice style={{zIndex: 200000}} />
-            <Toast style={{zIndex: 200000}} />
+            <OfflineNotice style={{ zIndex: 200000 }} />
+            <Toast style={{ zIndex: 200000 }} />
           </AuthContext.Provider>
         </BottomSheetModalProvider>
       </CopilotProvider>

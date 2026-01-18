@@ -11,14 +11,16 @@ import NetInfo from '@react-native-community/netinfo';
 import {createStackNavigator} from '@react-navigation/stack';
 import React, {useEffect, useState} from 'react';
 import {StatusBar, StyleSheet, View} from 'react-native';
-// import SplashScreen from 'react-native-splash-screen';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {ThemeProvider} from './components/ThemeContext';
 import WebdockApp from './WebdockApp';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {useTheme} from 'react-native-paper';
-import {hideSplash, showSplash} from 'react-native-splash-view';
+import * as SplashScreen from 'expo-splash-screen';
+
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
 
 // const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -111,7 +113,7 @@ export default function App() {
       init().finally(async () => {
         if ((await AsyncStorage.getItem('userToken')) == null) {
           setTimeout(() => {
-            hideSplash();
+            SplashScreen.hideAsync();
           }, 3000);
         }
       });

@@ -1,4 +1,4 @@
-import FastImage from 'react-native-fast-image';
+import {Image} from 'expo-image';
 import {api_url} from '../config/config';
 import {serverIconResponseCache} from './serverIconCache';
 
@@ -161,13 +161,12 @@ export function preloadServerIcons(serverList, max = 20) {
         icon.startsWith('http') &&
         !seen.has(icon)
       ) {
-        uris.push({uri: icon});
+        uris.push(icon);
         seen.add(icon);
       }
     }
-    if (uris.length > 0) {
-      FastImage.preload(uris);
-    }
+    // Prefetch all icons using expo-image
+    uris.forEach(uri => Image.prefetch(uri));
   } catch (e) {
     console.error('preloadServerIcons error:', e);
   }

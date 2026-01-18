@@ -5,10 +5,10 @@ import React, {
   useRef,
   useCallback,
 } from 'react';
-import {Image, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 import Spacer from './Spacer';
 import {Button, useTheme} from 'react-native-paper';
-import FastImage from 'react-native-fast-image';
+import {Image} from 'expo-image';
 const NewsItem = ({
   item: {
     title,
@@ -117,14 +117,11 @@ const NewsItem = ({
         }}>
         {title}
       </Text>
-      <FastImage
-        resizeMode="cover"
-        source={{
-          uri: featuredImage,
-          priority: FastImage.priority.normal,
-          cache: FastImage.cacheControl.web,
-        }}
+      <Image
+        contentFit="cover"
+        source={{uri: featuredImage}}
         style={{borderRadius: 4, width: '100%', height: 168}}
+        cachePolicy="memory-disk"
       />
       <Text
         style={{

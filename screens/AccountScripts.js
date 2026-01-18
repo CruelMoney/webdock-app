@@ -1,52 +1,31 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {useRef, useEffect, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   FlatList,
-  Image,
-  SafeAreaView,
-  ScrollView,
+  Keyboard,
   StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
-  View,
-  Pressable,
-  TouchableOpacity,
-  Alert,
-  Keyboard,
-  Dimensions,
+  View
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import ReactNativeModal from 'react-native-modal';
 import {
   Button,
-  Paragraph,
-  Dialog,
-  Portal,
-  FAB,
-  Provider,
-  IconButton,
-  useTheme,
+  HelperText,
   TextInput,
+  useTheme
 } from 'react-native-paper';
-import {Avatar, Divider} from 'react-native-paper';
+import Toast from 'react-native-toast-message';
+import AccordionItem from '../components/AccordionItem';
+import BottomSheetWrapper from '../components/BottomSheetWrapper';
+import ScriptItem from '../components/ScriptItem';
 import {
   deleteAccountScript,
   getAccountScripts,
-  patchAccountScripts,
-  postAccountScripts,
+  postAccountScripts
 } from '../service/accountScripts';
-import Toast from 'react-native-toast-message';
-import ReactNativeModal from 'react-native-modal';
-import DeleteIcon from '../assets/delete-icon.svg';
-import EditIcon from '../assets/edit-icon.svg';
-import BackIcon from '../assets/back-icon.svg';
-import PlusIcon from '../assets/plus-icon.svg';
-import EmptyList from '../components/EmptyList';
-import BottomSheetWrapper from '../components/BottomSheetWrapper';
-import ScriptItem from '../components/ScriptItem';
-import AccordionItem from '../components/AccordionItem';
 
-export default function AccountScripts({navigation}) {
+export default function AccountScripts({ navigation }) {
   const scriptsCache = useRef(null);
   const [scripts, setScripts] = useState();
   const [inputs, setInputs] = React.useState({
@@ -101,7 +80,7 @@ export default function AccountScripts({navigation}) {
     let userToken = null;
 
     userToken = await AsyncStorage.getItem('userToken');
-    var result = await deleteAccountScript(userToken, pkey);
+    let result = await deleteAccountScript(userToken, pkey);
     if (result == 200) {
       onBackgroundRefresh();
       try {
@@ -163,10 +142,10 @@ export default function AccountScripts({navigation}) {
     }
   };
   const handleOnchange = (text, input) => {
-    setInputs(prevState => ({...prevState, [input]: text}));
+    setInputs(prevState => ({ ...prevState, [input]: text }));
   };
   const handleError = (error, input) => {
-    setErrors(prevState => ({...prevState, [input]: error}));
+    setErrors(prevState => ({ ...prevState, [input]: error }));
   };
   const handleRequestDelete = key => {
     setSelectedScript(key);
@@ -195,7 +174,7 @@ export default function AccountScripts({navigation}) {
         alert(e);
       }
       onBackgroundRefresh();
-      setInputs({name: '', filename: '', content: ''});
+      setInputs({ name: '', filename: '', content: '' });
     } else if (result.status == 400) {
       try {
         Toast.show({
@@ -228,8 +207,8 @@ export default function AccountScripts({navigation}) {
           <AccordionItem
             title="Add new script"
             viewKey="AddAccountScriptAccordion">
-            <View style={{padding: 16, gap: 12}}>
-              <View style={{gap: 4}}>
+            <View style={{ padding: 16, gap: 12 }}>
+              <View style={{ gap: 4 }}>
                 <Text
                   style={{
                     fontFamily: 'Poppins-SemiBold',
@@ -244,7 +223,7 @@ export default function AccountScripts({navigation}) {
                   dense={true}
                   onChangeText={text => handleOnchange(text, 'name')}
                   underlineColorAndroid="transparent"
-                  underlineStyle={{display:'none'}}
+                  underlineStyle={{ display: 'none' }}
                   underlineColor="transparent"
                   activeUnderlineColor={theme.colors.text}
                   theme={{
@@ -273,7 +252,7 @@ export default function AccountScripts({navigation}) {
                   </HelperText>
                 ) : null}
               </View>
-              <View style={{gap: 4}}>
+              <View style={{ gap: 4 }}>
                 <Text
                   style={{
                     fontFamily: 'Poppins-SemiBold',
@@ -288,7 +267,7 @@ export default function AccountScripts({navigation}) {
                   dense={true}
                   onChangeText={text => handleOnchange(text, 'filename')}
                   underlineColorAndroid="transparent"
-                  underlineStyle={{display:'none'}}
+                  underlineStyle={{ display: 'none' }}
                   underlineColor="transparent"
                   activeUnderlineColor={theme.colors.text}
                   theme={{
@@ -320,7 +299,7 @@ export default function AccountScripts({navigation}) {
                   </HelperText>
                 ) : null}
               </View>
-              <View style={{gap: 4}}>
+              <View style={{ gap: 4 }}>
                 <Text
                   style={{
                     fontFamily: 'Poppins-SemiBold',
@@ -336,7 +315,7 @@ export default function AccountScripts({navigation}) {
                   dense={true}
                   multiline
                   underlineColorAndroid="transparent"
-                  underlineStyle={{display:'none'}}
+                  underlineStyle={{ display: 'none' }}
                   underlineColor="transparent"
                   activeUnderlineColor={theme.colors.text}
                   theme={{
@@ -426,7 +405,7 @@ export default function AccountScripts({navigation}) {
               showsVerticalScrollIndicator={false}
               onRefresh={() => onRefresh()}
               refreshing={isFetching}
-              renderItem={({item}) => (
+              renderItem={({ item }) => (
                 <>
                   <ScriptItem
                     item={item}
@@ -472,10 +451,9 @@ export default function AccountScripts({navigation}) {
         isVisible={isDeleteModalVisible}
         swipeDirection={['up', 'left', 'right', 'down']}
         onSwipeComplete={() => setIsDeleteModalVisible(false)}
-        style={{justifyContent: 'flex-end', margin: 0}}>
+        style={{ justifyContent: 'flex-end', margin: 0 }}>
         <View
           style={{
-            backgroundColor: 'white',
             padding: 24,
             borderTopStartRadius: 20,
             borderTopEndRadius: 20,

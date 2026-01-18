@@ -75,7 +75,7 @@ import {CopilotStep, useCopilot, walkthroughable} from 'react-native-copilot';
 import CallbackStatusWatcher from '../components/CallbackStatusWatcher';
 import requestUserPermission from '../service/notifications';
 import EventItem from '../components/EventItem';
-import {hideSplash, showSplash} from 'react-native-splash-view';
+import * as SplashScreen from 'expo-splash-screen';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const ONBOARDING_KEY = 'hasShownCopilot';
@@ -151,7 +151,7 @@ export function Dashboard({navigation}) {
       await fetchEvents();
       init().finally(async () => {
         setTimeout(() => {
-          hideSplash();
+          SplashScreen.hideAsync();
         }, 3000);
       });
     }, 0);
