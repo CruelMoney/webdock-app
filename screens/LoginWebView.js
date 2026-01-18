@@ -4,7 +4,7 @@ import {
   Alert,
   Platform,
   StatusBar,
-  View
+  View,
 } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';

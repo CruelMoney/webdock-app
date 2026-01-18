@@ -8,16 +8,16 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import {createStackNavigator} from '@react-navigation/stack';
-import React, {useEffect, useState} from 'react';
-import {StatusBar, StyleSheet, View} from 'react-native';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {ThemeProvider} from './components/ThemeContext';
-import WebdockApp from './WebdockApp';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {useTheme} from 'react-native-paper';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import * as SplashScreen from 'expo-splash-screen';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useTheme } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ThemeProvider } from './components/ThemeContext';
+import WebdockApp from './WebdockApp';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -81,7 +81,7 @@ export default function App() {
       } catch (e) {
         alert(e);
       }
-      dispatch({type: 'LOGOUT'});
+      dispatch({ type: 'LOGOUT' });
     },
   }));
 
@@ -101,12 +101,12 @@ export default function App() {
       } catch (e) {
         alert(e);
       }
-      dispatch({type: 'RETRIEVE_TOKEN', token: userToken});
+      dispatch({ type: 'RETRIEVE_TOKEN', token: userToken });
     }, 0);
   }, []);
 
   useEffect(() => {
-    if (loginState.isLoading == false) {
+    if (loginState.isLoading === false) {
       const init = async () => {
         // …do multiple sync or async tasks
       };
@@ -122,7 +122,7 @@ export default function App() {
   const theme = useTheme();
   return (
     <GestureHandlerRootView
-      style={{flex: 1, backgroundColor: theme.colors.background}}>
+      style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <ThemeProvider>
         <SafeAreaProvider>
           <WebdockApp />

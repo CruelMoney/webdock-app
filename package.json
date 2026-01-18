@@ -9,6 +9,7 @@
     "prebuild": "expo prebuild",
     "prebuild:clean": "expo prebuild --clean",
     "test": "jest",
+    "test:e2e": "maestro test .maestro/",
     "lint": "eslint ."
   },
   "dependencies": {

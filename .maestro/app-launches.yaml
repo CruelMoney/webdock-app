@@ -1,0 +1,9 @@
+appId: io.webdock.webdock
+name: App launches to login screen
+---
+- launchApp:
+    clearState: true
+- tapOn: ".*localhost.*"
+- extendedWaitUntil:
+    visible: ".*[Ll]ogin.*|.*[Ss]ign [Ii]n.*|.*[Ww]ebdock.*"
+    timeout: 20000
