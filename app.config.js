@@ -25,7 +25,6 @@ module.exports = {
       NSLocationWhenInUseUsageDescription: "We need your location for certain features.",
       NSCameraUsageDescription: "We need camera access for QR code scanning.",
     },
-    googleServicesFile: "./GoogleService-Info.plist",
     entitlements: {
       "aps-environment": "development",
     },
@@ -46,7 +45,6 @@ module.exports = {
       "WRITE_EXTERNAL_STORAGE",
       "CAMERA",
     ],
-    googleServicesFile: "./google-services.json",
   },
 
   plugins: [
@@ -116,8 +114,6 @@ module.exports = {
         cameraPermission: "Allow $(PRODUCT_NAME) to access your camera for QR code scanning.",
       },
     ],
-    "@react-native-firebase/app",
-    "@react-native-firebase/messaging",
     [
       "expo-build-properties",
       {

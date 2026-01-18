@@ -1,36 +1,29 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
-  LayoutAnimation,
   Linking,
+  Platform,
   Pressable,
-  Switch,
   Text,
   View,
 } from 'react-native';
-import {
-  FlatList,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native-gesture-handler';
-import MenuIcon from '../assets/menu-icon.svg';
-import PubicKeyIcon from '../assets/public-key-icon.svg';
+import { ScrollView } from 'react-native-gesture-handler';
+import { useTheme } from 'react-native-paper';
 import CogsIcon from '../assets/cogs.svg';
-import TeamIcon from '../assets/team-icon.svg';
 import LegalDocsIcon from '../assets/legal-docs.svg';
-import ScriptsIcon from '../assets/scripts-icon.svg';
 import NotificationIcon from '../assets/notification-bell.svg';
-import {getAccountInformations} from '../service/accountInformations';
-import {Icon, useTheme} from 'react-native-paper';
-import Spacer from '../components/Spacer';
-import ThemeSwitch from '../components/ThemeSwitch';
-import {ThemeContext} from '../components/ThemeContext';
-import {useBottomSheet} from '../components/BottomSheetProvider';
+import PubicKeyIcon from '../assets/public-key-icon.svg';
+import ScriptsIcon from '../assets/scripts-icon.svg';
+import TeamIcon from '../assets/team-icon.svg';
 import CallbackStatusWatcher from '../components/CallbackStatusWatcher';
+import Spacer from '../components/Spacer';
+import { ThemeContext } from '../components/ThemeContext';
+import ThemeSwitch from '../components/ThemeSwitch';
+import { getAccountInformations } from '../service/accountInformations';
 
-export default function Account({navigation}) {
+export default function Account({ navigation }) {
   const [account, setAccount] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -54,7 +47,7 @@ export default function Account({navigation}) {
   const measuredCount = useRef(0);
 
   const onLayout = (event, index) => {
-    const {height} = event.nativeEvent.layout;
+    const { height } = event.nativeEvent.layout;
     if (height > itemHeight) {
       setItemHeight(height);
     }
@@ -112,7 +105,7 @@ export default function Account({navigation}) {
       navigate: 'https://app.webdock.io/en/dash/profile%23legalDocuments',
     },
   ];
-  const {isDark, toggleTheme} = useContext(ThemeContext);
+  const { isDark, toggleTheme } = useContext(ThemeContext);
   const handlePress = url => {
     if (!url.includes('https://') && !url.includes('http://')) {
       url = 'https://' + url;
@@ -137,7 +130,7 @@ export default function Account({navigation}) {
       width="100%"
       height="100%"
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{gap: 24}}
+      contentContainerStyle={{ gap: 24 }}
       style={{
         backgroundColor: theme.colors.background,
         padding: 20,
@@ -191,10 +184,10 @@ export default function Account({navigation}) {
                   uri: !account.userAvatar
                     ? 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
                     : account.userAvatar.startsWith('https://')
-                    ? account.userAvatar
-                    : 'https:' + account.userAvatar,
+                      ? account.userAvatar
+                      : 'https:' + account.userAvatar,
                 }}
-                style={{borderRadius: 58 / 2, width: 58, height: 58}}
+                style={{ borderRadius: 58 / 2, width: 58, height: 58 }}
               />
             </View>
             <View
@@ -266,8 +259,8 @@ export default function Account({navigation}) {
       <View>
         <ThemeSwitch
           options={[
-            {key: 'light', label: 'Light mode', icon: 'white-balance-sunny'},
-            {key: 'dark', label: 'Dark mode', icon: 'weather-night'},
+            { key: 'light', label: 'Light mode', icon: 'white-balance-sunny' },
+            { key: 'dark', label: 'Dark mode', icon: 'weather-night' },
           ]}
           onToggle={value => toggleTheme(value)}
           selectedOption={theme.dark ? 1 : 0}
@@ -301,7 +294,7 @@ export default function Account({navigation}) {
                     : openWebView(item.navigate)
                   : navigation.navigate(item.navigate)
               }>
-              <View style={{padding: 12, display: 'flex'}}>
+              <View style={{ padding: 12, display: 'flex' }}>
                 <View
                   style={{
                     width: 20,
@@ -311,7 +304,7 @@ export default function Account({navigation}) {
                   }}>
                   {item.icon}
                 </View>
-                <View style={{height: 8}} />
+                <View style={{ height: 8 }} />
                 <Text
                   style={{
                     fontFamily: 'Poppins-SemiBold',
@@ -322,7 +315,7 @@ export default function Account({navigation}) {
                   }}>
                   {item.label}
                 </Text>
-                <View style={{height: 8}} />
+                <View style={{ height: 8 }} />
                 <Text
                   style={{
                     fontFamily: 'Poppins-Light',

@@ -1,31 +1,30 @@
-import React, {Component, useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   StatusBar,
-  StyleSheet,
-  Text,
-  View,
+  View
 } from 'react-native';
 
-import DeviceInfo from 'react-native-device-info';
-import {AuthContext} from '../components/context';
-import {getPing} from '../service/ping';
-import {WebView} from 'react-native-webview';
-import {getAccountInformations} from '../service/accountInformations';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   setTokenId,
   setUserEmail,
   setUserNickname,
 } from 'react-native-crisp-chat-sdk';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import DeviceInfo from 'react-native-device-info';
 import { useTheme } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { WebView } from 'react-native-webview';
+import { AuthContext } from '../components/context';
+import { getAccountInformations } from '../service/accountInformations';
+import { getPing } from '../service/ping';
 
 // ...
 export function LoginWebView() {
   const [deviceName, setDeviceName] = useState();
-  const {signIn} = React.useContext(AuthContext);
+  const { signIn } = React.useContext(AuthContext);
   const [token, setToken] = useState('');
   const loginHandle = usertoken => {
     getPing(usertoken).then(data => {
@@ -66,15 +65,17 @@ export function LoginWebView() {
         userAgent={'Webdock Mobile App WebView v1.0'}
         source={{
           uri:
-            'https://app.webdock.io/en/login?fromApp=true&deviceName=' + deviceName,
+            'https://app.webdock.io/en/login?fromApp=true&deviceName=' +
+            deviceName,
           headers: {
             'X-Device-Name': deviceName,
           },
         }}
         style={{
           flex: 1,
-          backgroundColor: "#E8EFE8",
-          paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : insets.top,
+          backgroundColor: '#E8EFE8',
+          paddingTop:
+            Platform.OS === 'android' ? StatusBar.currentHeight : insets.top,
         }}
         javaScriptEnabled={true}
         incognito={true}
@@ -82,7 +83,7 @@ export function LoginWebView() {
         onLoadEnd={hideSpinner}
         injectedJavaScriptBeforeContentLoaded={runFirst}
         onMessage={event => {
-          const {data} = event.nativeEvent;
+          const { data } = event.nativeEvent;
           console.log(data);
           loginHandle(data);
         }}
@@ -96,7 +97,7 @@ export function LoginWebView() {
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-          <ActivityIndicator style={{position: 'absolute'}} size="large" />
+          <ActivityIndicator style={{ position: 'absolute' }} size="large" />
         </View>
       )}
     </>

@@ -1,16 +1,12 @@
-import React, {useEffect, useState} from 'react';
-import {View, Text, TouchableOpacity, InteractionManager} from 'react-native';
-import {Dimensions} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {getMetrics} from '../service/serverMetrics';
-import {BarChart, LineChart} from 'react-native-chart-kit';
-import {ScrollView} from 'react-native-gesture-handler';
-import BackIcon from '../assets/back-icon.svg';
-import {Card, Title, useTheme} from 'react-native-paper';
+import { useEffect, useState } from 'react';
+import { Dimensions, InteractionManager, View } from 'react-native';
+import { BarChart, LineChart } from 'react-native-chart-kit';
+import { Card, Title, useTheme } from 'react-native-paper';
 import BottomSheetWrapper from '../components/BottomSheetWrapper';
-import {Circle, G, Path} from 'react-native-svg';
+import { getMetrics } from '../service/serverMetrics';
 
-export default function ServerActivity({route, navigation}) {
+export default function ServerActivity({ route, navigation }) {
   const [metrics, setMetrics] = useState();
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -140,13 +136,13 @@ export default function ServerActivity({route, navigation}) {
                   decimalPlaces: 0,
                   color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                   labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                  style: {borderRadius: 16},
+                  style: { borderRadius: 16 },
                   // global fallback only; per-dataset handled in decorator
-                  propsForDots: {r: '6', strokeWidth: '2', stroke: 'white'},
+                  propsForDots: { r: '6', strokeWidth: '2', stroke: 'white' },
                   useShadowColorFromDataset: true,
                 }}
                 withShadow={true} // avoid default single-fill shadow
-                style={{borderRadius: 16}}
+                style={{ borderRadius: 16 }}
               />
             </Card.Content>
           </Card>
@@ -209,7 +205,7 @@ export default function ServerActivity({route, navigation}) {
                   decimalPlaces: 0,
                   color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                   labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                  style: {borderRadius: 16},
+                  style: { borderRadius: 16 },
                   fillShadowGradient: `rgba(1,175,53,1)`,
                   fillShadowGradientFromOpacity: 1,
                   fillShadowGradientTo: 'rgba(1,175,53,1)',
@@ -219,9 +215,9 @@ export default function ServerActivity({route, navigation}) {
                     stroke: '#e3e3e3',
                     strokeDasharray: '0',
                   },
-                  barPercentage: 1.5 - (metrics?.disk?.samplings.length * 0.1)
+                  barPercentage: 1.5 - metrics?.disk?.samplings.length * 0.1,
                 }}
-                style={{ borderRadius: 16 }} 
+                style={{ borderRadius: 16 }}
                 barPercentage={0.6}
                 showBarTops={false}
               />
@@ -288,12 +284,12 @@ export default function ServerActivity({route, navigation}) {
                   decimalPlaces: 0,
                   color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                   labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                  style: {borderRadius: 16},
-                  propsForDots: {r: '6', strokeWidth: '2', stroke: 'white'},
+                  style: { borderRadius: 16 },
+                  propsForDots: { r: '6', strokeWidth: '2', stroke: 'white' },
                   useShadowColorFromDataset: true,
                 }}
                 withShadow={true}
-                style={{borderRadius: 16}}
+                style={{ borderRadius: 16 }}
                 fromZero
               />
             </Card.Content>
@@ -371,18 +367,18 @@ export default function ServerActivity({route, navigation}) {
                   decimalPlaces: 0,
                   color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                   labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                  style: {borderRadius: 16},
-                  propsForDots: {r: '6', strokeWidth: '2', stroke: 'white'},
+                  style: { borderRadius: 16 },
+                  propsForDots: { r: '6', strokeWidth: '2', stroke: 'white' },
                   useShadowColorFromDataset: true,
                 }}
                 withShadow={true}
-                style={{borderRadius: 16}}
+                style={{ borderRadius: 16 }}
                 fromZero
               />
             </Card.Content>
           </Card>
 
-          <View style={{height: 10}} />
+          <View style={{ height: 10 }} />
         </View>
       ) : (
         <View
