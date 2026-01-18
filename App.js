@@ -8,13 +8,10 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useTheme } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider } from './components/ThemeContext';
 import WebdockApp from './WebdockApp';
@@ -22,9 +19,6 @@ import WebdockApp from './WebdockApp';
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
-// const Drawer = createDrawerNavigator();
-const Stack = createStackNavigator();
-const Tab = createBottomTabNavigator();
 export default function App() {
   //const [isLoading, setIsLoading] = React.useState(true);
   //const [userToken, setUserToken] = React.useState(null);
@@ -63,27 +57,30 @@ export default function App() {
     initialLoginState,
   );
 
-  const authContext = React.useMemo(() => ({
-    signIn: async utoken => {
-      try {
-        await AsyncStorage.setItem('userToken', utoken);
-      } catch (e) {
-        alert(e);
-      }
-      dispatch({
-        type: 'LOGIN',
-        token: utoken,
-      });
-    },
-    signOut: async () => {
-      try {
-        await AsyncStorage.removeItem('userToken');
-      } catch (e) {
-        alert(e);
-      }
-      dispatch({ type: 'LOGOUT' });
-    },
-  }));
+  const authContext = React.useMemo(
+    () => ({
+      signIn: async utoken => {
+        try {
+          await AsyncStorage.setItem('userToken', utoken);
+        } catch (e) {
+          alert(e);
+        }
+        dispatch({
+          type: 'LOGIN',
+          token: utoken,
+        });
+      },
+      signOut: async () => {
+        try {
+          await AsyncStorage.removeItem('userToken');
+        } catch (e) {
+          alert(e);
+        }
+        dispatch({ type: 'LOGOUT' });
+      },
+    }),
+    [],
+  );
 
   useEffect(() => {
     setTimeout(async () => {
@@ -106,23 +103,18 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    console.log({ loginState });
     if (loginState.isLoading === false) {
-      const init = async () => {
-        // …do multiple sync or async tasks
-      };
-      init().finally(async () => {
-        if ((await AsyncStorage.getItem('userToken')) == null) {
-          setTimeout(() => {
-            SplashScreen.hideAsync();
-          }, 3000);
-        }
-      });
+      // Hide splash screen after a brief delay once app is initialized
+      const timer = setTimeout(() => {
+        SplashScreen.hideAsync();
+      }, 1000);
+      return () => clearTimeout(timer);
     }
   }, [loginState]);
-  const theme = useTheme();
+
   return (
-    <GestureHandlerRootView
-      style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>
         <SafeAreaProvider>
           <WebdockApp />

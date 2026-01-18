@@ -5,5 +5,6 @@ name: App launches to login screen
     clearState: true
 - tapOn: ".*localhost.*"
 - extendedWaitUntil:
-    visible: ".*[Ll]ogin.*|.*[Ss]ign [Ii]n.*|.*[Ww]ebdock.*"
+    visible:
+      id: "login-screen"
     timeout: 20000

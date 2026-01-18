@@ -60,7 +60,10 @@ export function LoginWebView() {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   return (
-    <>
+    <View
+      testID="login-screen"
+      accessibilityLabel="login-screen"
+      style={{ flex: 1 }}>
       <WebView
         userAgent={'Webdock Mobile App WebView v1.0'}
         source={{
@@ -100,6 +103,6 @@ export function LoginWebView() {
           <ActivityIndicator style={{ position: 'absolute' }} size="large" />
         </View>
       )}
-    </>
+    </View>
   );
 }
