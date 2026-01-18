@@ -8,9 +8,7 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar, StyleSheet, Text, View } from 'react-native';
 import { CopilotProvider, useCopilot } from 'react-native-copilot';
-import {
-  configure
-} from 'react-native-crisp-chat-sdk';
+import { configure } from 'react-native-crisp-chat-sdk';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { AuthContext } from './components/context';
