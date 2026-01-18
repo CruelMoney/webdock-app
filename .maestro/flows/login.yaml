@@ -1,0 +1,36 @@
+# Reusable login flow - use with runFlow
+# Pass credentials via env vars: TEST_EMAIL, TEST_PASSWORD
+appId: io.webdock.webdock
+env:
+  TEST_EMAIL: ${TEST_EMAIL}
+  TEST_PASSWORD: ${TEST_PASSWORD}
+---
+- extendedWaitUntil:
+    visible: "Email Address"
+    timeout: 15000
+- tapOn: "you@example.com"
+- inputText: ${TEST_EMAIL}
+- tapOn:
+    text: "Password"
+    index: 1
+- inputText: ${TEST_PASSWORD}
+- pressKey: Enter
+- extendedWaitUntil:
+    visible: "Home"
+    timeout: 30000
+- tapOn:
+    text: 'Continue'
+    optional: true
+# Dismiss walkthrough tooltips
+- tapOn:
+    text: 'Next'
+    optional: true
+- tapOn:
+    text: 'Next'
+    optional: true
+- tapOn:
+    text: 'Next'
+    optional: true
+- tapOn:
+    text: 'Done'
+    optional: true

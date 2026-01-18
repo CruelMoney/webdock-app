@@ -1,0 +1,15 @@
+appId: io.webdock.webdock
+name: Login via WebView
+tags:
+  - auth
+  - smoke
+---
+- launchApp:
+    clearState: true
+- runFlow: ../flows/dismiss-dialogs.yaml
+- extendedWaitUntil:
+    visible:
+      id: "login-screen"
+    timeout: 20000
+- runFlow: ../flows/login.yaml
+# Home assertion is done inside login.yaml flow

@@ -10,7 +10,9 @@
     "prebuild": "expo prebuild",
     "prebuild:clean": "expo prebuild --clean",
     "test": "jest",
-    "test:e2e": "maestro test .maestro/",
+    "test:e2e": "dotenv -e .env -- sh -c 'maestro test -e TEST_EMAIL=$TEST_EMAIL -e TEST_PASSWORD=$TEST_PASSWORD .maestro/'",
+    "test:e2e:smoke": "maestro test .maestro/smoke/",
+    "test:e2e:auth": "dotenv -e .env -- sh -c 'maestro test -e TEST_EMAIL=$TEST_EMAIL -e TEST_PASSWORD=$TEST_PASSWORD .maestro/auth/'",
     "lint": "eslint ."
   },
   "dependencies": {
@@ -83,6 +85,7 @@
     "@types/jest": "^29.5.13",
     "@types/react": "~19.1.10",
     "@types/react-test-renderer": "^19.0.0",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9.39.2",
     "eslint-config-expo": "~10.0.0",
     "eslint-config-prettier": "^10.1.8",

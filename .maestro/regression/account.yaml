@@ -1,0 +1,10 @@
+appId: io.webdock.webdock
+name: Account screen functionality
+tags:
+  - regression
+---
+- launchApp
+- runFlow: ../flows/ensure-logged-in.yaml
+- runFlow: ../flows/dismiss-dialogs.yaml
+- tapOn: 'Account'
+- assertVisible: 'Account'

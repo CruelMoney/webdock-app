@@ -1,12 +1,12 @@
 appId: io.webdock.webdock
 name: App launches to login screen
+tags:
+  - smoke
 ---
 - launchApp:
     clearState: true
-- tapOn: '.*localhost.*'
-- tapOn:
-    text: 'Close'
+- runFlow: ../flows/dismiss-dialogs.yaml
 - extendedWaitUntil:
     visible:
-      id: 'login-screen'
+      id: "login-screen"
     timeout: 20000

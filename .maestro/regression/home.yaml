@@ -1,0 +1,9 @@
+appId: io.webdock.webdock
+name: Home screen functionality
+tags:
+  - regression
+---
+- launchApp
+- runFlow: ../flows/ensure-logged-in.yaml
+- runFlow: ../flows/dismiss-dialogs.yaml
+- assertVisible: 'Home'

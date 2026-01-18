@@ -85,3 +85,4 @@ yarn-error.log
 
 # Credentials (keep out of git)
 credentials/
+.env

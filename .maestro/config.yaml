@@ -1,0 +1,19 @@
+flows:
+  - 'auth/*'
+  - 'regression/*'
+  - 'smoke/*'
+
+executionOrder:
+  continueOnFailure: false
+  flowsOrder:
+    - auth/login
+    - regression/home
+    - regression/servers
+    - regression/account
+
+includeTags:
+  - regression
+  - auth
+
+excludeTags:
+  - skip

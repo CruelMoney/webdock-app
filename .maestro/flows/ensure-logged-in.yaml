@@ -1,0 +1,9 @@
+# Conditional login - only runs if on login screen
+# Use this in regression tests to handle session expiry gracefully
+appId: io.webdock.webdock
+---
+- runFlow:
+    when:
+      visible:
+        id: "login-screen"
+    file: login.yaml

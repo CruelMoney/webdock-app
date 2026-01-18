@@ -1,0 +1,28 @@
+# Handle localhost modal and other startup dialogs
+# These appear on first launch in development mode
+appId: io.webdock.webdock
+---
+- tapOn:
+    text: '.*localhost.*'
+    optional: true
+- tapOn:
+    text: 'Close'
+    optional: true
+# Developer menu - try X button first, then Continue, then scroll and Continue
+- scroll
+- tapOn:
+    text: 'Continue'
+    optional: true
+# Dismiss walkthrough tooltips
+- tapOn:
+    text: 'Next'
+    optional: true
+- tapOn:
+    text: 'Next'
+    optional: true
+- tapOn:
+    text: 'Next'
+    optional: true
+- tapOn:
+    text: 'Done'
+    optional: true
