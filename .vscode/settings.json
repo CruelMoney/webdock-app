@@ -15,5 +15,10 @@
     "**/.rmv/catalog/**": true,
     "*/_*": false
   },
-  "java.compile.nullAnalysis.mode": "disabled"
+  "java.compile.nullAnalysis.mode": "disabled",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit",
+    "source.sortMembers": "explicit"
+  }
 }
