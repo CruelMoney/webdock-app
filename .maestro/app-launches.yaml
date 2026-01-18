@@ -3,8 +3,10 @@ name: App launches to login screen
 ---
 - launchApp:
     clearState: true
-- tapOn: ".*localhost.*"
+- tapOn: '.*localhost.*'
+- tapOn:
+    text: 'Close'
 - extendedWaitUntil:
     visible:
-      id: "login-screen"
+      id: 'login-screen'
     timeout: 20000
