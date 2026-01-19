@@ -1,6 +1,7 @@
 module.exports = {
   name: 'Webdock',
   slug: 'webdock',
+  owner: 'webdock',
   version: '2.0.6',
   orientation: 'portrait',
   icon: './assets/icon.png',
@@ -138,7 +139,7 @@ module.exports = {
 
   extra: {
     eas: {
-      projectId: 'your-eas-project-id', // Will be set after eas init
+      projectId: '2a9c82e7-bb6f-40ff-8e77-d2a318b23d3e',
     },
   },
 };
