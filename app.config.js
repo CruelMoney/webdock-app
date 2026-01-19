@@ -17,6 +17,7 @@ module.exports = {
     bundleIdentifier: 'io.webdock.webdock',
     buildNumber: '24',
     supportsTablet: true,
+    googleServicesFile: './GoogleService-Info.plist',
     infoPlist: {
       UIStatusBarStyle: 'UIStatusBarStyleLightContent',
       UIViewControllerBasedStatusBarAppearance: false,
@@ -33,6 +34,7 @@ module.exports = {
   android: {
     package: 'io.webdock',
     versionCode: 8,
+    googleServicesFile: './google-services.json',
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
       backgroundColor: '#022213',
@@ -121,6 +123,7 @@ module.exports = {
         ios: {
           useFrameworks: 'static',
           deploymentTarget: '15.1',
+          buildReactNativeFromSource: true,
         },
         android: {
           minSdkVersion: 24,
@@ -130,17 +133,7 @@ module.exports = {
         },
       },
     ],
-    [
-      '@react-native-firebase/app',
-      {
-        android: {
-          googleServicesFile: './google-services.json',
-        },
-        ios: {
-          googleServicesFile: './GoogleService-Info.plist',
-        },
-      },
-    ],
+    '@react-native-firebase/app',
   ],
 
   extra: {
