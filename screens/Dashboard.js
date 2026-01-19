@@ -1,86 +1,46 @@
-import React, {
-  useState,
-  useEffect,
-  PureComponent,
-  useRef,
-  useCallback,
-} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect, useRef, useState } from 'react';
 import {
   FlatList,
-  Image,
+  InteractionManager,
+  Pressable,
   SafeAreaView,
   ScrollView,
+  Share,
   StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
-  View,
   TouchableOpacity,
-  UIManager,
-  LayoutAnimation,
-  Pressable,
-  Share,
-  InteractionManager,
+  View,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { CopilotStep, useCopilot, walkthroughable } from 'react-native-copilot';
+import Modal from 'react-native-modal';
 import {
   ActivityIndicator,
-  Colors,
-  FAB,
-  Searchbar,
-  IconButton,
-  TextInput,
   Button,
-  Card,
-  Title,
-  Paragraph,
-  Menu,
+  Colors,
+  IconButton,
   useTheme,
-  Chip,
-  Badge,
-  ProgressBar,
 } from 'react-native-paper';
-import {Avatar, Divider} from 'react-native-paper';
-import {getServers, provisionAServer} from '../service/servers';
-import {AuthContext} from '../components/context';
-import Modal from 'react-native-modal';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  getImages,
-  getLocations,
-  getProfiles,
-} from '../service/serverConfiguration';
-import {SvgUri, SvgXml} from 'react-native-svg';
-import SVGCpu from '../assets/icon-cpu.svg';
-import SVGRam from '../assets/icon-ram2.svg';
-import SVGStorage from '../assets/icon-storage.svg';
-import IconOcticons from 'react-native-vector-icons/Octicons';
-import {getServerSnapshots} from '../service/serverSnapshots';
-import MenuIcon from '../assets/menu-icon.svg';
-import PlusIcon from '../assets/plus-icon.svg';
-import SearchIcon from '../assets/search-icon.svg';
-import PowerIcon from '../assets/power-icon.svg';
-import DropdownIcon from '../assets/dropdown-icon.svg';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import CirclePercent from '../assets/circle-percent.svg';
+import PowerIcon from '../assets/power-icon.svg';
 import ThumbsUp from '../assets/thumbs-up.svg';
-import ArrowIcon from '../assets/arrow-icon.svg';
-import {getEventsPerPage, getAllEvents} from '../service/events';
+import CallbackStatusWatcher from '../components/CallbackStatusWatcher';
 import EmptyList from '../components/EmptyList';
-import {getNews} from '../service/news';
-import Spacer from '../components/Spacer';
+import EventItem from '../components/EventItem';
 import NewsItem from '../components/NewsItem';
 import ServerItem from '../components/ServerItem';
-import {CopilotStep, useCopilot, walkthroughable} from 'react-native-copilot';
-import CallbackStatusWatcher from '../components/CallbackStatusWatcher';
+import { getAllEvents } from '../service/events';
+import { getNews } from '../service/news';
 import requestUserPermission from '../service/notifications';
-import EventItem from '../components/EventItem';
-import * as SplashScreen from 'expo-splash-screen';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import { getServers } from '../service/servers';
 
 const ONBOARDING_KEY = 'hasShownCopilot';
 
-export function Dashboard({navigation}) {
+export function Dashboard({ navigation }) {
   const serversCache = useRef(null);
   const newsCache = useRef(null);
   const notificationsCache = useRef(null);
@@ -88,7 +48,7 @@ export function Dashboard({navigation}) {
   const [news, setNews] = useState();
   const [notifications, setNotifications] = useState();
   const [loading, setLoading] = useState(true);
-  const {start, copilotEvents} = useCopilot();
+  const { start, copilotEvents } = useCopilot();
   const [isFirstRun, setIsFirstRun] = useState(false);
   const [events, setEvents] = useState([]);
 
@@ -168,9 +128,9 @@ export function Dashboard({navigation}) {
       userToken = await AsyncStorage.getItem('userToken');
       getServers(userToken).then(data => {
         const sorter = (a, b) => {
-          var dA = a.date.split(' ');
-          var dB = b.date.split(' ');
-          var dateA = Date.parse(dA[0] + 'T' + dA[1]),
+          let dA = a.date.split(' ');
+          let dB = b.date.split(' ');
+          let dateA = Date.parse(dA[0] + 'T' + dA[1]),
             dateB = Date.parse(dB[0] + 'T' + dB[1]);
 
           return dateB - dateA;
@@ -232,9 +192,9 @@ export function Dashboard({navigation}) {
       userToken = await AsyncStorage.getItem('userToken');
       getServers(userToken).then(data => {
         const sorter = (a, b) => {
-          var dA = a.date.split(' ');
-          var dB = b.date.split(' ');
-          var dateA = Date.parse(dA[0] + 'T' + dA[1]),
+          let dA = a.date.split(' ');
+          let dB = b.date.split(' ');
+          let dateA = Date.parse(dA[0] + 'T' + dA[1]),
             dateB = Date.parse(dB[0] + 'T' + dB[1]);
 
           return dateB - dateA;
@@ -346,14 +306,14 @@ export function Dashboard({navigation}) {
           backgroundColor: theme.colors.surface,
         }}>
         <ScrollView
-          style={{flex: 1, backgroundColor: theme.colors.background}}
+          style={{ flex: 1, backgroundColor: theme.colors.background }}
           contentContainerStyle={{
             paddingHorizontal: 20,
             paddingVertical: 10,
             gap: 20,
           }}
           showsVerticalScrollIndicator={false}>
-          <View style={{gap: 24}}>
+          <View style={{ gap: 24 }}>
             <CallbackStatusWatcher
               onFinished={() => {
                 console.log('Event completed!');
@@ -427,8 +387,8 @@ export function Dashboard({navigation}) {
               ) : (
                 <View>
                   {Array.isArray(servers) &&
-                  servers.length === 0 &&
-                  !isFetching ? (
+                    servers.length === 0 &&
+                    !isFetching ? (
                     <View
                       style={{
                         padding: 14,
@@ -444,7 +404,7 @@ export function Dashboard({navigation}) {
                           color: theme.colors.text,
                         }}>
                         You have no servers.{' '}
-                        <Text style={{color: theme.colors.primary}}>
+                        <Text style={{ color: theme.colors.primary }}>
                           Create a server
                         </Text>{' '}
                         and it will be listed here.
@@ -492,7 +452,7 @@ export function Dashboard({navigation}) {
                             title={item.name}
                             alias={
                               Array.isArray(item.aliases) &&
-                              item.aliases.length > 0
+                                item.aliases.length > 0
                                 ? item.aliases[0]
                                 : ''
                             }
@@ -503,7 +463,7 @@ export function Dashboard({navigation}) {
                             status={item.status}
                           />
                         </View>
-                        <View style={{height: 1}} />
+                        <View style={{ height: 1 }} />
                       </TouchableOpacity>
                     ))}
                   {isFetching ? (
@@ -602,7 +562,7 @@ export function Dashboard({navigation}) {
                   data={Array.isArray(events) ? events.slice(0, 3) : []}
                   scrollEnabled={false}
                   removeClippedSubviews={true}
-                  renderItem={({item}) => (
+                  renderItem={({ item }) => (
                     <View key={item.id}>
                       <EventItem
                         key={item.id}
@@ -617,7 +577,7 @@ export function Dashboard({navigation}) {
                           })
                         }
                       />
-                      <View style={{height: 1}} />
+                      <View style={{ height: 1 }} />
                     </View>
                   )}
                   ListEmptyComponent={
@@ -749,7 +709,7 @@ export function Dashboard({navigation}) {
                   data={Array.isArray(news) ? news.slice(0, 3) : []}
                   scrollEnabled={false}
                   removeClippedSubviews={true}
-                  renderItem={({item}) => (
+                  renderItem={({ item }) => (
                     <View key={item.id}>
                       <TouchableOpacity
                         key={item.id}
@@ -944,7 +904,6 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     marginHorizontal: '5%',
     justifyContent: 'center', //Centered vertically
-    flex: 1,
   },
   status: {
     width: '15%',

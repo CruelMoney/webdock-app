@@ -1,23 +1,22 @@
-import React, {useEffect, useState, useRef} from 'react';
-import {
-  ActivityIndicator,
-  View,
-  Text,
-  Alert,
-  StyleSheet,
-  InteractionManager,
-} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
-import {WebView} from 'react-native-webview';
-import BottomSheetWrapper from '../components/BottomSheetWrapper';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import {IconButton, useTheme} from 'react-native-paper';
+import { useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  InteractionManager,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import DeviceInfo from 'react-native-device-info';
+import { IconButton, useTheme } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { WebView } from 'react-native-webview';
 
-export default function WebViewWebdockAI({navigation}) {
+export default function WebViewWebdockAI({ navigation }) {
   const [deviceName, setDeviceName] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -244,14 +243,14 @@ export default function WebViewWebdockAI({navigation}) {
               }}>
               AI Assistant
             </Text>
-            <View style={{width: 30, height: 30}}></View>
+            <View style={{ width: 30, height: 30 }}></View>
           </View>
           <WebView
             originWhitelist={['*']}
             userAgent={'Webdock Mobile App WebView v1.0'}
             source={{
               uri: 'https://app.webdock.io/static/aichat/',
-              headers: {'X-Device-Name': deviceName},
+              headers: { 'X-Device-Name': deviceName },
             }}
             javaScriptEnabled={true}
             injectedJavaScriptBeforeContentLoaded={
@@ -265,20 +264,19 @@ export default function WebViewWebdockAI({navigation}) {
             onMessage={event => {
               console.log('[WebView]', event.nativeEvent.data);
               try {
-                  const msg = JSON.parse(event.nativeEvent.data);
-                  if (msg.type === 'close') {
-                    navigation.goBack();   // or bottomSheetRef.current?.close()
-                  }
-                } catch (e) {
-                  console.warn('Invalid message', event.nativeEvent.data);
+                const msg = JSON.parse(event.nativeEvent.data);
+                if (msg.type === 'close') {
+                  navigation.goBack(); // or bottomSheetRef.current?.close()
                 }
+              } catch (e) {
+                console.warn('Invalid message', event.nativeEvent.data);
               }
-            }
+            }}
             onError={e => console.warn('[WebView Error]', e.nativeEvent)}
             onHttpError={e =>
               console.warn('[WebView HTTP Error]', e.nativeEvent)
             }
-            style={{flex: 1, marginBottom: insets.bottom}}
+            style={{ flex: 1, marginBottom: insets.bottom }}
           />
           {loading && (
             <ActivityIndicator
@@ -286,7 +284,7 @@ export default function WebViewWebdockAI({navigation}) {
                 position: 'absolute',
                 top: '50%',
                 left: '50%',
-                transform: [{translateX: -25}, {translateY: -25}],
+                transform: [{ translateX: -25 }, { translateY: -25 }],
               }}
               size="large"
             />
