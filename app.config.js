@@ -130,6 +130,17 @@ module.exports = {
         },
       },
     ],
+    [
+      '@react-native-firebase/app',
+      {
+        android: {
+          googleServicesFile: './google-services.json',
+        },
+        ios: {
+          googleServicesFile: './GoogleService-Info.plist',
+        },
+      },
+    ],
   ],
 
   extra: {

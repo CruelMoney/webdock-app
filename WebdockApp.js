@@ -1,6 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  useNavigationContainerRef,
+} from '@react-navigation/native';
+import { logScreenView } from './service/analytics';
 import React, { useContext, useEffect, useState } from 'react';
 import { Button, Provider } from 'react-native-paper';
 // import SplashScreen from 'react-native-splash-screen';
@@ -34,6 +38,25 @@ export default function WebdockApp() {
   //const [isLoading, setIsLoading] = React.useState(true);
   const [userToken, setUserToken] = React.useState(null);
   configure('a3c561be-1f43-4c0e-aa0f-6c88579e55a9');
+
+  // Analytics: Navigation tracking
+  const navigationRef = useNavigationContainerRef();
+  const routeNameRef = React.useRef();
+
+  const onNavigationReady = () => {
+    routeNameRef.current = navigationRef.getCurrentRoute()?.name;
+  };
+
+  const onNavigationStateChange = async () => {
+    const previousRouteName = routeNameRef.current;
+    const currentRouteName = navigationRef.getCurrentRoute()?.name;
+
+    if (previousRouteName !== currentRouteName && currentRouteName) {
+      await logScreenView(currentRouteName, currentRouteName);
+    }
+
+    routeNameRef.current = currentRouteName;
+  };
 
   const initialLoginState = {
     isLoading: true,
@@ -285,6 +308,9 @@ export default function WebdockApp() {
         <BottomSheetModalProvider>
           <AuthContext.Provider value={authContext}>
             <NavigationContainer
+              ref={navigationRef}
+              onReady={onNavigationReady}
+              onStateChange={onNavigationStateChange}
               style={{
                 backgroundColor: theme.colors.background,
                 paddingTop: StatusBar.currentHeight,
